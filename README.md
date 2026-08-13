@@ -1,8 +1,27 @@
-# Unified WSI Vision-Language Codebase
+<p align="center">
+  <img src="docs/assets/logo_gym.png" alt="PGVL-Gym Logo" width="560">
+</p>
 
-A single, registry-based codebase that runs twelve recent few-shot
-whole-slide-image (WSI) vision-language methods through one entry
-point.
+<h1 align="center">PGVL-Gym</h1>
+
+<p align="center">
+  <strong>A generalized framework for fair, reproducible evaluation of<br>whole-slide pathology vision-language models.</strong>
+</p>
+
+<p align="center">
+  <a href="https://researchsubmissions66.github.io/PGVL-Gym/"><img src="https://img.shields.io/badge/Documentation-6b21a8?style=for-the-badge" alt="Documentation"></a>
+  <a href="https://github.com/researchsubmissions66/PGVL-Gym"><img src="https://img.shields.io/badge/Source-1e1b4b?style=for-the-badge&logo=github" alt="Source"></a>
+</p>
+
+---
+
+## Overview
+
+**PGVL-Gym** is a registry-based benchmark that runs recent few-shot and
+zero-shot whole-slide-image (WSI) vision-language methods through one explicit
+experiment contract. It preserves each paper's model-specific architecture
+while standardizing protocols, feature provenance, folds, shots, seeds, and
+reporting.
 
 Systematic protocols cover TCGA NSCLC/BRCA/RCC plus
 [CAMELYON16 and UBC-OCEAN](benchmarks/additional_tasks/README.md).
@@ -20,6 +39,8 @@ protocol files for your own storage layout:
 Then regenerate manifests, splits, run configs, and readiness reports with
 `python scripts/tcga_benchmark.py all --protocol <protocol>`. Do not infer a
 cohort from whatever feature files happen to exist.
+
+## Supported Methods
 
 | Method     | Paper venue          | Validated/default encoder boundary |
 | ---------- | -------------------- | ---------------------------------- |
