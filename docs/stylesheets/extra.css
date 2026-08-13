@@ -264,6 +264,84 @@ body {
   }
 }
 
+@media screen and (min-width: 60em) {
+  /* Compact page outline */
+  .md-sidebar--secondary {
+    padding-top: 1.15rem;
+  }
+
+  .md-sidebar--secondary .md-sidebar__scrollwrap {
+    margin: 0.35rem 0 0 0.7rem;
+    padding: 0.15rem 0.2rem 0.65rem 0.8rem;
+    border-left: 1px solid var(--pgvl-line);
+  }
+
+  .md-sidebar--secondary .md-nav__title {
+    padding: 0 0.35rem 0.62rem;
+    background: transparent;
+    box-shadow: none;
+    color: var(--pgvl-muted);
+    font-size: 0.5rem;
+    font-weight: 800;
+    letter-spacing: 0.11em;
+    text-transform: uppercase;
+  }
+
+  .md-sidebar--secondary .md-nav__list {
+    padding: 0;
+  }
+
+  .md-sidebar--secondary .md-nav__item {
+    position: relative;
+    padding: 0.04rem 0;
+  }
+
+  .md-sidebar--secondary .md-nav__link {
+    position: relative;
+    margin: 0;
+    padding: 0.28rem 0.4rem;
+    border-radius: 0.35rem;
+    color: var(--pgvl-muted);
+    font-size: 0.57rem;
+    line-height: 1.38;
+    transition: color 160ms ease, background 160ms ease;
+  }
+
+  .md-sidebar--secondary .md-nav__link:hover {
+    background: rgba(232, 111, 113, 0.07);
+    color: var(--pgvl-plum);
+  }
+
+  .md-sidebar--secondary .md-nav__link--active {
+    background: rgba(69, 32, 79, 0.06);
+    color: var(--pgvl-plum);
+    font-weight: 750;
+  }
+
+  .md-sidebar--secondary .md-nav__link--active::before {
+    position: absolute;
+    top: 0.34rem;
+    bottom: 0.34rem;
+    left: -0.85rem;
+    width: 0.12rem;
+    border-radius: 1rem;
+    background: var(--pgvl-coral);
+    content: "";
+  }
+
+  [data-md-color-scheme="slate"] .md-sidebar--secondary .md-nav__link:hover,
+  [data-md-color-scheme="slate"] .md-sidebar--secondary .md-nav__link--active {
+    background: rgba(248, 166, 166, 0.08);
+    color: var(--pgvl-rose);
+  }
+
+  .md-sidebar--secondary .md-nav .md-nav {
+    margin-left: 0.35rem;
+    padding-left: 0.35rem;
+    border-left: 1px solid var(--pgvl-line);
+  }
+}
+
 .md-search__form {
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 0.55rem;
