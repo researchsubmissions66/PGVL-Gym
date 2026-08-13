@@ -84,6 +84,7 @@ nav:
   - Home: index.md
   - User guide:
       - Getting started: getting-started.md
+      - Environment setup: environment.md
       - End-to-end tutorial: tutorial.md
       - Commands and run lifecycle: commands.md
       - Architecture: architecture.md

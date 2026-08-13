@@ -34,6 +34,7 @@ Archive the following alongside benchmark outputs:
 git rev-parse HEAD
 python --version
 python -m pip freeze
+conda env export --name pgvl-gym --from-history
 nvidia-smi
 sha256sum benchmarks/tcga/protocol.yaml
 ```

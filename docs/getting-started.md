@@ -2,16 +2,24 @@
 
 ## Install
 
-Use the existing `trident` environment on the benchmark server:
+Create the dedicated PGVL-Gym environment from the repository root:
 
 ```bash
-conda activate trident
-python -m pip install -e ".[all]"
+conda env create --file environment.yml
+conda activate pgvl-gym
+python -m pip check
 ```
 
-For documentation-only work, install the small documentation dependency set:
+This installs the full pip-installable benchmark stack with a CUDA-enabled
+PyTorch build. Gated model packages and weights remain explicit opt-ins. See
+[Environment setup](environment.md) for lean per-method profiles, CONCH and
+MUSK installation, GPU verification, updates, and removal.
+
+For documentation-only work, create the smaller documentation environment:
 
 ```bash
+conda create --name pgvl-gym-docs python=3.10 pip --yes
+conda activate pgvl-gym-docs
 python -m pip install -r requirements-docs.txt
 ```
 

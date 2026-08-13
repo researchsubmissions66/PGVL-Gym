@@ -28,15 +28,14 @@ By the end, you will know how to:
 From the repository root:
 
 ```bash
-conda activate trident
+conda activate pgvl-gym
 python --version
+python -m pip check
 ```
 
-If the project has not been installed into this environment:
-
-```bash
-python -m pip install -e ".[all]"
-```
+If the environment does not exist yet, create it from the repository root with
+`conda env create --file environment.yml`. Follow the
+[environment guide](environment.md) for a smaller method-specific installation.
 
 This tutorial assumes the locally registered CONCH checkpoint and feature bags
 exist. Do not download or substitute another encoder merely to make a row

@@ -1,0 +1,16 @@
+name: pgvl-gym
+
+channels:
+  - pytorch
+  - nvidia
+  - conda-forge
+
+dependencies:
+  - python=3.10
+  - pip>=24
+  - pytorch=2.5.1
+  - torchvision=0.20.1
+  - pytorch-cuda=12.4
+  - openslide
+  - pip:
+      - "-e .[all]"

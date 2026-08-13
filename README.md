@@ -287,20 +287,25 @@ no matter which YAML you pass.
 ## Installation
 
 ```bash
-git clone <this-repo>
-cd unified_wsi_vlm
-pip install -e .              # uses pyproject.toml
-# or:
-pip install -r requirements.txt
+git clone https://github.com/researchsubmissions66/PGVL-Gym.git
+cd PGVL-Gym
+conda env create --file environment.yml
+conda activate pgvl-gym
+python -m pip check
 ```
 
-Optional, per-backbone:
+This creates an isolated `pgvl-gym` environment; the benchmark does not use
+or modify a machine-wide `trident` environment. For a smaller installation,
+install the core package and only the extras for the selected methods:
 
-* CONCH: `pip install git+https://github.com/Mahmood-Lab/CONCH.git`
-  + HF token for `MahmoodLab/conch`
-* MUSK: vendor the original `musk/` package or install upstream
-* KEEP: `transformers >= 4.40` (loads via HF `Astaxanthin/KEEP`)
-* PLIP: `transformers` + HF model `vinid/plip`
+```bash
+python -m pip install -e .
+python -m pip install -e ".[maple,mscpt,pathpt-musk]"
+```
+
+CONCH and MUSK code and weights are gated upstream and remain explicit opt-in
+installs. See the complete [environment guide](docs/environment.md) for the
+per-method profiles, gated model setup, GPU checks, updates, and removal.
 
 ## Preprocessing pipeline
 

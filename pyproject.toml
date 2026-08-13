@@ -3,26 +3,29 @@ requires = ["setuptools>=61"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "unified-wsi-vlm"
+name = "pgvl-gym"
 version = "0.1.0"
 description = "Registry-based benchmark for few-shot WSI vision-language methods"
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.10,<3.12"
 license = {text = "Apache-2.0"}
-authors = [{name = "Unified WSI-VLM contributors"}]
+authors = [{name = "PGVL-Gym contributors"}]
 dependencies = [
-    "torch>=2.0",
+    "torch>=2.4,<2.7",
     "torchvision",
-    "numpy",
+    "numpy>=1.24,<2",
+    "scipy",
     "pandas",
     "pyyaml",
     "scikit-learn",
     "tensorboard",
+    "tensorboardX",
     "h5py",
-    "transformers>=4.40",
+    "transformers>=4.40,<5",
     "ftfy",
     "regex",
     "tqdm",
+    "termcolor",
 ]
 
 [project.optional-dependencies]
@@ -32,22 +35,46 @@ docs = [
     "mkdocstrings[python]>=0.27,<1",
     "ruff>=0.6",
 ]
-slip = ["nystrom-attention", "open-clip-torch"]
+preprocessing = [
+    "openslide-python",
+    "opencv-python-headless>=4.8,<4.12",
+    "pillow",
+    "matplotlib",
+]
+cod-mil = ["ml-collections", "yacs", "torch-geometric>=2.4,<3"]
+maple = ["einops>=0.7", "nmslib", "torch-geometric>=2.4,<3"]
+mscpt = ["torch-geometric>=2.4,<3", "pytorch-lightning>=2,<3"]
 pathpt = ["nystrom-attention"]
-maple = ["einops", "torch-geometric"]
-mscpt = ["torch-geometric", "pytorch-lightning"]
+pathpt-musk = ["nystrom-attention", "timm>=0.9,<1.1", "fairscale>=0.4.13"]
+slip = ["nystrom-attention", "open-clip-torch>=2.24", "timm>=0.9,<1.1"]
+wsi-five = [
+    "diffdist",
+    "imgaug",
+    "peft>=0.10,<1",
+    "timm>=0.9,<1.1",
+    "yacs",
+]
+convlm = ["open-clip-torch>=2.24"]
 sldpc = ["einops-exts"]
 all = [
     "nystrom-attention",
-    "einops",
-    "timm",
-    "torch-geometric",
-    "pytorch-lightning",
+    "open-clip-torch>=2.24",
+    "einops>=0.7",
+    "timm>=0.9,<1.1",
+    "torch-geometric>=2.4,<3",
+    "pytorch-lightning>=2,<3",
     "einops-exts",
     "openslide-python",
-    "opencv-python-headless",
+    "opencv-python-headless>=4.8,<4.12",
     "pillow",
     "matplotlib",
+    "ml-collections",
+    "yacs",
+    "nmslib",
+    "diffdist",
+    "imgaug",
+    "peft>=0.10,<1",
+    "fairscale>=0.4.13",
 ]
 
 [tool.setuptools.packages.find]
