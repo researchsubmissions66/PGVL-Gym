@@ -1,0 +1,28 @@
+# WSI-FiVE / LUNG
+# Source: configs/wsi/fix_pth.yaml from ls1rius/WSI_FiVE.
+# Different from the rest: uses GPT-summarised pathology reports.
+
+method: "wsi_five"
+backbone: "wsi-five-vit"  # FiVE's method-owned video/patch transformer
+n_classes: 2
+classnames: ["lung adenocarcinoma", "lung squamous cell carcinoma"]
+label_dict: {"LUAD": 0, "LUSC": 1}
+
+seed: 0
+epochs: 30
+lr: 8.0e-6
+weight_decay: 0.05
+batch_size: 4
+num_frames: 2048
+T_mit: 8
+is_img_pth: true
+
+dataset:    "tcga"
+data_path:  "path/to/TCGA_Lung"
+# Import TCGA_Reports.csv with scripts/import_upstream_assets.py.
+report_csv: "methods/wsi_five/gpt_preprocess/TCGA_Reports.csv"
+
+dataset_csv: "splits/TCGA_Lung/dataset.csv"
+data_folder_s: "path/to/TCGA_Lung/features"
+split_dir:    "splits/WSI_FiVE_TCGA_Lung"
+results_dir:  "results/wsi_five_lung"

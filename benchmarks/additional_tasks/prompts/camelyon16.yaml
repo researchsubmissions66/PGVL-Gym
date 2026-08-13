@@ -1,0 +1,67 @@
+version: 1
+provenance: user_defined_from_focus_camelyon_domain
+context: Histopathology assessment of sentinel lymph nodes for metastatic breast carcinoma without access to the diagnostic label.
+mscpt_prompts_per_scale: 10
+classes:
+  normal:
+    classname: normal lymph node
+    aliases:
+      - normal lymph node
+      - benign lymphoid tissue
+      - lymph node without metastatic carcinoma
+    tissues:
+      - normal lymph node
+      - benign lymphoid tissue with preserved architecture
+    low_res:
+      - Preserved lymph-node architecture with an intact capsule, cortex, paracortex, and medulla.
+      - Evenly distributed lymphoid follicles and patent sinuses without epithelial tumor deposits.
+      - Smooth nodal contour with orderly cortical and medullary organization.
+      - Reactive follicles may be present but retain regular spacing and circumscribed germinal centers.
+      - Homogeneous lymphoid parenchyma without geographic replacement by a solid mass.
+      - Preserved subcapsular sinus and trabecular framework without capsular invasion.
+      - No irregular pale epithelial nests interrupt the blue lymphoid background.
+      - Normal vascular and stromal distribution without desmoplastic tumor-associated regions.
+      - Continuous lymphoid texture without micrometastatic clusters or confluent deposits.
+      - Benign node with no architectural effacement by metastatic carcinoma.
+    high_res:
+      - Uniform small mature lymphocytes with round nuclei and scant cytoplasm.
+      - Polymorphous benign immune cells without cohesive atypical epithelial groups.
+      - Germinal centers contain an expected mixture of centrocytes, centroblasts, and tingible-body macrophages.
+      - Sinuses contain benign histiocytes without malignant gland-forming cells.
+      - Nuclear contours are regular and mitotic activity is limited to reactive compartments.
+      - No marked epithelial pleomorphism, prominent nucleoli, or atypical mitoses are identified.
+      - Reticular stromal cells and vessels remain orderly among benign lymphocytes.
+      - No keratinizing, glandular, or solid carcinoma clusters are present.
+      - Cell density and chromatin staining remain compatible with benign lymphoid tissue.
+      - High-power fields lack isolated malignant cells and cohesive metastatic deposits.
+  tumor:
+    classname: metastatic lymph node
+    aliases:
+      - metastatic lymph node
+      - lymph node metastasis
+      - lymph node involved by carcinoma
+    tissues:
+      - metastatic lymph node
+      - lymph node involved by metastatic carcinoma
+    low_res:
+      - Lymph-node architecture is distorted or effaced by irregular metastatic tumor deposits.
+      - Cohesive pale epithelial nests contrast with the surrounding basophilic lymphoid tissue.
+      - Subcapsular or parenchymal tumor foci expand through nodal sinuses.
+      - Geographic solid tumor regions replace normal follicles and medullary architecture.
+      - Irregular infiltrative deposits extend toward the capsule or extranodal soft tissue.
+      - Desmoplastic stromal regions surround metastatic nests within the lymph node.
+      - Multiple micrometastatic clusters interrupt the otherwise orderly lymphoid background.
+      - Confluent carcinoma deposits produce heterogeneous cellularity, necrosis, or hemorrhage.
+      - Capsular involvement and loss of the normal cortex-medulla relationship suggest metastasis.
+      - Abnormal glandular or solid epithelial architecture is visible within lymphoid parenchyma.
+    high_res:
+      - Pleomorphic malignant epithelial cells form cohesive clusters among lymphocytes.
+      - Tumor nuclei are enlarged and irregular with coarse chromatin and prominent nucleoli.
+      - Increased mitotic activity and atypical mitotic figures support metastatic carcinoma.
+      - Malignant cells show a high nuclear-to-cytoplasmic ratio and variable eosinophilic cytoplasm.
+      - Gland formation, luminal debris, or mucin may be present within metastatic deposits.
+      - Isolated tumor cells and small cohesive groups infiltrate nodal sinuses.
+      - Necrotic debris and apoptotic bodies accompany densely packed carcinoma cells.
+      - Desmoplastic fibroblasts and reactive inflammatory cells surround invasive epithelial nests.
+      - Marked nuclear size variation and membrane irregularity distinguish tumor from lymphocytes.
+      - High-power fields reveal unequivocal atypical epithelial cells replacing benign nodal tissue.

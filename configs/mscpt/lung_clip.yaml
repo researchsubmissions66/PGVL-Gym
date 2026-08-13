@@ -1,0 +1,35 @@
+# MSCPT / LUNG / 8-shot / 5-seed / CLIP backbone
+# Source: scripts/mscpt/train_my_lung.sh from Hanminghao/MSCPT.
+# NOTE: MSCPT uses different epoch counts per backbone:
+#   CLIP=100, PLIP=50, CONCH=50.
+
+method: "mscpt"
+backbone: "clip"
+n_classes: 2
+classnames: ["lung adenocarcinoma", "lung squamous cell carcinoma"]
+label_dict: {"LUAD": 0, "LUSC": 1}
+dataset_name: "Lung"
+
+shots: 8
+k: 5
+k_start: 0
+k_end: 5
+
+seed: 1
+epochs: 100
+lr: 1.0e-4
+weight_decay: 1.0e-5
+batch_size: 1
+num_workers: 4
+
+n_tpro: 2
+n_vpro: 2
+n_set: 5
+num_k: 100
+
+dataset_csv:     "tcga_lung.csv"
+feat_data_dir:   "path/to/TCGA_Lung/clip/pt_files"
+selected_5x_dir: "path/to/TCGA_Lung/selected_5x_patches"
+gpt_dir:         "./train_data/gpt"
+split_dir:       "numshots/LUNG_8shot_5fold"
+results_dir:     "results/mscpt_lung8_clip"

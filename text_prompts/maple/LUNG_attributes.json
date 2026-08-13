@@ -1,0 +1,148 @@
+{
+  "low": {
+    "entities": [
+      {
+        "name": "Architecture",
+        "general_feature": "Overall pattern or arrangement of tumor cells and structures within the tumor region visible at low magnification.",
+        "attributes": {
+          "lung adenocarcinoma": "Shows glandular, acinar, or papillary arrangements with well-formed gland-like spaces and frequent areas of lepidic (growth along alveolar spaces) pattern.",
+          "lung squamous cell carcinoma": "Displays solid nests, sheets, or islands of tumor cells with evidence of keratinization or central necrosis (keratin pearls), lacking glandular or papillary structures."
+        }
+      },
+      {
+        "name": "Stroma",
+        "general_feature": "The connective tissue and extracellular matrix surrounding tumor cell nests; appears as fibrous or desmoplastic regions.",
+        "attributes": {
+          "lung adenocarcinoma": "Typically features prominent desmoplastic reaction with loose, myxoid, or fibrous stroma separating irregular glandular structures; stroma may appear lighter and less dense at low magnification.",
+          "lung squamous cell carcinoma": "Displays denser and more collagenized stroma, often with fewer desmoplastic changes and a tendency for stromal tissue to tightly encase solid sheets or nests of tumor cells."
+        }
+      },
+      {
+        "name": "Lumina",
+        "general_feature": "Round to oval empty spaces or gland-like areas within tumor cell nests seen under low magnification.",
+        "attributes": {
+          "lung adenocarcinoma": "Frequent presence of well-formed glandular lumina, sometimes with mucin, demonstrating distinct glandular differentiation in the tumor nests.",
+          "lung squamous cell carcinoma": "Rare to absent true lumina; if present, are irregular, slit-like, or represent necrotic debris rather than glandular differentiation, with tumor nests generally appearing solid."
+        }
+      },
+      {
+        "name": "Keratinization",
+        "general_feature": "Area of eosinophilic, dense, glassy material within tumor nests or sheets, often forming concentric foci",
+        "attributes": {
+          "lung adenocarcinoma": "Rare or absent; tumor regions lack overt keratin pearls or extensive keratinized material at low magnification.",
+          "lung squamous cell carcinoma": "Frequent presence of well-defined keratin pearls or foci of extensive keratinization scattered within tumor islands, creating readily visible pink, dense areas at low magnification."
+        }
+      },
+      {
+        "name": "Border",
+        "general_feature": "The overall outline or margin of tumor nests or aggregates relative to the surrounding tissue.",
+        "attributes": {
+          "lung adenocarcinoma": "Irregular, infiltrative, or poorly-defined border with tumor nests forming glands or acinar patterns extending into adjacent lung parenchyma.",
+          "lung squamous cell carcinoma": "Well-demarcated, pushing, or lobulated border with solid sheets or nests of tumor cells sharply separated from adjacent stroma."
+        }
+      },
+      {
+        "name": "Cell Cluster",
+        "general_feature": "Aggregations of tumor cells forming recognizable foci or groups within tumor tissue",
+        "attributes": {
+          "lung adenocarcinoma": "Cell clusters often form irregular gland-like or acinar structures with rounded or variably shaped contours, tending to be loosely cohesive and sometimes displaying a mucinous appearance.",
+          "lung squamous cell carcinoma": "Cell clusters are typically dense, solid, polygonal aggregates with well-defined edges, forming sheets or nests with a more cohesive and compact appearance, lacking glandular or acinar organization."
+        }
+      },
+      {
+        "name": "Cytoplasmic Content",
+        "general_feature": "Appearance of the cellular material between the nuclear membrane and cell boundary in tumor regions at low magnification",
+        "attributes": {
+          "lung adenocarcinoma": "Cytoplasmic content typically appears moderate and relatively uniform without dense eosinophilia, and lacks prominent glassy or brightly pink regions, contributing to a finer overall tumor appearance.",
+          "lung squamous cell carcinoma": "Cytoplasmic content is often abundant and more intensely eosinophilic, imparting a bright pink or dense appearance to tumor nests; may show dense or glassy areas even at low magnification."
+        }
+      },
+      {
+        "name": "Vascular Pattern",
+        "general_feature": "Distribution and arrangement of blood vessels within the tumor region as seen at low magnification.",
+        "attributes": {
+          "lung adenocarcinoma": "Shows delicate, thin-walled, and regularly distributed vessels, often accompanying glandular or alveolar structures.",
+          "lung squamous cell carcinoma": "Displays irregular, thick-walled, and sometimes congested vessels, frequently associated with dense tumor nests and fibrotic areas."
+        }
+      }
+    ],
+    "tumor": "typically appears as an expansile or infiltrative area with altered architecture, increased cellularity, and distinct borders contrasting with the surrounding normal tissue.",
+    "global_info": {
+      "lung adenocarcinoma": "Displays irregular glandular architecture with acinar, papillary, or lepidic growth; lumina are variable, often forming gland-like or microacinar spaces. The stroma appears desmoplastic, supporting dispersed clusters of atypical cells. Cytoplasmic mucin may be visible. Borders are often infiltrative, blending into the surrounding lung tissue. Minimal keratinization and uncommon prominent vascular patterns.",
+      "lung squamous cell carcinoma": "Shows nests or sheets of tumor cells with well-defined borders, separated by dense, often fibrotic stroma. Keratinization is prominent, visible as bright pink cytoplasmic content and keratin pearls. Intercellular bridges are characteristic. Tumor lumina are rare to absent. Vascular pattern is less pronounced. Cell clusters are cohesive, not glandular."
+    }
+  },
+  "high": {
+    "entities": [
+      {
+        "name": "Cytoplasmic Border",
+        "general_feature": "The outline or edge of the cytoplasm surrounding the nucleus, often seen as the boundary between adjacent tumor cells.",
+        "attributes": {
+          "lung adenocarcinoma": "Cytoplasmic borders are generally indistinct and poorly defined, with cells often demonstrating overlapping or poorly separated cytoplasm. Cell cohesion is low.",
+          "lung squamous cell carcinoma": "Cytoplasmic borders are well-delineated and sharp, with clear cell-to-cell boundaries. Tumor cells exhibit strong cohesion and polygonal shapes."
+        }
+      },
+      {
+        "name": "Nucleolus",
+        "general_feature": "Prominent, round to oval intranuclear structure, appears as a distinct spot within the nucleus under high magnification.",
+        "attributes": {
+          "lung adenocarcinoma": "Frequently small, inconspicuous or variably prominent; may be solitary or few per nucleus with generally fine chromatin background.",
+          "lung squamous cell carcinoma": "Typically large, prominent, and sometimes multiple; often eosinophilic with hyperchromatic surrounding chromatin and increased irregularity."
+        }
+      },
+      {
+        "name": "Keratinization",
+        "general_feature": "Presence and appearance of eosinophilic, dense, concentric cytoplasmic material or whorls within tumor cells.",
+        "attributes": {
+          "lung adenocarcinoma": "Typically absent; tumor cells rarely show keratin production or keratin pearls.",
+          "lung squamous cell carcinoma": "Frequently present; keratin pearls and dense eosinophilic cytoplasmic material are prominent, often forming concentric whorled structures."
+        }
+      },
+      {
+        "name": "Cytoplasm",
+        "general_feature": "Cellular region surrounding the nucleus, often granular or clear depending on cytoplasmic contents and staining.",
+        "attributes": {
+          "lung adenocarcinoma": "Cytoplasm is typically moderate to abundant and appears pale, vacuolated, or sometimes clear due to mucin production. Mucin may be visible as intracytoplasmic droplets or small vacuoles.",
+          "lung squamous cell carcinoma": "Cytoplasm is dense, eosinophilic, and lacks mucin. It may appear more glassy or dense due to increased protein content and frequently shows more uniform staining without vacuolation."
+        }
+      },
+      {
+        "name": "Nuclear Membrane",
+        "general_feature": "The outer boundary of the cell nucleus, appearing as a thin, defined rim encasing the nuclear contents under high magnification.",
+        "attributes": {
+          "lung adenocarcinoma": "Nuclear membrane tends to be smooth, relatively uniform, and continuous with only occasional, mild irregularities.",
+          "lung squamous cell carcinoma": "Nuclear membrane frequently appears irregular, thickened, and may exhibit distinctive indentations or folds more commonly."
+        }
+      },
+      {
+        "name": "Chromatin",
+        "general_feature": "Fine granular material within the nucleus responsible for DNA packaging, visible as varying density and texture under high magnification.",
+        "attributes": {
+          "lung adenocarcinoma": "Chromatin appears uniformly fine, with evenly distributed granularity and less clumping, often displaying a more open and delicate texture.",
+          "lung squamous cell carcinoma": "Chromatin shows coarse clumping, irregular distribution, and a darker, more hyperchromatic appearance, often with areas of clearing or parachromatin clearing."
+        }
+      },
+      {
+        "name": "Vacuole",
+        "general_feature": "Clear, well-defined round or oval spaces within the cytoplasm of tumor cells, often seen as empty areas that may displace the nucleus.",
+        "attributes": {
+          "lung adenocarcinoma": "Vacuoles are frequently present, often appearing as distinct intracytoplasmic mucin vacuoles that indicate mucin production, occasionally pushing the nucleus to the periphery.",
+          "lung squamous cell carcinoma": "Vacuoles are typically absent or very rare; tumor cells usually lack mucin-containing spaces in the cytoplasm."
+        }
+      },
+      {
+        "name": "Glandular Lumen",
+        "general_feature": "Circular or oval-shaped empty or mucin-filled spaces within tumor cell nests, usually lined by tumor cells.",
+        "attributes": {
+          "lung adenocarcinoma": "Frequently observed; prominent, well-formed glandular or acinar spaces lined by a single layer of polarized columnar or cuboidal tumor cells, sometimes containing mucin.",
+          "lung squamous cell carcinoma": "Rarely observed; if present, lumens are poorly formed, irregular, and typically not lined by polarized epithelial cells; true glandular differentiation is absent."
+        }
+      }
+    ],
+    "tumor": "typically appears as a densely cellular area with pleomorphic, hyperchromatic nuclei, increased nuclear-to-cytoplasmic ratio, frequent atypical mitoses, and disrupted or absent normal tissue architecture.",
+    "global_info": {
+      "lung adenocarcinoma": "Under high magnification, tumor cells form irregular glandular structures with prominent lumina, often showing clear or vacuolated cytoplasm. Nuclei are round to oval, containing visible nucleoli, with mildly irregular nuclear membranes and evenly distributed, fine chromatin. Cytoplasmic borders are generally distinct but less sharp than in squamous tumors. Keratinization is absent.",
+      "lung squamous cell carcinoma": "Cells are polygonal with sharply defined cytoplasmic borders and abundant, dense, eosinophilic cytoplasm indicating keratinization. Nuclei are hyperchromatic and may show irregular contours and coarser chromatin, often containing prominent nucleoli. Intercellular bridges and keratin pearls may be present, with a lack of glandular lumina. Vacuoles are uncommon."
+    }
+  }
+}

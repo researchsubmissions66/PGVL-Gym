@@ -1,0 +1,11 @@
+prompts:
+  IDC:
+    - invasive ductal carcinoma
+    - breast invasive ductal carcinoma
+    - invasive carcinoma of no special type
+    - IDC
+  ILC:
+    - invasive lobular carcinoma
+    - breast invasive lobular carcinoma
+    - lobular carcinoma of the breast
+    - ILC

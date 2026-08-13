@@ -1,0 +1,6 @@
+class_name,low_res_prompt,high_res_prompt
+CC,"Ovarian clear cell carcinoma with tubulocystic, papillary, or solid architecture and hyalinized stromal cores.","Clear or eosinophilic hobnail cells with distinct borders and atypical nuclei."
+EC,"Ovarian endometrioid carcinoma with confluent glandular or cribriform architecture resembling endometrial glands.","Columnar epithelial cells forming glands with variable squamous differentiation and nuclear atypia."
+HGSC,"High-grade serous carcinoma with complex papillary, solid, or slit-like architecture and destructive invasion.","Marked nuclear pleomorphism, prominent nucleoli, brisk mitotic activity, and frequent apoptotic bodies."
+LGSC,"Low-grade serous carcinoma with orderly micropapillary architecture, delicate papillae, and relatively uniform growth.","Monomorphic nuclei with mild atypia, low mitotic activity, and possible psammoma bodies."
+MC,"Ovarian mucinous carcinoma with expansile or infiltrative mucinous glands and complex intestinal-type architecture.","Tall mucin-rich columnar cells with stratification, atypia, and intracytoplasmic mucin."

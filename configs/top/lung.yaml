@@ -1,0 +1,36 @@
+# TOP / LUNG / 16-shot
+# Source: exp_TCGA.sh from miccaiif/TOP.
+# IMPORTANT: TOP uses VERY different hyper-parameters from the rest:
+#   LR ~ 0.02 (vs 1e-4),  epochs = 8000 (vs 20-200).
+
+method: "top"
+clip_arch: "RN50"
+n_classes: 2
+classnames: ["lung adenocarcinoma", "lung squamous cell carcinoma"]
+label_dict: {"LUAD": 0, "LUSC": 1}
+
+shots: 16
+k: 5
+
+seed: 0
+epochs: 8000
+lr: 0.02
+lr_TB: 0.02
+lr_IB: 0.02
+weight_decay: 0.0
+early_stopping: false
+
+n_ctx_bag: 4
+n_ctx_inst: 4
+ctx_init_bag: ""
+ctx_init_inst: ""
+csc: true
+p_drop_out: 0.2
+p_bag_drop_out: 0.2
+weight_lossA: 25
+pooling_strategy: "learnablePrompt_multi"
+
+dataset_csv: "splits/TCGA_Lung/dataset.csv"
+data_folder_s: "path/to/TCGA_Lung/clip_features"
+split_dir:   "splits/TOP_TCGA_Lung_16shot"
+results_dir: "results/top_lung16"

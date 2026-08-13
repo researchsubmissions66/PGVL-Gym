@@ -1,0 +1,60 @@
+# SLDPC / TCGA-NSCLC. All one-vector-per-slide methods use the shared loader;
+# this example keeps TITAN's native paired slide/text projection.
+method: "sldpc"
+# Runtime prompt backbone (independent from the offline slide encoder below).
+backbone: "titan"
+backbone_weights: "/path/to/cached/titan/snapshot"
+prompt_encoder_model_id: "MahmoodLab/TITAN"
+prompt_encoder_revision: "dac6773d9961cfc75503440676ff157a2c6e8d2e"
+prompt_feature_space_id: "hf:MahmoodLab/TITAN@dac6773d9961cfc75503440676ff157a2c6e8d2e"
+local_files_only: true       # use the existing Hugging Face cache; no Hub request
+
+# Offline slide-vector source and exact provenance.
+feature_dim: 768
+feature_space_id: "hf:MahmoodLab/TITAN@dac6773d9961cfc75503440676ff157a2c6e8d2e"
+feature_key: "features"
+slide_encoder:
+  input_kind: "slide_embedding"
+  name: "titan"
+  weights: "/path/to/cached/titan/snapshot"
+  feature_space_id: "hf:MahmoodLab/TITAN@dac6773d9961cfc75503440676ff157a2c6e8d2e"
+  feature_dim: 768
+  feature_key: "features"
+  resolution: "20x"
+  path_template: "path/to/TCGA_Lung/titan_slide_embeddings/{slide_id}.pth"
+  runtime_encoder: true
+slide_projection:
+  mode: "native"            # use linear or mlp for another slide encoder
+  input_dim: 768
+  output_dim: 768
+  trainable: false
+n_classes: 2
+classnames: ["LUAD", "LUSC"]
+label_dict: {"LUAD": 0, "LUSC": 1}
+
+source_type: "per_slide_torch"  # also per_slide_h5 or pkl
+slide_features: "path/to/TCGA_Lung/titan_slide_embeddings"
+split_dir: "splits/SLDPC_TCGA_Lung_16shot"
+k: 5
+k_start: 0
+k_end: 5
+batch_size: 4
+num_workers: 0
+
+# CPI stage 1, followed by DHNO + symmetric InfoNCE stage 2.
+stage1_epochs: 50
+stage2_epochs: 50
+epochs: 100                 # must equal stage1_epochs + stage2_epochs
+stage1_lr: 1.0e-3
+stage2_lr: 1.0e-3
+weight_decay: 0.0
+n_ctx: 8
+csc: false
+class_token_position: "end"
+omega: 0.8
+tau: 0.07
+topk: 8
+stage1_apply_tau: false
+early_stopping: false        # preserve the required Stage-1 -> Stage-2 handoff
+monitor_metric: "F1"        # restore each stage's best validation prompt
+results_dir: "results/sldpc_lung16"

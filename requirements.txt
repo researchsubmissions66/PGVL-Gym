@@ -1,0 +1,112 @@
+# ============================================================================
+#  Unified WSI Vision-Language Codebase - dependencies
+# ============================================================================
+#
+#  Install in three tiers so users only pull what they actually need:
+#
+#    # 1. CORE (everything except the foundation models)
+#    pip install -r requirements.txt
+#
+#    # 2. PER-BACKBONE (only install what your chosen method uses)
+#    See "Backbone-specific" section at the bottom.
+#
+#    # 3. OPTIONAL (only if you actually run the corresponding method)
+#    See "Method-specific extras" section.
+#
+# Tested with Python 3.10 and 3.11. Pin torch to a CUDA build that matches
+# your driver via the official PyTorch index, e.g.:
+#   pip install torch==2.5.1 --index-url https://download.pytorch.org/whl/cu121
+# ============================================================================
+
+
+# ----- Core deep-learning stack ---------------------------------------------
+torch>=2.0,<3.0
+torchvision
+numpy
+scipy
+pandas
+scikit-learn
+pyyaml
+yacs                                  # CoD-MIL, WSI-FiVE configs
+ml_collections                        # CoD-MIL ViT configs
+tqdm
+matplotlib
+tensorboard
+tensorboardX                          # WSI-FiVE training logs
+
+# ----- Image / WSI handling -------------------------------------------------
+pillow
+opencv-python-headless                # CLAM tissue segmentation
+openslide-python                      # CLAM .svs / .ndpi reading
+h5py                                  # PathPT, CLAM features
+imgaug                                # WSI-FiVE patch augmentation
+
+# ----- Hugging Face ecosystem -----------------------------------------------
+transformers>=4.40                    # PLIP, KEEP, MUSK, MSCPT base models
+timm                                  # CoD-MIL ViT, WSI-FiVE vision tower
+ftfy                                  # CLIP tokenizer dependency
+regex                                 # CLIP tokenizer dependency
+einops                                # MAPLE, WSI-FiVE attention layers
+peft                                  # WSI-FiVE LoRA wrappers
+
+# ----- Method-specific (always-on; small) -----------------------------------
+nystrom-attention                     # SLIP, PathPT (TransMIL block)
+termcolor                             # logging in several methods
+einops-exts                           # TITAN dynamic model dependency (SLDPC)
+
+
+# ============================================================================
+#  Method-specific extras  --  uncomment what you use
+# ============================================================================
+#
+# MSCPT (graph neural network over text prompts):
+# torch-geometric
+# torch-sparse                                  # optional, speeds up GCN
+# pytorch-lightning>=2.0                        # only for the original Lightning paths
+#
+# MAPLE / WSI-FiVE neighborhood graph helpers:
+# nmslib                                        # K-NN over patch features
+# faiss-cpu                                     # alternative K-NN (or faiss-gpu)
+#
+# WSI-FiVE distributed training utilities:
+# diffdist                                      # cross-GPU contrastive loss
+#
+# ConVLM attribute encodings:
+# open-clip-torch                               # QuiltNet / Quilt-LLaVA attributes
+#
+# CoD-MIL ViT pretrained weights via Plotly heatmap viewer (optional):
+# plotly
+#
+# PathPT WSI selectors (optional patch-level visualisation):
+# scipy                                         # already in core
+# wget                                          # only used by some download scripts
+
+
+# ============================================================================
+#  Backbone-specific installs (NOT pip-installable from this file -- see notes)
+# ============================================================================
+#
+# CONCH  (FOCUS, MSCPT, PathPT)
+#   1. Request access at https://huggingface.co/MahmoodLab/conch
+#   2. pip install git+https://github.com/Mahmood-Lab/CONCH.git
+#   3. export HF_TOKEN=<your token>
+#
+# MUSK   (PathPT)
+#   1. pip install git+https://github.com/lilab-stanford/MUSK.git
+#   2. Download weights from the upstream repo's release page.
+#
+# KEEP   (PathPT)
+#   pip install transformers>=4.40
+#   model loads from `Astaxanthin/KEEP` via `trust_remote_code=True`
+#
+# PLIP   (MAPLE, MSCPT, PathPT, SLIP)
+#   pip install transformers>=4.40
+#   model loads from `vinid/plip` (no gating)
+#
+# OpenAI CLIP (RN50 / ViT-B)
+#   already vendored in this repo at ./clip/  -- nothing to install
+#
+# TITAN (SLDPC)
+#   1. Accept the license at https://huggingface.co/MahmoodLab/TITAN
+#   2. `huggingface-cli login`
+#   3. transformers downloads the model automatically via trust_remote_code

@@ -1,0 +1,33 @@
+# CoD-MIL / RCC / full data / 5-fold
+# Source: README of Jiangbo-Shi/CoD-MIL.
+
+method: "cod_mil"
+backbone: "clip-rn50"
+feature_dim: 1024
+n_classes: 3
+classnames: ["clear cell renal cell carcinoma", "papillary renal cell carcinoma", "chromophobe renal cell carcinoma"]
+label_dict: {"CCRCC": 0, "PRCC": 1, "CHRCC": 2}
+
+shots: -1                    # CoD-MIL trains on full data by default
+k: 5
+k_start: 0
+k_end: 5
+
+seed: 1
+epochs: 200
+lr: 1.0e-4
+weight_decay: 1.0e-5
+early_stopping: true
+es_patience: 20
+es_stop_epoch: 50
+
+dataset_csv:    "splits/TCGA_RCC/dataset.csv"
+data_folder_s:  "path/to/TCGA_RCC/feats_5x"
+data_folder_l:  "path/to/TCGA_RCC/feats_20x"
+split_dir:      "splits/task_tcga_rcc_subtyping"
+# Imported from upstream with scripts/import_upstream_assets.py.
+# Generate this directory with scripts/generate_cross_magnification_maps.py.
+text_prompt_path: "text_prompts/cod_mil/rcc_chain_of_diagnosis.json"
+text_prompt_features: "text_prompts/cod_mil/rcc_text_prompt_features_clip.pt"
+cross_mag_map_dir: "maps/TCGA_RCC_10x_to_20x"
+results_dir:    "results/cod_mil_rcc"

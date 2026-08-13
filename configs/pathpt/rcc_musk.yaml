@@ -1,0 +1,41 @@
+# PathPT / RCC / 10-shot / MUSK backbone
+# Source: official train.py defaults from MAGIC-AI4Med/PathPT.
+# IMPORTANT: hyperparameters are intentionally identical across
+# all four backbones (PLIP / CONCH / KEEP / MUSK) -- only
+# `backbone` and `feature_root` change.  This is the paper's
+# fair-comparison recipe.
+
+method: "pathpt"
+backbone: "musk"
+n_classes: 3
+classnames: ["clear cell renal cell carcinoma", "papillary renal cell carcinoma", "chromophobe renal cell carcinoma"]
+label_dict: {"CCRCC": 0, "PRCC": 1, "CHRCC": 2}
+
+shots: 10
+k: 10
+k_start: 0
+k_end: 10
+
+# --- training (locked across backbones) ---
+seed: 42
+epochs: 20
+lr: 1.0e-4
+batch_size: 1
+n_ctx: 32
+prompt_init: "template"
+aux_weight: 0.5
+learnable: "token"
+vision_only: false
+vision_grad: true
+use_aug: false
+loss_weight: [1.0, 0.5, 0.1]
+
+# --- features ---
+feature_root: "features/musk/rcc/h5_files"
+patch_num: 100000            # OOM guard for MUSK
+loader_mode: "h5"
+
+# --- paths ---
+dataset_csv:  "multifold/dataset_csv_10shot/RCC/fold0.csv"
+split_dir:    "multifold/dataset_csv_10shot/RCC"
+results_dir:  "results/pathpt_rcc_musk_10shot"

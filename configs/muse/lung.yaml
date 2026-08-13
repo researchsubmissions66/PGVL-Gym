@@ -1,0 +1,58 @@
+# MUSE / TCGA-NSCLC. Static patch bags and the runtime prompt encoder are
+# configured independently; CONCH/CONCH remains the paper-faithful default.
+method: "muse"
+# Runtime prompt encoder.
+backbone: "conch"
+backbone_weights: "/path/to/cached/conch/pytorch_model.bin"
+prompt_feature_space_id: "hf:MahmoodLab/conch"
+conch_ckpt: "/path/to/cached/conch/pytorch_model.bin"
+
+# Offline patch encoder. Change this block, feature_dim, and data_folder_s
+# together. MUSE learns feature_dim -> embed_dim dynamically.
+feature_dim: 512
+feature_space_id: "hf:MahmoodLab/conch"
+feature_key: "features"
+patch_encoder:
+  input_kind: "patch_bag"
+  name: "conch"
+  weights: "/path/to/cached/conch/pytorch_model.bin"
+  feature_space_id: "hf:MahmoodLab/conch"
+  feature_dim: 512
+  feature_key: "features"
+  resolution: "10x"
+  path_template: "path/to/TCGA_Lung/conch_features/{slide_id}.h5"
+embed_dim: 512
+n_classes: 2
+classnames: ["lung adenocarcinoma", "lung squamous cell carcinoma"]
+label_dict: {"LUAD": 0, "LUSC": 1}
+
+shots: 16
+k: 5
+k_start: 0
+k_end: 5
+seed: 1
+epochs: 200
+lr: 1.0e-4
+weight_decay: 1.0e-5
+early_stopping: true
+es_patience: 20
+es_stop_epoch: 50
+batch_size: 1
+
+# MUSE retrieval/MoE settings from the public implementation.
+num_heads: 8
+num_experts: 8
+num_selected: 2
+retrieval_k: 8
+dropout: 0.25
+text_batch_size: 64
+
+# Run `python scripts/import_upstream_assets.py --download` first.  The
+# adapter uses CONCH to encode these exact published descriptions once.
+prompt_csvs:
+  "lung adenocarcinoma": "text_prompts/muse/tcga_nsclc/generated_new_0.csv"
+  "lung squamous cell carcinoma": "text_prompts/muse/tcga_nsclc/generated_new_1.csv"
+dataset_csv: "splits/TCGA_Lung/dataset.csv"
+data_folder_s: "path/to/TCGA_Lung/conch_features/pt_files"
+split_dir: "splits/TCGA_Lung_16shots_5folds"
+results_dir: "results/muse_lung16"

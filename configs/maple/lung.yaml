@@ -1,0 +1,39 @@
+# MAPLE / LUNG / 16-shot / 5-fold
+# Source: run.sh from JJ-ZHOU-Code/MAPLE.
+# MAPLE uses CLIP or PLIP (default PLIP).
+
+method: "maple"
+backbone: "plip"
+n_classes: 2
+classnames: ["lung adenocarcinoma", "lung squamous cell carcinoma"]
+label_dict: {"LUAD": 0, "LUSC": 1}
+
+shots: 16
+k: 5
+k_start: 0
+k_end: 5
+
+seed: 1
+epochs: 200
+lr: 2.0e-4                  # MAPLE uses 2e-4, not 1e-4
+weight_decay: 1.0e-5
+early_stopping: true
+es_patience: 20
+es_stop_epoch: 50
+
+prompt_mode: "attribute"
+attr_edge_topk: 7
+entity_weight: 0.3
+pos_ratio: 0.8
+n_ctx: 0
+csc: false
+all_ctx_trainable: false
+p_drop_out: 0.0
+p_bag_drop_out: 0.0
+
+dataset_csv:    "splits/TCGA_Lung/dataset.csv"
+data_folder_s:  "data_dir/TCGA/LUNG/feats-l0-s2048-PLIP/pt_files"
+data_folder_l:  "data_dir/TCGA/LUNG/feats-l0-s1024-PLIP/pt_files"
+split_dir:      "splits/task_tcga_lung_subtyping_16shots_5folds"
+text_prompt_path: "text_prompts/maple/LUNG_attributes.json"
+results_dir:    "results/maple_lung16"

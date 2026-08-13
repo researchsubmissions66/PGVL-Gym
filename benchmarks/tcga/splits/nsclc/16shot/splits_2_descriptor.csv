@@ -1,0 +1,3 @@
+label,train_slides,train_patients,val_slides,val_patients,test_slides,test_patients
+LUAD,16,16,16,16,111,94
+LUSC,16,16,16,16,99,95

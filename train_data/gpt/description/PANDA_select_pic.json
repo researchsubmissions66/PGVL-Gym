@@ -1,0 +1,877 @@
+{
+    "0": {
+        "classnames": {
+            "LowRisk": "localized prostate cancer with minimal aggressiveness",
+            "IntermediateRisk": "prostate cancer showing mixed low- and high-risk characteristics",
+            "HighRisk": "poorly differentiated prostate cancer"
+        },
+        "templates": [
+            "CLASSNAME is present.",
+            "CLASSNAME.",
+            "a histopathological photograph showing CLASSNAME.",
+            "there is CLASSNAME.",
+            "shows CLASSNAME.",
+            "an image of CLASSNAME.",
+            "an image showing CLASSNAME.",
+            "an example of CLASSNAME.",
+            "a histopathological photograph of CLASSNAME.",
+            "this is CLASSNAME.",
+            "presence of CLASSNAME.",
+            "a histopathological image of CLASSNAME.",
+            "CLASSNAME is shown.",
+            "a histopathological image showing CLASSNAME.",
+            "a photomicrograph of CLASSNAME.",
+            "a photomicrograph showing CLASSNAME."
+        ]
+    },
+    "1": {
+        "classnames": {
+            "LowRisk": "low-grade prostate cancer with favorable prognosis",
+            "IntermediateRisk": "prostate cancer showing mixed low- and high-risk characteristics",
+            "HighRisk": "prostate cancer associated with rapid disease progression"
+        },
+        "templates": [
+            "an image showing CLASSNAME.",
+            "CLASSNAME is shown.",
+            "a histopathological image showing CLASSNAME.",
+            "a photomicrograph showing CLASSNAME.",
+            "an example of CLASSNAME.",
+            "there is CLASSNAME.",
+            "CLASSNAME.",
+            "shows CLASSNAME.",
+            "a photomicrograph of CLASSNAME.",
+            "a histopathological photograph of CLASSNAME.",
+            "a histopathological image of CLASSNAME.",
+            "a histopathological photograph showing CLASSNAME.",
+            "CLASSNAME is present.",
+            "this is CLASSNAME.",
+            "an image of CLASSNAME.",
+            "presence of CLASSNAME."
+        ]
+    },
+    "2": {
+        "classnames": {
+            "LowRisk": "cancer with slow progression and low likelihood of spread",
+            "IntermediateRisk": "intermediate-grade prostate adenocarcinoma",
+            "HighRisk": "prostate cancer with significant structural abnormalities"
+        },
+        "templates": [
+            "CLASSNAME is present.",
+            "an image of CLASSNAME.",
+            "shows CLASSNAME.",
+            "a photomicrograph showing CLASSNAME.",
+            "an image showing CLASSNAME.",
+            "CLASSNAME.",
+            "a histopathological photograph of CLASSNAME.",
+            "an example of CLASSNAME."
+        ]
+    },
+    "3": {
+        "classnames": {
+            "LowRisk": "early-stage prostate cancer",
+            "IntermediateRisk": "tumor with potential to spread beyond the prostate",
+            "HighRisk": "prostate cancer associated with rapid disease progression"
+        },
+        "templates": [
+            "CLASSNAME is shown.",
+            "an image of CLASSNAME.",
+            "an image showing CLASSNAME.",
+            "a photomicrograph showing CLASSNAME.",
+            "CLASSNAME is present.",
+            "an example of CLASSNAME.",
+            "a photomicrograph of CLASSNAME.",
+            "presence of CLASSNAME.",
+            "there is CLASSNAME."
+        ]
+    },
+    "4": {
+        "classnames": {
+            "LowRisk": "localized prostate cancer with minimal aggressiveness",
+            "IntermediateRisk": "localized prostate cancer with moderate progression risk",
+            "HighRisk": "prostate tumor with high likelihood of spread or invasion"
+        },
+        "templates": [
+            "a histopathological photograph showing CLASSNAME.",
+            "CLASSNAME.",
+            "an image showing CLASSNAME.",
+            "this is CLASSNAME."
+        ]
+    },
+    "5": {
+        "classnames": {
+            "LowRisk": "prostate tumor with minimal structural abnormality",
+            "IntermediateRisk": "prostate cancer with notable structural abnormalities",
+            "HighRisk": "advanced-stage prostate cancer"
+        },
+        "templates": [
+            "shows CLASSNAME.",
+            "a histopathological image of CLASSNAME.",
+            "a histopathological photograph of CLASSNAME.",
+            "presence of CLASSNAME."
+        ]
+    },
+    "6": {
+        "classnames": {
+            "LowRisk": "localized prostate cancer with minimal aggressiveness",
+            "IntermediateRisk": "prostate cancer with mixed differentiation",
+            "HighRisk": "prostate cancer with significant structural abnormalities"
+        },
+        "templates": [
+            "CLASSNAME.",
+            "a histopathological photograph of CLASSNAME.",
+            "an example of CLASSNAME.",
+            "a histopathological image of CLASSNAME.",
+            "an image showing CLASSNAME.",
+            "a photomicrograph of CLASSNAME.",
+            "CLASSNAME is shown.",
+            "shows CLASSNAME.",
+            "presence of CLASSNAME.",
+            "this is CLASSNAME."
+        ]
+    },
+    "7": {
+        "classnames": {
+            "LowRisk": "localized prostate cancer with minimal aggressiveness",
+            "IntermediateRisk": "intermediate-grade prostate adenocarcinoma",
+            "HighRisk": "locally advanced or metastatic prostate adenocarcinoma"
+        },
+        "templates": [
+            "this is CLASSNAME.",
+            "CLASSNAME is shown.",
+            "a histopathological image showing CLASSNAME.",
+            "a histopathological photograph of CLASSNAME.",
+            "shows CLASSNAME.",
+            "a photomicrograph showing CLASSNAME.",
+            "there is CLASSNAME.",
+            "a photomicrograph of CLASSNAME.",
+            "a histopathological photograph showing CLASSNAME.",
+            "CLASSNAME is present."
+        ]
+    },
+    "8": {
+        "classnames": {
+            "LowRisk": "cancer with slow progression and low likelihood of spread",
+            "IntermediateRisk": "moderately aggressive prostate cancer",
+            "HighRisk": "prostate cancer associated with rapid disease progression"
+        },
+        "templates": [
+            "presence of CLASSNAME.",
+            "a histopathological photograph of CLASSNAME.",
+            "a histopathological image showing CLASSNAME.",
+            "there is CLASSNAME.",
+            "an image showing CLASSNAME.",
+            "an example of CLASSNAME.",
+            "an image of CLASSNAME.",
+            "a histopathological image of CLASSNAME.",
+            "CLASSNAME is present.",
+            "a photomicrograph of CLASSNAME.",
+            "a histopathological photograph showing CLASSNAME.",
+            "a photomicrograph showing CLASSNAME.",
+            "CLASSNAME.",
+            "this is CLASSNAME."
+        ]
+    },
+    "9": {
+        "classnames": {
+            "LowRisk": "localized prostate cancer with minimal aggressiveness",
+            "IntermediateRisk": "prostate cancer with notable structural abnormalities",
+            "HighRisk": "advanced-stage prostate cancer"
+        },
+        "templates": [
+            "there is CLASSNAME."
+        ]
+    },
+    "10": {
+        "classnames": {
+            "LowRisk": "prostate cancer confined to the prostate gland",
+            "IntermediateRisk": "tumor with potential to spread beyond the prostate",
+            "HighRisk": "prostate cancer with significant structural abnormalities"
+        },
+        "templates": [
+            "a histopathological image showing CLASSNAME.",
+            "this is CLASSNAME."
+        ]
+    },
+    "11": {
+        "classnames": {
+            "LowRisk": "early-stage prostate cancer",
+            "IntermediateRisk": "moderately aggressive prostate cancer",
+            "HighRisk": "prostate cancer associated with rapid disease progression"
+        },
+        "templates": [
+            "a histopathological image showing CLASSNAME.",
+            "a histopathological photograph showing CLASSNAME.",
+            "CLASSNAME is present.",
+            "shows CLASSNAME.",
+            "there is CLASSNAME.",
+            "a histopathological image of CLASSNAME.",
+            "CLASSNAME is shown.",
+            "an image of CLASSNAME."
+        ]
+    },
+    "12": {
+        "classnames": {
+            "LowRisk": "well-differentiated prostate cancer",
+            "IntermediateRisk": "tumor with potential to spread beyond the prostate",
+            "HighRisk": "advanced-stage prostate cancer"
+        },
+        "templates": [
+            "a histopathological photograph of CLASSNAME.",
+            "a histopathological image showing CLASSNAME.",
+            "there is CLASSNAME."
+        ]
+    },
+    "13": {
+        "classnames": {
+            "LowRisk": "cancer with slow progression and low likelihood of spread",
+            "IntermediateRisk": "tumor with potential to spread beyond the prostate",
+            "HighRisk": "high-grade prostate cancer with aggressive behavior"
+        },
+        "templates": [
+            "an image of CLASSNAME.",
+            "CLASSNAME is present.",
+            "a histopathological image of CLASSNAME.",
+            "an image showing CLASSNAME.",
+            "a histopathological image showing CLASSNAME.",
+            "presence of CLASSNAME.",
+            "there is CLASSNAME.",
+            "shows CLASSNAME.",
+            "a photomicrograph of CLASSNAME.",
+            "this is CLASSNAME.",
+            "a photomicrograph showing CLASSNAME.",
+            "a histopathological photograph showing CLASSNAME."
+        ]
+    },
+    "14": {
+        "classnames": {
+            "LowRisk": "low-grade prostate cancer with favorable prognosis",
+            "IntermediateRisk": "localized prostate cancer with moderate progression risk",
+            "HighRisk": "prostate tumor with high likelihood of spread or invasion"
+        },
+        "templates": [
+            "a histopathological photograph of CLASSNAME.",
+            "an image showing CLASSNAME.",
+            "shows CLASSNAME."
+        ]
+    },
+    "15": {
+        "classnames": {
+            "LowRisk": "prostate tumor with minimal structural abnormality",
+            "IntermediateRisk": "tumor with potential to spread beyond the prostate",
+            "HighRisk": "prostate cancer with significant structural abnormalities"
+        },
+        "templates": [
+            "presence of CLASSNAME.",
+            "CLASSNAME is present.",
+            "a histopathological photograph of CLASSNAME.",
+            "a histopathological image of CLASSNAME.",
+            "there is CLASSNAME.",
+            "an image showing CLASSNAME.",
+            "an image of CLASSNAME.",
+            "shows CLASSNAME."
+        ]
+    },
+    "16": {
+        "classnames": {
+            "LowRisk": "prostate tumor with minimal structural abnormality",
+            "IntermediateRisk": "intermediate-grade prostate adenocarcinoma",
+            "HighRisk": "poorly differentiated prostate cancer"
+        },
+        "templates": [
+            "a photomicrograph showing CLASSNAME.",
+            "an example of CLASSNAME.",
+            "CLASSNAME is shown.",
+            "shows CLASSNAME.",
+            "CLASSNAME."
+        ]
+    },
+    "17": {
+        "classnames": {
+            "LowRisk": "well-differentiated prostate cancer",
+            "IntermediateRisk": "prostate cancer with notable structural abnormalities",
+            "HighRisk": "poorly differentiated prostate cancer"
+        },
+        "templates": [
+            "this is CLASSNAME.",
+            "CLASSNAME is present.",
+            "a histopathological photograph showing CLASSNAME.",
+            "an example of CLASSNAME.",
+            "an image of CLASSNAME.",
+            "presence of CLASSNAME."
+        ]
+    },
+    "18": {
+        "classnames": {
+            "LowRisk": "cancer with slow progression and low likelihood of spread",
+            "IntermediateRisk": "prostate cancer showing mixed low- and high-risk characteristics",
+            "HighRisk": "locally advanced or metastatic prostate adenocarcinoma"
+        },
+        "templates": [
+            "CLASSNAME is shown.",
+            "a histopathological photograph of CLASSNAME.",
+            "an example of CLASSNAME.",
+            "a photomicrograph of CLASSNAME.",
+            "presence of CLASSNAME.",
+            "shows CLASSNAME.",
+            "CLASSNAME.",
+            "a histopathological image showing CLASSNAME.",
+            "an image showing CLASSNAME.",
+            "a histopathological image of CLASSNAME.",
+            "an image of CLASSNAME.",
+            "this is CLASSNAME.",
+            "there is CLASSNAME.",
+            "CLASSNAME is present."
+        ]
+    },
+    "19": {
+        "classnames": {
+            "LowRisk": "cancer with slow progression and low likelihood of spread",
+            "IntermediateRisk": "prostate cancer with mixed differentiation",
+            "HighRisk": "high-grade prostate cancer with aggressive behavior"
+        },
+        "templates": [
+            "a histopathological photograph showing CLASSNAME.",
+            "CLASSNAME.",
+            "a photomicrograph of CLASSNAME.",
+            "a photomicrograph showing CLASSNAME.",
+            "this is CLASSNAME.",
+            "an example of CLASSNAME.",
+            "a histopathological image showing CLASSNAME.",
+            "an image showing CLASSNAME.",
+            "there is CLASSNAME.",
+            "presence of CLASSNAME.",
+            "a histopathological image of CLASSNAME.",
+            "an image of CLASSNAME.",
+            "a histopathological photograph of CLASSNAME.",
+            "CLASSNAME is shown.",
+            "CLASSNAME is present.",
+            "shows CLASSNAME."
+        ]
+    },
+    "20": {
+        "classnames": {
+            "LowRisk": "well-differentiated prostate cancer",
+            "IntermediateRisk": "prostate cancer with mixed differentiation",
+            "HighRisk": "prostate cancer associated with rapid disease progression"
+        },
+        "templates": [
+            "presence of CLASSNAME.",
+            "shows CLASSNAME.",
+            "a histopathological image of CLASSNAME.",
+            "this is CLASSNAME.",
+            "an image showing CLASSNAME.",
+            "a histopathological image showing CLASSNAME.",
+            "there is CLASSNAME.",
+            "a photomicrograph showing CLASSNAME.",
+            "an example of CLASSNAME.",
+            "CLASSNAME.",
+            "a photomicrograph of CLASSNAME.",
+            "a histopathological photograph showing CLASSNAME.",
+            "CLASSNAME is present.",
+            "an image of CLASSNAME.",
+            "a histopathological photograph of CLASSNAME."
+        ]
+    },
+    "21": {
+        "classnames": {
+            "LowRisk": "localized prostate cancer with minimal aggressiveness",
+            "IntermediateRisk": "prostate cancer with notable structural abnormalities",
+            "HighRisk": "prostate cancer with significant structural abnormalities"
+        },
+        "templates": [
+            "there is CLASSNAME.",
+            "a photomicrograph of CLASSNAME.",
+            "an example of CLASSNAME.",
+            "CLASSNAME.",
+            "a histopathological photograph showing CLASSNAME.",
+            "a photomicrograph showing CLASSNAME.",
+            "CLASSNAME is shown."
+        ]
+    },
+    "22": {
+        "classnames": {
+            "LowRisk": "cancer with slow progression and low likelihood of spread",
+            "IntermediateRisk": "prostate cancer with notable structural abnormalities",
+            "HighRisk": "prostate cancer with significant structural abnormalities"
+        },
+        "templates": [
+            "this is CLASSNAME.",
+            "presence of CLASSNAME."
+        ]
+    },
+    "23": {
+        "classnames": {
+            "LowRisk": "prostate tumor with minimal structural abnormality",
+            "IntermediateRisk": "intermediate-grade prostate adenocarcinoma",
+            "HighRisk": "locally advanced or metastatic prostate adenocarcinoma"
+        },
+        "templates": [
+            "a histopathological photograph of CLASSNAME.",
+            "a histopathological photograph showing CLASSNAME.",
+            "this is CLASSNAME.",
+            "a histopathological image of CLASSNAME.",
+            "an image showing CLASSNAME."
+        ]
+    },
+    "24": {
+        "classnames": {
+            "LowRisk": "well-differentiated prostate cancer",
+            "IntermediateRisk": "tumor with potential to spread beyond the prostate",
+            "HighRisk": "prostate tumor with high likelihood of spread or invasion"
+        },
+        "templates": [
+            "there is CLASSNAME.",
+            "a photomicrograph showing CLASSNAME.",
+            "this is CLASSNAME.",
+            "a histopathological image of CLASSNAME.",
+            "CLASSNAME.",
+            "a histopathological photograph showing CLASSNAME.",
+            "an image of CLASSNAME."
+        ]
+    },
+    "25": {
+        "classnames": {
+            "LowRisk": "low-grade prostate cancer with favorable prognosis",
+            "IntermediateRisk": "prostate cancer with notable structural abnormalities",
+            "HighRisk": "prostate cancer with significant structural abnormalities"
+        },
+        "templates": [
+            "CLASSNAME.",
+            "an image showing CLASSNAME.",
+            "there is CLASSNAME.",
+            "a histopathological image showing CLASSNAME.",
+            "CLASSNAME is shown.",
+            "a photomicrograph showing CLASSNAME.",
+            "a histopathological photograph showing CLASSNAME.",
+            "a histopathological photograph of CLASSNAME.",
+            "a histopathological image of CLASSNAME.",
+            "presence of CLASSNAME.",
+            "CLASSNAME is present.",
+            "shows CLASSNAME."
+        ]
+    },
+    "26": {
+        "classnames": {
+            "LowRisk": "low-grade prostate cancer with favorable prognosis",
+            "IntermediateRisk": "tumor with potential to spread beyond the prostate",
+            "HighRisk": "high-grade prostate cancer with aggressive behavior"
+        },
+        "templates": [
+            "CLASSNAME is present.",
+            "there is CLASSNAME.",
+            "shows CLASSNAME.",
+            "presence of CLASSNAME.",
+            "an example of CLASSNAME.",
+            "CLASSNAME is shown.",
+            "a histopathological image showing CLASSNAME.",
+            "a histopathological image of CLASSNAME.",
+            "a histopathological photograph of CLASSNAME.",
+            "an image of CLASSNAME.",
+            "a photomicrograph showing CLASSNAME.",
+            "an image showing CLASSNAME.",
+            "a photomicrograph of CLASSNAME."
+        ]
+    },
+    "27": {
+        "classnames": {
+            "LowRisk": "prostate tumor with minimal structural abnormality",
+            "IntermediateRisk": "prostate cancer with notable structural abnormalities",
+            "HighRisk": "prostate cancer associated with rapid disease progression"
+        },
+        "templates": [
+            "an image of CLASSNAME.",
+            "a histopathological photograph of CLASSNAME.",
+            "CLASSNAME.",
+            "CLASSNAME is shown.",
+            "there is CLASSNAME.",
+            "a histopathological image of CLASSNAME.",
+            "an example of CLASSNAME.",
+            "this is CLASSNAME.",
+            "a histopathological photograph showing CLASSNAME.",
+            "presence of CLASSNAME.",
+            "shows CLASSNAME."
+        ]
+    },
+    "28": {
+        "classnames": {
+            "LowRisk": "early-stage prostate cancer",
+            "IntermediateRisk": "prostate cancer with mixed differentiation",
+            "HighRisk": "prostate cancer with significant structural abnormalities"
+        },
+        "templates": [
+            "a histopathological image showing CLASSNAME.",
+            "a histopathological photograph showing CLASSNAME.",
+            "shows CLASSNAME.",
+            "a histopathological image of CLASSNAME.",
+            "a photomicrograph of CLASSNAME.",
+            "there is CLASSNAME.",
+            "this is CLASSNAME.",
+            "CLASSNAME is shown.",
+            "an image showing CLASSNAME.",
+            "a photomicrograph showing CLASSNAME.",
+            "an image of CLASSNAME.",
+            "CLASSNAME is present."
+        ]
+    },
+    "29": {
+        "classnames": {
+            "LowRisk": "well-differentiated prostate cancer",
+            "IntermediateRisk": "tumor with potential to spread beyond the prostate",
+            "HighRisk": "poorly differentiated prostate cancer"
+        },
+        "templates": [
+            "a photomicrograph showing CLASSNAME.",
+            "CLASSNAME is present.",
+            "shows CLASSNAME.",
+            "an example of CLASSNAME.",
+            "this is CLASSNAME.",
+            "a histopathological photograph of CLASSNAME.",
+            "a histopathological image showing CLASSNAME.",
+            "an image of CLASSNAME.",
+            "CLASSNAME is shown.",
+            "presence of CLASSNAME.",
+            "a photomicrograph of CLASSNAME.",
+            "there is CLASSNAME.",
+            "an image showing CLASSNAME.",
+            "a histopathological photograph showing CLASSNAME.",
+            "a histopathological image of CLASSNAME."
+        ]
+    },
+    "30": {
+        "classnames": {
+            "LowRisk": "low-grade prostate cancer with favorable prognosis",
+            "IntermediateRisk": "prostate cancer showing mixed low- and high-risk characteristics",
+            "HighRisk": "prostate tumor with high likelihood of spread or invasion"
+        },
+        "templates": [
+            "a histopathological photograph of CLASSNAME.",
+            "a photomicrograph showing CLASSNAME.",
+            "a photomicrograph of CLASSNAME.",
+            "CLASSNAME.",
+            "a histopathological image of CLASSNAME.",
+            "presence of CLASSNAME.",
+            "this is CLASSNAME.",
+            "CLASSNAME is shown.",
+            "an image of CLASSNAME.",
+            "shows CLASSNAME.",
+            "CLASSNAME is present."
+        ]
+    },
+    "31": {
+        "classnames": {
+            "LowRisk": "low-grade prostate cancer with favorable prognosis",
+            "IntermediateRisk": "prostate cancer with notable structural abnormalities",
+            "HighRisk": "high-grade prostate cancer with aggressive behavior"
+        },
+        "templates": [
+            "an example of CLASSNAME.",
+            "CLASSNAME.",
+            "a histopathological photograph of CLASSNAME.",
+            "CLASSNAME is shown.",
+            "an image showing CLASSNAME."
+        ]
+    },
+    "32": {
+        "classnames": {
+            "LowRisk": "prostate cancer confined to the prostate gland",
+            "IntermediateRisk": "moderately aggressive prostate cancer",
+            "HighRisk": "locally advanced or metastatic prostate adenocarcinoma"
+        },
+        "templates": [
+            "an example of CLASSNAME.",
+            "CLASSNAME.",
+            "CLASSNAME is present.",
+            "a photomicrograph showing CLASSNAME.",
+            "an image of CLASSNAME.",
+            "this is CLASSNAME.",
+            "a photomicrograph of CLASSNAME.",
+            "a histopathological photograph showing CLASSNAME.",
+            "a histopathological photograph of CLASSNAME.",
+            "presence of CLASSNAME."
+        ]
+    },
+    "33": {
+        "classnames": {
+            "LowRisk": "prostate tumor with minimal structural abnormality",
+            "IntermediateRisk": "prostate cancer showing mixed low- and high-risk characteristics",
+            "HighRisk": "advanced-stage prostate cancer"
+        },
+        "templates": [
+            "an image of CLASSNAME.",
+            "CLASSNAME is shown.",
+            "an example of CLASSNAME.",
+            "a photomicrograph showing CLASSNAME."
+        ]
+    },
+    "34": {
+        "classnames": {
+            "LowRisk": "prostate cancer confined to the prostate gland",
+            "IntermediateRisk": "moderately aggressive prostate cancer",
+            "HighRisk": "prostate tumor with high likelihood of spread or invasion"
+        },
+        "templates": [
+            "a photomicrograph showing CLASSNAME.",
+            "shows CLASSNAME."
+        ]
+    },
+    "35": {
+        "classnames": {
+            "LowRisk": "low-grade prostate cancer with favorable prognosis",
+            "IntermediateRisk": "moderately aggressive prostate cancer",
+            "HighRisk": "poorly differentiated prostate cancer"
+        },
+        "templates": [
+            "a histopathological image of CLASSNAME.",
+            "a histopathological image showing CLASSNAME.",
+            "an example of CLASSNAME.",
+            "a photomicrograph showing CLASSNAME.",
+            "a photomicrograph of CLASSNAME.",
+            "a histopathological photograph of CLASSNAME.",
+            "CLASSNAME.",
+            "CLASSNAME is present.",
+            "this is CLASSNAME.",
+            "presence of CLASSNAME.",
+            "there is CLASSNAME."
+        ]
+    },
+    "36": {
+        "classnames": {
+            "LowRisk": "low-grade prostate cancer with favorable prognosis",
+            "IntermediateRisk": "moderately aggressive prostate cancer",
+            "HighRisk": "advanced-stage prostate cancer"
+        },
+        "templates": [
+            "a histopathological image of CLASSNAME.",
+            "an image of CLASSNAME.",
+            "there is CLASSNAME.",
+            "a histopathological image showing CLASSNAME.",
+            "CLASSNAME is shown.",
+            "shows CLASSNAME.",
+            "a histopathological photograph of CLASSNAME.",
+            "an example of CLASSNAME.",
+            "a photomicrograph of CLASSNAME."
+        ]
+    },
+    "37": {
+        "classnames": {
+            "LowRisk": "prostate tumor with minimal structural abnormality",
+            "IntermediateRisk": "moderately aggressive prostate cancer",
+            "HighRisk": "poorly differentiated prostate cancer"
+        },
+        "templates": [
+            "a histopathological image showing CLASSNAME.",
+            "presence of CLASSNAME.",
+            "an image of CLASSNAME.",
+            "there is CLASSNAME.",
+            "a histopathological image of CLASSNAME.",
+            "a photomicrograph of CLASSNAME.",
+            "CLASSNAME is shown.",
+            "shows CLASSNAME.",
+            "an example of CLASSNAME.",
+            "a histopathological photograph of CLASSNAME.",
+            "a photomicrograph showing CLASSNAME.",
+            "a histopathological photograph showing CLASSNAME.",
+            "an image showing CLASSNAME.",
+            "CLASSNAME.",
+            "CLASSNAME is present."
+        ]
+    },
+    "38": {
+        "classnames": {
+            "LowRisk": "low-grade prostate cancer with favorable prognosis",
+            "IntermediateRisk": "moderately aggressive prostate cancer",
+            "HighRisk": "advanced-stage prostate cancer"
+        },
+        "templates": [
+            "an image showing CLASSNAME.",
+            "an example of CLASSNAME.",
+            "a photomicrograph showing CLASSNAME."
+        ]
+    },
+    "39": {
+        "classnames": {
+            "LowRisk": "cancer with slow progression and low likelihood of spread",
+            "IntermediateRisk": "prostate cancer with mixed differentiation",
+            "HighRisk": "advanced-stage prostate cancer"
+        },
+        "templates": [
+            "an image showing CLASSNAME.",
+            "a histopathological image showing CLASSNAME.",
+            "a histopathological photograph showing CLASSNAME.",
+            "a histopathological photograph of CLASSNAME.",
+            "this is CLASSNAME.",
+            "shows CLASSNAME.",
+            "CLASSNAME is shown.",
+            "an image of CLASSNAME.",
+            "an example of CLASSNAME.",
+            "CLASSNAME.",
+            "a photomicrograph showing CLASSNAME.",
+            "a photomicrograph of CLASSNAME.",
+            "a histopathological image of CLASSNAME.",
+            "there is CLASSNAME."
+        ]
+    },
+    "40": {
+        "classnames": {
+            "LowRisk": "well-differentiated prostate cancer",
+            "IntermediateRisk": "prostate cancer showing mixed low- and high-risk characteristics",
+            "HighRisk": "advanced-stage prostate cancer"
+        },
+        "templates": [
+            "a histopathological image showing CLASSNAME.",
+            "an image of CLASSNAME.",
+            "an example of CLASSNAME.",
+            "shows CLASSNAME.",
+            "presence of CLASSNAME.",
+            "CLASSNAME is shown.",
+            "CLASSNAME is present.",
+            "CLASSNAME.",
+            "a histopathological photograph of CLASSNAME.",
+            "a photomicrograph of CLASSNAME.",
+            "an image showing CLASSNAME.",
+            "a photomicrograph showing CLASSNAME.",
+            "this is CLASSNAME."
+        ]
+    },
+    "41": {
+        "classnames": {
+            "LowRisk": "localized prostate cancer with minimal aggressiveness",
+            "IntermediateRisk": "moderately aggressive prostate cancer",
+            "HighRisk": "poorly differentiated prostate cancer"
+        },
+        "templates": [
+            "a histopathological image showing CLASSNAME."
+        ]
+    },
+    "42": {
+        "classnames": {
+            "LowRisk": "well-differentiated prostate cancer",
+            "IntermediateRisk": "localized prostate cancer with moderate progression risk",
+            "HighRisk": "prostate cancer with significant structural abnormalities"
+        },
+        "templates": [
+            "presence of CLASSNAME.",
+            "this is CLASSNAME.",
+            "CLASSNAME is present.",
+            "an image of CLASSNAME.",
+            "an example of CLASSNAME.",
+            "CLASSNAME is shown.",
+            "a photomicrograph showing CLASSNAME.",
+            "a photomicrograph of CLASSNAME.",
+            "an image showing CLASSNAME.",
+            "a histopathological photograph showing CLASSNAME.",
+            "a histopathological image showing CLASSNAME.",
+            "CLASSNAME."
+        ]
+    },
+    "43": {
+        "classnames": {
+            "LowRisk": "localized prostate cancer with minimal aggressiveness",
+            "IntermediateRisk": "moderately aggressive prostate cancer",
+            "HighRisk": "prostate tumor with high likelihood of spread or invasion"
+        },
+        "templates": [
+            "a histopathological image of CLASSNAME.",
+            "presence of CLASSNAME.",
+            "shows CLASSNAME.",
+            "CLASSNAME is present.",
+            "CLASSNAME is shown.",
+            "CLASSNAME.",
+            "a photomicrograph showing CLASSNAME.",
+            "an image showing CLASSNAME.",
+            "an example of CLASSNAME.",
+            "there is CLASSNAME."
+        ]
+    },
+    "44": {
+        "classnames": {
+            "LowRisk": "prostate cancer confined to the prostate gland",
+            "IntermediateRisk": "prostate cancer with notable structural abnormalities",
+            "HighRisk": "prostate tumor with high likelihood of spread or invasion"
+        },
+        "templates": [
+            "CLASSNAME is shown.",
+            "a photomicrograph of CLASSNAME.",
+            "an image showing CLASSNAME.",
+            "a histopathological photograph showing CLASSNAME.",
+            "CLASSNAME.",
+            "shows CLASSNAME.",
+            "an example of CLASSNAME.",
+            "a photomicrograph showing CLASSNAME."
+        ]
+    },
+    "45": {
+        "classnames": {
+            "LowRisk": "well-differentiated prostate cancer",
+            "IntermediateRisk": "intermediate-grade prostate adenocarcinoma",
+            "HighRisk": "poorly differentiated prostate cancer"
+        },
+        "templates": [
+            "an image of CLASSNAME.",
+            "this is CLASSNAME."
+        ]
+    },
+    "46": {
+        "classnames": {
+            "LowRisk": "well-differentiated prostate cancer",
+            "IntermediateRisk": "localized prostate cancer with moderate progression risk",
+            "HighRisk": "locally advanced or metastatic prostate adenocarcinoma"
+        },
+        "templates": [
+            "an example of CLASSNAME."
+        ]
+    },
+    "47": {
+        "classnames": {
+            "LowRisk": "well-differentiated prostate cancer",
+            "IntermediateRisk": "moderately aggressive prostate cancer",
+            "HighRisk": "prostate cancer with significant structural abnormalities"
+        },
+        "templates": [
+            "a photomicrograph of CLASSNAME.",
+            "an image of CLASSNAME.",
+            "a histopathological image of CLASSNAME.",
+            "a histopathological photograph showing CLASSNAME.",
+            "a histopathological image showing CLASSNAME.",
+            "CLASSNAME.",
+            "this is CLASSNAME.",
+            "a photomicrograph showing CLASSNAME."
+        ]
+    },
+    "48": {
+        "classnames": {
+            "LowRisk": "prostate tumor with minimal structural abnormality",
+            "IntermediateRisk": "localized prostate cancer with moderate progression risk",
+            "HighRisk": "high-grade prostate cancer with aggressive behavior"
+        },
+        "templates": [
+            "presence of CLASSNAME.",
+            "CLASSNAME is shown.",
+            "CLASSNAME is present.",
+            "a histopathological image showing CLASSNAME.",
+            "a histopathological photograph of CLASSNAME."
+        ]
+    },
+    "49": {
+        "classnames": {
+            "LowRisk": "localized prostate cancer with minimal aggressiveness",
+            "IntermediateRisk": "prostate cancer with notable structural abnormalities",
+            "HighRisk": "prostate tumor with high likelihood of spread or invasion"
+        },
+        "templates": [
+            "shows CLASSNAME.",
+            "a histopathological photograph showing CLASSNAME.",
+            "presence of CLASSNAME.",
+            "an example of CLASSNAME.",
+            "CLASSNAME is shown.",
+            "a histopathological image of CLASSNAME.",
+            "a photomicrograph of CLASSNAME.",
+            "a histopathological photograph of CLASSNAME.",
+            "a photomicrograph showing CLASSNAME.",
+            "this is CLASSNAME.",
+            "an image of CLASSNAME.",
+            "an image showing CLASSNAME.",
+            "CLASSNAME is present."
+        ]
+    }
+}

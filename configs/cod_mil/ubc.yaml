@@ -1,0 +1,34 @@
+# CoD-MIL / UBC / full data / 5-fold
+# Source: README of Jiangbo-Shi/CoD-MIL.
+
+method: "cod_mil"
+backbone: "clip-rn50"
+feature_dim: 1024
+n_classes: 5
+classnames: ["HGSC", "LGSC", "EC", "CC", "MC"]
+label_dict: {"HGSC": 0, "LGSC": 1, "EC": 2, "CC": 3, "MC": 4}
+
+shots: -1                    # CoD-MIL trains on full data by default
+k: 5
+k_start: 0
+k_end: 5
+
+seed: 1
+epochs: 200
+lr: 1.0e-4
+weight_decay: 1.0e-5
+early_stopping: true
+es_patience: 20
+es_stop_epoch: 50
+
+dataset_csv:    "splits/UBC-OCEAN/dataset.csv"
+data_folder_s:  "path/to/UBC-OCEAN/feats_5x"
+data_folder_l:  "path/to/UBC-OCEAN/feats_20x"
+split_dir:      "splits/task_UBC-OCEAN_subtyping"
+# Upstream CoD-MIL has no UBC-OCEAN task, and its public prompt directory
+# releases kidney/RCC assets only. Supply independently constructed, matching
+# CLIP-RN50 embeddings and maps before running this extension config.
+text_prompt_path: "text_prompts/cod_mil/ubc_chain_of_diagnosis.json"
+text_prompt_features: null
+cross_mag_map_dir: "maps/UBC_OCEAN_10x_to_20x"
+results_dir:    "results/cod_mil_ubc"

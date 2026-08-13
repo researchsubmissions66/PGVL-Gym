@@ -1,0 +1,43 @@
+# Composite vanilla baseline.
+#
+# Bare-bones reference: identity selector, plain CoOp prompts, simple
+# gated-attention aggregator, FOCUS-style training recipe.
+# Every other "vanilla baseline" in the literature is a small
+# perturbation of this.
+
+method: "composite"
+backbone: "conch"
+feature_dim: 512
+n_classes: 5
+classnames: ["HGSC", "LGSC", "EC", "CC", "MC"]
+label_dict: {"HGSC": 0, "LGSC": 1, "EC": 2, "CC": 3, "MC": 4}
+
+selectors: []                # no patch selection
+
+prompts:
+  coop_flat: {enabled: true, n_ctx: 16}
+  fusion: {mode: average}
+
+aggregators:
+  attn_pool: {enabled: true, hidden_dim: 192}
+  fusion: "logit_ensemble"
+  logit_mode: "mean"
+
+recipe:
+  type: "focus"
+  lr: 1.0e-4
+  epochs: 200
+
+seed: 1
+k: 10
+k_start: 0
+k_end: 10
+early_stopping: true
+es_patience: 20
+es_stop_epoch: 50
+
+dataset_csv:    "splits/UBC-OCEAN/dataset.csv"
+data_folder_s:  "path/to/UBC-OCEAN/features_5x_conch"
+data_folder_l:  "path/to/UBC-OCEAN/features_20x_conch"
+split_dir:      "splits/UBC-OCEAN_16shots_10folds"
+results_dir:    "results/composite_vanilla_ubc"

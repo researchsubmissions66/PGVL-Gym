@@ -1,0 +1,24 @@
+# Defaults shared by all methods (override in method-specific YAMLs)
+
+# --- training ---
+seed: 1
+epochs: 200
+lr: 1.0e-4
+weight_decay: 1.0e-5
+early_stopping: true
+es_patience: 20
+es_stop_epoch: 50
+loader_mode: "transformer"
+
+# --- cross-validation ---
+k: 10
+k_start: 0
+k_end: 10
+
+# --- paths (must be filled in per dataset) ---
+dataset_csv: "path/to/dataset.csv"
+data_folder_s: "path/to/low-res/features"
+data_folder_l: "path/to/high-res/features"
+split_dir: "splits/your_split"
+text_prompt_path: "text_prompts/your_prompt.csv"
+results_dir: "results/run_name"

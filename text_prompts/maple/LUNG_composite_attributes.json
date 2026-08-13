@@ -1,0 +1,42 @@
+{
+  "lung adenocarcinoma": [
+    "Shows glandular, acinar, or papillary arrangements with well-formed gland-like spaces and frequent areas of lepidic (growth along alveolar spaces) pattern.",
+    "Typically features prominent desmoplastic reaction with loose, myxoid, or fibrous stroma separating irregular glandular structures; stroma may appear lighter and less dense at low magnification.",
+    "Frequent presence of well-formed glandular lumina, sometimes with mucin, demonstrating distinct glandular differentiation in the tumor nests.",
+    "Rare or absent; tumor regions lack overt keratin pearls or extensive keratinized material at low magnification.",
+    "Irregular, infiltrative, or poorly-defined border with tumor nests forming glands or acinar patterns extending into adjacent lung parenchyma.",
+    "Cell clusters often form irregular gland-like or acinar structures with rounded or variably shaped contours, tending to be loosely cohesive and sometimes displaying a mucinous appearance.",
+    "Cytoplasmic content typically appears moderate and relatively uniform without dense eosinophilia, and lacks prominent glassy or brightly pink regions, contributing to a finer overall tumor appearance.",
+    "Shows delicate, thin-walled, and regularly distributed vessels, often accompanying glandular or alveolar structures.",
+    "Displays irregular glandular architecture with acinar, papillary, or lepidic growth; lumina are variable, often forming gland-like or microacinar spaces. The stroma appears desmoplastic, supporting dispersed clusters of atypical cells. Cytoplasmic mucin may be visible. Borders are often infiltrative, blending into the surrounding lung tissue. Minimal keratinization and uncommon prominent vascular patterns.",
+    "Cytoplasmic borders are generally indistinct and poorly defined, with cells often demonstrating overlapping or poorly separated cytoplasm. Cell cohesion is low.",
+    "Frequently small, inconspicuous or variably prominent; may be solitary or few per nucleus with generally fine chromatin background.",
+    "Typically absent; tumor cells rarely show keratin production or keratin pearls.",
+    "Cytoplasm is typically moderate to abundant and appears pale, vacuolated, or sometimes clear due to mucin production. Mucin may be visible as intracytoplasmic droplets or small vacuoles.",
+    "Nuclear membrane tends to be smooth, relatively uniform, and continuous with only occasional, mild irregularities.",
+    "Chromatin appears uniformly fine, with evenly distributed granularity and less clumping, often displaying a more open and delicate texture.",
+    "Vacuoles are frequently present, often appearing as distinct intracytoplasmic mucin vacuoles that indicate mucin production, occasionally pushing the nucleus to the periphery.",
+    "Frequently observed; prominent, well-formed glandular or acinar spaces lined by a single layer of polarized columnar or cuboidal tumor cells, sometimes containing mucin.",
+    "Under high magnification, tumor cells form irregular glandular structures with prominent lumina, often showing clear or vacuolated cytoplasm. Nuclei are round to oval, containing visible nucleoli, with mildly irregular nuclear membranes and evenly distributed, fine chromatin. Cytoplasmic borders are generally distinct but less sharp than in squamous tumors. Keratinization is absent."
+  ],
+  "lung squamous cell carcinoma": [
+    "Displays solid nests, sheets, or islands of tumor cells with evidence of keratinization or central necrosis (keratin pearls), lacking glandular or papillary structures.",
+    "Displays denser and more collagenized stroma, often with fewer desmoplastic changes and a tendency for stromal tissue to tightly encase solid sheets or nests of tumor cells.",
+    "Rare to absent true lumina; if present, are irregular, slit-like, or represent necrotic debris rather than glandular differentiation, with tumor nests generally appearing solid.",
+    "Frequent presence of well-defined keratin pearls or foci of extensive keratinization scattered within tumor islands, creating readily visible pink, dense areas at low magnification.",
+    "Well-demarcated, pushing, or lobulated border with solid sheets or nests of tumor cells sharply separated from adjacent stroma.",
+    "Cell clusters are typically dense, solid, polygonal aggregates with well-defined edges, forming sheets or nests with a more cohesive and compact appearance, lacking glandular or acinar organization.",
+    "Cytoplasmic content is often abundant and more intensely eosinophilic, imparting a bright pink or dense appearance to tumor nests; may show dense or glassy areas even at low magnification.",
+    "Displays irregular, thick-walled, and sometimes congested vessels, frequently associated with dense tumor nests and fibrotic areas.",
+    "Shows nests or sheets of tumor cells with well-defined borders, separated by dense, often fibrotic stroma. Keratinization is prominent, visible as bright pink cytoplasmic content and keratin pearls. Intercellular bridges are characteristic. Tumor lumina are rare to absent. Vascular pattern is less pronounced. Cell clusters are cohesive, not glandular.",
+    "Cytoplasmic borders are well-delineated and sharp, with clear cell-to-cell boundaries. Tumor cells exhibit strong cohesion and polygonal shapes.",
+    "Typically large, prominent, and sometimes multiple; often eosinophilic with hyperchromatic surrounding chromatin and increased irregularity.",
+    "Frequently present; keratin pearls and dense eosinophilic cytoplasmic material are prominent, often forming concentric whorled structures.",
+    "Cytoplasm is dense, eosinophilic, and lacks mucin. It may appear more glassy or dense due to increased protein content and frequently shows more uniform staining without vacuolation.",
+    "Nuclear membrane frequently appears irregular, thickened, and may exhibit distinctive indentations or folds more commonly.",
+    "Chromatin shows coarse clumping, irregular distribution, and a darker, more hyperchromatic appearance, often with areas of clearing or parachromatin clearing.",
+    "Vacuoles are typically absent or very rare; tumor cells usually lack mucin-containing spaces in the cytoplasm.",
+    "Rarely observed; if present, lumens are poorly formed, irregular, and typically not lined by polarized epithelial cells; true glandular differentiation is absent.",
+    "Cells are polygonal with sharply defined cytoplasmic borders and abundant, dense, eosinophilic cytoplasm indicating keratinization. Nuclei are hyperchromatic and may show irregular contours and coarser chromatin, often containing prominent nucleoli. Intercellular bridges and keratin pearls may be present, with a lack of glandular lumina. Vacuoles are uncommon."
+  ]
+}

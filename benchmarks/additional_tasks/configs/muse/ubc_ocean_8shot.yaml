@@ -1,0 +1,79 @@
+backbone: conch
+backbone_weights: /path/to/model-cache/huggingface/hub/models--MahmoodLab--conch/blobs/40a9644b9ba0e83a74576e0a5e5f7313599fa9c9cdaf3c20f8a3e271b0e9ae7c
+encoder:
+  name: conch
+  weights: /path/to/model-cache/huggingface/hub/models--MahmoodLab--conch/blobs/40a9644b9ba0e83a74576e0a5e5f7313599fa9c9cdaf3c20f8a3e271b0e9ae7c
+  feature_space_id: hf:MahmoodLab/conch
+  feature_dim: 512
+  initialization: pretrained
+feature_space_id: hf:MahmoodLab/conch
+n_classes: 5
+classnames:
+- ovarian clear cell carcinoma
+- ovarian endometrioid carcinoma
+- ovarian high-grade serous carcinoma
+- ovarian low-grade serous carcinoma
+- ovarian mucinous carcinoma
+label_dict:
+  CC: 0
+  EC: 1
+  HGSC: 2
+  LGSC: 3
+  MC: 4
+shots: 8
+k: 5
+k_start: 0
+k_end: 5
+seed: 1
+batch_size: 1
+num_workers: 4
+feature_key: features
+feature_sources:
+  bag: conch_v1_10x
+feature_resolutions:
+  bag: 10x
+feature_input_kinds:
+  bag: patch_bag
+include_metadata: true
+dataset_csv: /path/to/PGVL-Gym/benchmarks/additional_tasks/data/ubc_ocean/manifest.csv
+split_dir: /path/to/PGVL-Gym/benchmarks/additional_tasks/splits/ubc_ocean/8shot
+task: ubc_ocean
+benchmark: camelyon16_ubc_ocean_resolution_registry
+feature_dim: 512
+method: muse
+experiment: muse
+epochs: 200
+prompt_provenance: released_ubc_multiscale_descriptions_with_declared_aliases
+results_dir: /path/to/PGVL-Gym/results/additional_tasks_benchmark/muse/ubc_ocean/8shot
+prompt_feature_space_id: hf:MahmoodLab/conch
+patch_encoder:
+  input_kind: patch_bag
+  name: conch
+  weights: /path/to/model-cache/huggingface/hub/models--MahmoodLab--conch/blobs/40a9644b9ba0e83a74576e0a5e5f7313599fa9c9cdaf3c20f8a3e271b0e9ae7c
+  feature_space_id: hf:MahmoodLab/conch
+  feature_dim: 512
+  feature_key: features
+  resolution: 10x
+  path_template: /path/to/features/additional_tasks/ubc_ocean/10x_256px_0px_overlap/features_conch_v1/{slide_id}.h5
+lr: 0.0001
+weight_decay: 1.0e-05
+early_stopping: true
+es_patience: 20
+es_stop_epoch: 50
+embed_dim: 512
+num_heads: 8
+num_experts: 8
+num_selected: 2
+retrieval_k: 8
+dropout: 0.25
+text_batch_size: 64
+prompt_csvs:
+  ovarian clear cell carcinoma: /path/to/PGVL-Gym/benchmarks/additional_tasks/data/ubc_ocean/prompts/muse/generated_new_0.csv
+  ovarian endometrioid carcinoma: /path/to/PGVL-Gym/benchmarks/additional_tasks/data/ubc_ocean/prompts/muse/generated_new_1.csv
+  ovarian high-grade serous carcinoma: /path/to/PGVL-Gym/benchmarks/additional_tasks/data/ubc_ocean/prompts/muse/generated_new_2.csv
+  ovarian low-grade serous carcinoma: /path/to/PGVL-Gym/benchmarks/additional_tasks/data/ubc_ocean/prompts/muse/generated_new_3.csv
+  ovarian mucinous carcinoma: /path/to/PGVL-Gym/benchmarks/additional_tasks/data/ubc_ocean/prompts/muse/generated_new_4.csv
+prompt_source: muse_description_csvs
+conch_ckpt: /path/to/model-cache/huggingface/hub/models--MahmoodLab--conch/blobs/40a9644b9ba0e83a74576e0a5e5f7313599fa9c9cdaf3c20f8a3e271b0e9ae7c
+data_folder_s: /path/to/features/additional_tasks/ubc_ocean/10x_256px_0px_overlap/features_conch_v1
+feature_path_column: feature__conch_v1_10x

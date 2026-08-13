@@ -1,0 +1,61 @@
+backbone: wsi-five-vit
+backbone_weights: null
+encoder:
+  name: wsi-five-vit
+  weights: null
+  feature_space_id: wsi-five/medclip-patch@official
+  feature_dim: 512
+  initialization: scratch
+feature_space_id: wsi-five/medclip-patch@official
+n_classes: 5
+classnames:
+- ovarian clear cell carcinoma
+- ovarian endometrioid carcinoma
+- ovarian high-grade serous carcinoma
+- ovarian low-grade serous carcinoma
+- ovarian mucinous carcinoma
+label_dict:
+  CC: 0
+  EC: 1
+  HGSC: 2
+  LGSC: 3
+  MC: 4
+shots: 8
+k: 5
+k_start: 0
+k_end: 5
+seed: 1
+batch_size: 1
+num_workers: 4
+feature_key: features
+feature_sources:
+  bag: wsi_five_medclip_20x
+feature_resolutions:
+  bag: 20x
+feature_input_kinds:
+  bag: patch_sequence
+include_metadata: true
+dataset_csv: /path/to/PGVL-Gym/benchmarks/additional_tasks/data/ubc_ocean/manifest.csv
+split_dir: /path/to/PGVL-Gym/benchmarks/additional_tasks/splits/ubc_ocean/8shot
+task: ubc_ocean
+benchmark: camelyon16_ubc_ocean_resolution_registry
+feature_dim: 512
+method: wsi_five
+experiment: wsi_five
+epochs: 30
+prompt_provenance: released_ubc_multiscale_descriptions_with_declared_aliases
+results_dir: /path/to/PGVL-Gym/results/additional_tasks_benchmark/wsi_five/ubc_ocean/8shot
+lr: 8.0e-06
+weight_decay: 0.05
+early_stopping: false
+num_frames: 2048
+T_mit: 8
+is_img_pth: true
+feature_root: /path/to/features/additional_tasks/ubc_ocean/20x_224px_0px_overlap/features_wsi_five_medclip
+feature_path_column: feature__wsi_five_medclip_20x
+report_csv: null
+default_report: Histopathologic subtyping of primary ovarian carcinoma without access
+  to the diagnostic label.
+require_report: false
+clinicalbert_weights: /path/to/model-cache/huggingface/hub/models--emilyalsentzer--Bio_ClinicalBERT/snapshots/d5892b39a4adaed74b92212a44081509db72f87b
+prompt_source: wsi_five_class_agnostic_task_context

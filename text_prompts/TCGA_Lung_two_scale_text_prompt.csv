@@ -1,0 +1,3 @@
+class,low_res_prompt,high_res_prompt
+LUAD,a low resolution image of lung adenocarcinoma,a high resolution image of lung adenocarcinoma
+LUSC,a low resolution image of lung squamous cell carcinoma,a high resolution image of lung squamous cell carcinoma

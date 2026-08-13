@@ -1,0 +1,35 @@
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+.eggs/
+build/
+dist/
+site/
+
+# Outputs
+results/
+logs/
+checkpoints/
+ckpts/
+*.pt
+*.pth
+*.h5
+
+# Data
+data/
+features/
+splits/*.csv
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+*.swp
+
+# Testing
+.pytest_cache/
+.coverage
+.mypy_cache/
+.ruff_cache/
+.ipynb_checkpoints/

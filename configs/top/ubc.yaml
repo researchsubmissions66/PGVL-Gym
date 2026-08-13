@@ -1,0 +1,36 @@
+# TOP / UBC / 16-shot
+# Source: exp_TCGA.sh from miccaiif/TOP.
+# IMPORTANT: TOP uses VERY different hyper-parameters from the rest:
+#   LR ~ 0.02 (vs 1e-4),  epochs = 8000 (vs 20-200).
+
+method: "top"
+clip_arch: "RN50"
+n_classes: 5
+classnames: ["HGSC", "LGSC", "EC", "CC", "MC"]
+label_dict: {"HGSC": 0, "LGSC": 1, "EC": 2, "CC": 3, "MC": 4}
+
+shots: 16
+k: 5
+
+seed: 0
+epochs: 8000
+lr: 0.02
+lr_TB: 0.02
+lr_IB: 0.02
+weight_decay: 0.0
+early_stopping: false
+
+n_ctx_bag: 4
+n_ctx_inst: 4
+ctx_init_bag: ""
+ctx_init_inst: ""
+csc: true
+p_drop_out: 0.2
+p_bag_drop_out: 0.2
+weight_lossA: 25
+pooling_strategy: "learnablePrompt_multi"
+
+dataset_csv: "splits/UBC-OCEAN/dataset.csv"
+data_folder_s: "path/to/UBC-OCEAN/clip_features"
+split_dir:   "splits/TOP_UBC-OCEAN_16shot"
+results_dir: "results/top_ubc16"

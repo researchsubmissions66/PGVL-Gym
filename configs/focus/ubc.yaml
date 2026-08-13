@@ -1,0 +1,41 @@
+# FOCUS / UBC / 16-shot / 10-fold
+# Source: official `UBC.sh` style script from dddavid4real/FOCUS.
+# FOCUS uses CONCH only.
+
+method: "focus"
+backbone: "conch"
+feature_dim: 512
+n_classes: 5
+classnames: ["HGSC", "LGSC", "EC", "CC", "MC"]
+label_dict: {"HGSC": 0, "LGSC": 1, "EC": 2, "CC": 3, "MC": 4}
+
+# --- few-shot setup ---
+shots: 16
+k: 10
+k_start: 0
+k_end: 10
+
+# --- training ---
+seed: 1
+epochs: 200
+lr: 1.0e-4
+weight_decay: 1.0e-5
+bag_loss: "ce"
+drop_out: true
+early_stopping: true
+es_patience: 20
+es_stop_epoch: 40
+
+# --- model ---
+prototype_number: 16
+mode: "transformer"
+loader_mode: "transformer"
+
+# --- paths (fill in your own) ---
+dataset_csv:    "splits/UBC-OCEAN/dataset.csv"
+data_folder_s:  "path/to/UBC-OCEAN/features_5x_conch"
+data_folder_l:  "path/to/UBC-OCEAN/features_20x_conch"
+split_dir:      "splits/UBC-OCEAN_16shots_10folds"
+text_prompt_path: "text_prompts/UBC-OCEAN_two_scale_text_prompt.csv"
+conch_ckpt:     "ckpts/conch.pth"
+results_dir:    "results/focus_ubc16"

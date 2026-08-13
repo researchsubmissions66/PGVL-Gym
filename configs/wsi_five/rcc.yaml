@@ -1,0 +1,27 @@
+# WSI-FiVE / RCC
+# Source: configs/wsi/fix_pth.yaml from ls1rius/WSI_FiVE.
+# Different from the rest: uses GPT-summarised pathology reports.
+
+method: "wsi_five"
+backbone: "wsi-five-vit"  # FiVE's method-owned video/patch transformer
+n_classes: 3
+classnames: ["clear cell renal cell carcinoma", "papillary renal cell carcinoma", "chromophobe renal cell carcinoma"]
+label_dict: {"CCRCC": 0, "PRCC": 1, "CHRCC": 2}
+
+seed: 0
+epochs: 30
+lr: 8.0e-6
+weight_decay: 0.05
+batch_size: 4
+num_frames: 2048
+T_mit: 8
+is_img_pth: true
+
+dataset:    "tcga"
+data_path:  "path/to/TCGA_RCC"
+report_csv: "methods/wsi_five/gpt_preprocess/RCC_report.csv"
+
+dataset_csv: "splits/TCGA_RCC/dataset.csv"
+data_folder_s: "path/to/TCGA_RCC/features"
+split_dir:    "splits/WSI_FiVE_TCGA_RCC"
+results_dir:  "results/wsi_five_rcc"

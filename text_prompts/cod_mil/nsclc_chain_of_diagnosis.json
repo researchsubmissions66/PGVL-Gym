@@ -1,0 +1,18 @@
+{
+  "lung adenocarcinoma": {
+    "broad": [
+      "At low magnification, lung adenocarcinoma commonly shows peripheral gland-forming or lepidic tumor growth with heterogeneous acinar, papillary, micropapillary, or solid regions."
+    ],
+    "specific": [
+      "At high magnification, lung adenocarcinoma shows malignant epithelial cells with glandular differentiation, mucin production, or pneumocyte-like growth along alveolar septa."
+    ]
+  },
+  "lung squamous cell carcinoma": {
+    "broad": [
+      "At low magnification, lung squamous cell carcinoma commonly forms central solid nests and sheets with pushing or infiltrative borders and foci of necrosis or keratinization."
+    ],
+    "specific": [
+      "At high magnification, lung squamous cell carcinoma shows polygonal malignant cells with eosinophilic cytoplasm, intercellular bridges, dyskeratosis, and keratin pearls."
+    ]
+  }
+}

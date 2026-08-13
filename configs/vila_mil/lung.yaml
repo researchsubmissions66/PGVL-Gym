@@ -1,0 +1,35 @@
+# ViLa-MIL / LUNG / 16-shot / 5-fold
+# Source: README of Jiangbo-Shi/ViLa-MIL.
+
+method: "vila_mil"
+backbone: "clip-rn50"
+feature_dim: 1024
+n_classes: 2
+classnames: ["lung adenocarcinoma", "lung squamous cell carcinoma"]
+label_dict: {"LUAD": 0, "LUSC": 1}
+
+shots: 16
+k: 5
+k_start: 0
+k_end: 5
+
+seed: 1
+epochs: 200
+lr: 1.0e-4
+weight_decay: 1.0e-5
+bag_loss: "ce"
+drop_out: true
+early_stopping: true
+es_patience: 20
+es_stop_epoch: 80          # ViLa-MIL uses a longer warm-up than FOCUS
+
+prototype_number: 16
+mode: "transformer"
+loader_mode: "transformer"
+
+dataset_csv:    "splits/TCGA_Lung/dataset.csv"
+data_folder_s:  "path/to/TCGA_Lung/feats_5x"
+data_folder_l:  "path/to/TCGA_Lung/feats_20x"
+split_dir:      "splits/task_tcga_lung_subtyping_16shots_5folds"
+text_prompt_path: "text_prompts/TCGA_Lung_two_scale_text_prompt.csv"
+results_dir:    "results/vila_mil_lung16"

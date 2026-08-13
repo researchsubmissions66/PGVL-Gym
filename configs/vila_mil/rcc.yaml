@@ -1,0 +1,35 @@
+# ViLa-MIL / RCC / 16-shot / 5-fold
+# Source: README of Jiangbo-Shi/ViLa-MIL.
+
+method: "vila_mil"
+backbone: "clip-rn50"
+feature_dim: 1024
+n_classes: 3
+classnames: ["clear cell renal cell carcinoma", "papillary renal cell carcinoma", "chromophobe renal cell carcinoma"]
+label_dict: {"CCRCC": 0, "PRCC": 1, "CHRCC": 2}
+
+shots: 16
+k: 5
+k_start: 0
+k_end: 5
+
+seed: 1
+epochs: 200
+lr: 1.0e-4
+weight_decay: 1.0e-5
+bag_loss: "ce"
+drop_out: true
+early_stopping: true
+es_patience: 20
+es_stop_epoch: 80          # ViLa-MIL uses a longer warm-up than FOCUS
+
+prototype_number: 16
+mode: "transformer"
+loader_mode: "transformer"
+
+dataset_csv:    "splits/TCGA_RCC/dataset.csv"
+data_folder_s:  "path/to/TCGA_RCC/feats_5x"
+data_folder_l:  "path/to/TCGA_RCC/feats_20x"
+split_dir:      "splits/task_tcga_rcc_subtyping_16shots_5folds"
+text_prompt_path: "text_prompts/TCGA_RCC_two_scale_text_prompt.csv"
+results_dir:    "results/vila_mil_rcc16"

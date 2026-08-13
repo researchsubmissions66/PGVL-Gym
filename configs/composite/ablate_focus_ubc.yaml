@@ -1,0 +1,52 @@
+# Ablation: kitchen sink WITHOUT the FOCUS three-stage selector.
+# Useful for measuring how much of the gain comes from FOCUS's compression
+# versus the rest of the contributions.
+
+method: "composite"
+backbone: "conch"
+feature_dim: 512
+n_classes: 5
+classnames: ["HGSC", "LGSC", "EC", "CC", "MC"]
+label_dict: {"HGSC": 0, "LGSC": 1, "EC": 2, "CC": 3, "MC": 4}
+
+selectors:
+  - {type: focus_three_stage, enabled: false}      # << ABLATED
+  - {type: cod_chain_mask,    enabled: true,  topk_ratio: 0.1}
+  - {type: mscpt_topk,        enabled: true,  k: 1024}
+
+prompts:
+  coop_flat:     {enabled: true,  n_ctx: 16}
+  top_two_level: {enabled: true,  n_ctx_bag: 4, n_ctx_inst: 4}
+  maple_graph:   {enabled: true,  text_path: "text_prompts/maple/UBC_attributes.json"}
+  cod_chain:     {enabled: true,  hierarchy_path: "text_prompts/cod_mil/UBC_chain.json"}
+  slip_tissue:   {enabled: true,  tissue_classnames_path: "text_prompts/slip/UBC_tissues.json"}
+  fusion: {mode: weighted_sum}
+
+aggregators:
+  attn_pool:       {enabled: true}
+  vila_prototypes: {enabled: true}
+  slip_routing:    {enabled: true}
+  pathpt_conv1d:   {enabled: true}
+  focus_mha:       {enabled: true}
+  fusion: "logit_ensemble"
+  logit_mode: "weighted_sum"
+
+recipe:
+  type: "pathpt"
+  lr: 1.0e-4
+  epochs: 40
+  loss: {ce_weight: 1.0, slip_contrastive_weight: 0.3, aux_attribute_weight: 0.3}
+
+seed: 42
+k: 10
+k_start: 0
+k_end: 10
+early_stopping: true
+es_patience: 20
+es_stop_epoch: 30
+
+dataset_csv:    "splits/UBC-OCEAN/dataset.csv"
+data_folder_s:  "path/to/UBC-OCEAN/features_5x_conch"
+data_folder_l:  "path/to/UBC-OCEAN/features_20x_conch"
+split_dir:      "splits/UBC-OCEAN_16shots_10folds"
+results_dir:    "results/composite_ablate_focus_ubc"

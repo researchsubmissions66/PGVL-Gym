@@ -1,0 +1,46 @@
+# Second-stage prompt tuning for fresh standard FOCUS+CONCH. The validated
+# GEPA text is inserted first; only the 8,192 learned context scalars are then
+# updated. The previously consumed RCC test split remains closed.
+method: focus
+backbone: conch
+feature_dim: 512
+n_classes: 3
+classnames: [CCRCC, PRCC, CHRCC]
+label_dict: {CCRCC: 0, PRCC: 1, CHRCC: 2}
+
+shots: 16
+k: 1
+k_start: 0
+k_end: 1
+seed: 1
+
+epochs: 100
+lr: 5.0e-4
+weight_decay: 0.0
+early_stopping: true
+es_patience: 15
+es_stop_epoch: 20
+evaluate_initial: true
+evaluate_test: false
+trainable_scope: soft_context
+initial_checkpoint: /path/to/PGVL-Gym/results/focus_rcc_conch_16shot_fold0/fold0_best.pt
+
+prototype_number: 16
+window_size: 7
+sim_threshold: 0.7
+max_context_length: 4096
+mode: transformer
+loader_mode: transformer
+
+dataset_csv: /path/to/PathoGEPA/data/tcga_rcc_maple_conch_fold0.csv
+label_column: OncoTreeCode
+feature_path_column_s: feature_path_s
+feature_path_column_l: feature_path_l
+feature_key: features
+data_folder_s: null
+data_folder_l: null
+split_dir: /path/to/PathoGEPA/data/splits/tcga_rcc_maple_conch_16shot_fold0
+
+text_prompt_path: /path/to/PGVL-Gym/text_prompts/focus/TCGA_RCC_GEPA_two_scale_text_prompt.csv
+conch_ckpt: /path/to/model-cache/huggingface/hub/models--MahmoodLab--conch/snapshots/f9ca9f877171a28ade80228fb195ac5d79003357/pytorch_model.bin
+results_dir: /path/to/PGVL-Gym/results/focus_rcc_conch_gepa_soft_context_fold0

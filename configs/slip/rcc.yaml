@@ -1,0 +1,31 @@
+# SLIP / RCC / 1-shot
+# Source: main.py defaults from LTS5/SLIP.
+# Backbones: CLIP / BiomedCLIP / PLIP / CLIP-RN50.
+
+method: "slip"
+backbone: "CLIP"
+n_classes: 3
+classnames: ["clear cell renal cell carcinoma", "papillary renal cell carcinoma", "chromophobe renal cell carcinoma"]
+label_dict: {"CCRCC": 0, "PRCC": 1, "CHRCC": 2}
+
+shots: 1
+k: 5
+
+seed: 0
+epochs: 10                  # SLIP runs only a handful of epochs
+lr: 2.0e-3
+weight_decay: 0.0
+batch_size: 1
+early_stopping: false
+
+context_size: 1
+context_gain: 0.01
+topk: 50
+temp: 0.01
+image_size: 224
+
+dataroot: "./data"
+dataset_csv: "splits/TCGA_RCC/dataset.csv"
+data_folder_s: "path/to/TCGA_RCC/clip_features"
+split_dir:   "splits/SLIP_TCGA_RCC_1shot"
+results_dir: "results/slip_rcc_1shot"

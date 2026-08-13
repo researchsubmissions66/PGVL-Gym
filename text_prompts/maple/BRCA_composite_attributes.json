@@ -1,0 +1,42 @@
+{
+  "invasive ductal carcinoma": [
+    "Tumor cells are typically arranged in irregular nests, cords, or clusters with a haphazard infiltrative pattern. Central areas may show gland formation. The tumor-stroma interface appears desmoplastic, and there is marked disruption of normal tissue architecture.",
+    "Frequently exhibits a desmoplastic response, characterized by dense, fibrous, and often well-demarcated stroma surrounding irregular clusters or nests of tumor cells.",
+    "Tumor cells form cohesive nests, cords, or irregular clusters, often with central areas of necrosis or duct-like structures; clusters are generally well-demarcated from surrounding stroma.",
+    "Borders are typically irregular, angular, or stellate, with infiltrative edges that are readily distinguishable from adjacent normal tissue.",
+    "Prominent, irregular duct-like or glandular structures are evident; tumor cells often form nests or cords that attempt to recapitulate ducts, with sometimes visible luminal spaces.",
+    "Rarely observed; tumor cells tend to form cohesive nests or clusters, with minimal presence of isolated single cells in the stroma.",
+    "Frequently present as central zones within tumor nests or duct-like areas, appearing as irregular or geographic pale regions that disrupt the tumor architecture; can be extensive and sometimes seen as comedo-type necrosis.",
+    "Often prominent and thick, delineating irregular nests and sheets of tumor cells, imparting a desmoplastic (fibrotic) stromal response; septa are sharply defined and compartmentalize tumor clusters.",
+    "Presents with irregular, infiltrative growth patterns, often forming dense nests or cords of tumor cells within desmoplastic stroma. Borders are usually angulated and poorly circumscribed. Duct-like structures or gland formation may be seen, varying from well- to poorly-differentiated. Coagulative necrosis and fibrous septa may be present, with cell clusters appearing cohesive. Single cells are less prominent.",
+    "Cell borders are usually well-defined and distinct, allowing individual tumor cells to be easily distinguished from one another. Cells tend to have angular or irregular outlines, frequently forming cohesive nests or clusters.",
+    "Chromatin often appears coarsely clumped or irregular, with prominent variation in density and occasional hyperchromasia.",
+    "Nucleoli are often prominent, enlarged, and easily visible; may be multiple per nucleus and sometimes irregular in shape.",
+    "Cells tend to form cohesive nests, cords, or gland-like (tubular) structures with relatively well-defined groupings and less separation between individual cells.",
+    "Rare and usually inconspicuous; cytoplasmic vacuoles are infrequent and, if present, are generally small and scattered.",
+    "Increased number of mitotic figures, often appearing with atypical forms and prominent chromatin condensation. Frequently seen scattered within tumor nests.",
+    "Tumor cells generally display strong cell-to-cell adhesion, frequently forming cohesive groups with well-apposed cell membranes.",
+    "Stroma is frequently desmoplastic and densely collagenized, often showing a sclerotic, reactive appearance encasing irregular tumor nests and cords.",
+    "Displays cohesive clusters and nests of tumor cells with sharply defined cell borders, abundant eosinophilic cytoplasm, and prominent nucleoli. Chromatin is often irregular, and mitotic figures are readily observed. Tumor cells maintain strong cell adhesion; stroma may be desmoplastic with reactive fibroblasts. Cytoplasmic vacuoles may occur but are not prominent."
+  ],
+  "invasive lobular carcinoma": [
+    "Tumor cells are arranged in single-file linear strands, loose cords, or as individual cells, often infiltrating the stroma in a linear, targetoid, or concentric pattern. The overall architecture is less cohesive and more uniform compared to ductal carcinoma, with minimal to absent gland formation.",
+    "Stroma appears less reactive and less fibrous, with tumor cells infiltrating in single files or loose strands, leading to more subtle separation between tumor and stroma and a more uniform distribution.",
+    "Tumor cells are arranged in loose, single-file linear strands or small, non-cohesive groups; clusters are often ill-defined, with a more dispersed, infiltrative pattern.",
+    "Borders are often ill-defined or blurred, with tumor cells infiltrating the stroma in a more diffuse, linear, or single-file manner, making the edge less clearly demarcated.",
+    "Duct-like structures are typically absent; tumor cells are arranged as single cells or in linear, 'Indian file' patterns, showing a lack of glandular or ductal formations.",
+    "Frequently present; shows numerous, dispersed, isolated single tumor cells or loosely arranged linear files infiltrating through the stroma, often appearing as 'Indian file' patterns.",
+    "Rarely present or absent; tumor regions typically show uniform cells without significant areas of necrosis, maintaining more preserved tissue architecture.",
+    "Less conspicuous or minimal; when present, septa are thin and delicate, often inconspicuous, with tumor cells infiltrating in single files or small loose groups, and little to no stromal compartmentalization.",
+    "Shows a diffuse, infiltrative pattern with small, uniform tumor cells arranged in single files or loose clusters dispersed within fibrous stroma. Growth is more discohesive, lacking ductal structures. Borders are ill-defined and blending with stroma. Fibrous septa may be seen, but necrosis and central cell clusters are uncommon. Single infiltrating cells predominate.",
+    "Cell borders are often poorly defined or indistinct; tumor cells lose cohesion and appear as single-file linear arrangements or loose, dispersed cells. The separation between adjacent cells is minimal and not readily appreciable.",
+    "Chromatin typically appears fine and evenly dispersed, with less variation in density and lacking prominent clumping.",
+    "Nucleoli are usually small, inconspicuous, and often difficult to discern; nuclei commonly appear bland with minimal nucleolar prominence.",
+    "Cells display a single-file pattern or are arranged in linear, loosely cohesive rows and strands, often appearing as individually dispersed or in targetoid/Indian file formations.",
+    "Frequent and more prominent; cytoplasmic vacuoles are often larger and may impart a signet ring appearance to the cells.",
+    "Rare or absent mitotic figures with less atypia. When present, they are typically sparse and less conspicuous due to the lower proliferation rate.",
+    "Tumor cells typically exhibit reduced or absent cell-to-cell adhesion, appearing as single, dispersed cells or forming loose linear files due to loss of cohesion.",
+    "Stroma appears less desmoplastic and more loosely organized, often demonstrating minimal sclerosis with tumor cells infiltrating individually or in single-file patterns without dense stromal response.",
+    "Characterized by small, uniform tumor cells invading in single files or loose linear patterns with indistinct cell borders. Nuclei are bland with inconspicuous nucleoli, and chromatin is fine. Mitotic figures are uncommon. Cells show minimal cohesion, and cytoplasmic vacuoles are rare. The stroma is often fibrous but less reactive than in ductal carcinoma."
+  ]
+}

@@ -1,0 +1,327 @@
+{
+  "matrix": "/path/to/PGVL-Gym/benchmarks/additional_tasks/run_matrix.csv",
+  "cohort": "ubc_ocean",
+  "device": "cuda:1",
+  "results": [
+    {
+      "experiment": "cod_mil",
+      "method": "cod_mil",
+      "config": "/path/to/PGVL-Gym/benchmarks/additional_tasks/configs/cod_mil/ubc_ocean_4shot.yaml",
+      "device": "cuda:1",
+      "status": "passed",
+      "stage": "complete",
+      "trainable_parameters": 6696518,
+      "logits_shape": [
+        1,
+        5
+      ],
+      "logits_finite": true,
+      "seconds": 3.148,
+      "peak_gpu_mib": 323.0
+    },
+    {
+      "experiment": "composite",
+      "method": "composite",
+      "config": "/path/to/PGVL-Gym/benchmarks/additional_tasks/configs/composite/ubc_ocean_4shot.yaml",
+      "device": "cuda:1",
+      "status": "passed",
+      "stage": "complete",
+      "trainable_parameters": 407110,
+      "logits_shape": [
+        1,
+        5
+      ],
+      "logits_finite": true,
+      "seconds": 3.504,
+      "peak_gpu_mib": 285.3
+    },
+    {
+      "experiment": "convlm",
+      "method": "convlm",
+      "config": "/path/to/PGVL-Gym/benchmarks/additional_tasks/configs/convlm/ubc_ocean_4shot.yaml",
+      "device": "cuda:1",
+      "status": "passed",
+      "stage": "complete",
+      "trainable_parameters": 90188544,
+      "logits_shape": [
+        1,
+        5
+      ],
+      "logits_finite": true,
+      "seconds": 8.923,
+      "peak_gpu_mib": 630.5
+    },
+    {
+      "experiment": "focus",
+      "method": "focus",
+      "config": "/path/to/PGVL-Gym/benchmarks/additional_tasks/configs/focus/ubc_ocean_4shot.yaml",
+      "device": "cuda:1",
+      "status": "passed",
+      "stage": "complete",
+      "trainable_parameters": 86876677,
+      "logits_shape": [
+        1,
+        5
+      ],
+      "logits_finite": true,
+      "seconds": 8.592,
+      "peak_gpu_mib": 1519.1
+    },
+    {
+      "experiment": "focus_5x20x",
+      "method": "focus",
+      "config": "/path/to/PGVL-Gym/benchmarks/additional_tasks/configs/focus_5x20x/ubc_ocean_4shot.yaml",
+      "device": "cuda:1",
+      "status": "passed",
+      "stage": "complete",
+      "trainable_parameters": 86876677,
+      "logits_shape": [
+        1,
+        5
+      ],
+      "logits_finite": true,
+      "seconds": 8.468,
+      "peak_gpu_mib": 1519.1
+    },
+    {
+      "experiment": "maple",
+      "method": "maple",
+      "config": "/path/to/PGVL-Gym/benchmarks/additional_tasks/configs/maple/ubc_ocean_4shot.yaml",
+      "device": "cuda:1",
+      "status": "passed",
+      "stage": "complete",
+      "trainable_parameters": 1840641,
+      "logits_shape": [
+        1,
+        5
+      ],
+      "logits_finite": true,
+      "seconds": 5.748,
+      "peak_gpu_mib": 621.1
+    },
+    {
+      "experiment": "maple_5x20x",
+      "method": "maple",
+      "config": "/path/to/PGVL-Gym/benchmarks/additional_tasks/configs/maple_5x20x/ubc_ocean_4shot.yaml",
+      "device": "cuda:1",
+      "status": "passed",
+      "stage": "complete",
+      "trainable_parameters": 1840641,
+      "logits_shape": [
+        1,
+        5
+      ],
+      "logits_finite": true,
+      "seconds": 5.392,
+      "peak_gpu_mib": 621.1
+    },
+    {
+      "experiment": "mscpt",
+      "method": "mscpt",
+      "config": "/path/to/PGVL-Gym/benchmarks/additional_tasks/configs/mscpt/ubc_ocean_4shot.yaml",
+      "device": "cuda:1",
+      "status": "passed",
+      "stage": "complete",
+      "trainable_parameters": 1667328,
+      "logits_shape": [
+        1,
+        5
+      ],
+      "logits_finite": true,
+      "seconds": 9.557,
+      "peak_gpu_mib": 1853.0
+    },
+    {
+      "experiment": "mscpt_5x20x",
+      "method": "mscpt",
+      "config": "/path/to/PGVL-Gym/benchmarks/additional_tasks/configs/mscpt_5x20x/ubc_ocean_4shot.yaml",
+      "device": "cuda:1",
+      "status": "passed",
+      "stage": "complete",
+      "trainable_parameters": 1667328,
+      "logits_shape": [
+        1,
+        5
+      ],
+      "logits_finite": true,
+      "seconds": 10.135,
+      "peak_gpu_mib": 1853.0
+    },
+    {
+      "experiment": "muse",
+      "method": "muse",
+      "config": "/path/to/PGVL-Gym/benchmarks/additional_tasks/configs/muse/ubc_ocean_4shot.yaml",
+      "device": "cuda:1",
+      "status": "passed",
+      "stage": "complete",
+      "trainable_parameters": 9726990,
+      "logits_shape": [
+        1,
+        5
+      ],
+      "logits_finite": true,
+      "seconds": 8.592,
+      "peak_gpu_mib": 1784.8
+    },
+    {
+      "experiment": "muse_keep",
+      "method": "muse",
+      "config": "/path/to/PGVL-Gym/benchmarks/additional_tasks/configs/muse_keep/ubc_ocean_4shot.yaml",
+      "device": "cuda:1",
+      "status": "passed",
+      "stage": "complete",
+      "trainable_parameters": 9858062,
+      "logits_shape": [
+        1,
+        5
+      ],
+      "logits_finite": true,
+      "seconds": 8.577,
+      "peak_gpu_mib": 1784.8
+    },
+    {
+      "experiment": "muse_musk",
+      "method": "muse",
+      "config": "/path/to/PGVL-Gym/benchmarks/additional_tasks/configs/muse_musk/ubc_ocean_4shot.yaml",
+      "device": "cuda:1",
+      "status": "passed",
+      "stage": "complete",
+      "trainable_parameters": 9989134,
+      "logits_shape": [
+        1,
+        5
+      ],
+      "logits_finite": true,
+      "seconds": 8.887,
+      "peak_gpu_mib": 1784.8
+    },
+    {
+      "experiment": "pathpt",
+      "method": "pathpt",
+      "config": "/path/to/PGVL-Gym/benchmarks/additional_tasks/configs/pathpt/ubc_ocean_4shot.yaml",
+      "device": "cuda:1",
+      "status": "passed",
+      "stage": "complete",
+      "trainable_parameters": 5108488,
+      "logits_shape": [
+        1,
+        5
+      ],
+      "logits_finite": true,
+      "seconds": 8.755,
+      "peak_gpu_mib": 1599.7
+    },
+    {
+      "experiment": "pathpt_keep",
+      "method": "pathpt",
+      "config": "/path/to/PGVL-Gym/benchmarks/additional_tasks/configs/pathpt_keep/ubc_ocean_4shot.yaml",
+      "device": "cuda:1",
+      "status": "passed",
+      "stage": "complete",
+      "trainable_parameters": 11336712,
+      "logits_shape": [
+        1,
+        5
+      ],
+      "logits_finite": true,
+      "seconds": 7.455,
+      "peak_gpu_mib": 1735.7
+    },
+    {
+      "experiment": "pathpt_musk",
+      "method": "pathpt",
+      "config": "/path/to/PGVL-Gym/benchmarks/additional_tasks/configs/pathpt_musk/ubc_ocean_4shot.yaml",
+      "device": "cuda:1",
+      "status": "passed",
+      "stage": "complete",
+      "trainable_parameters": 20096264,
+      "logits_shape": [
+        1,
+        5
+      ],
+      "logits_finite": true,
+      "seconds": 12.915,
+      "peak_gpu_mib": 2804.1
+    },
+    {
+      "experiment": "sldpc",
+      "method": "sldpc",
+      "config": "/path/to/PGVL-Gym/benchmarks/additional_tasks/configs/sldpc/ubc_ocean_4shot.yaml",
+      "device": "cuda:1",
+      "status": "passed",
+      "stage": "complete",
+      "trainable_parameters": 6144,
+      "logits_shape": [
+        1,
+        5
+      ],
+      "logits_finite": true,
+      "seconds": 6.777,
+      "peak_gpu_mib": 642.0
+    },
+    {
+      "experiment": "slip",
+      "method": "slip",
+      "config": "/path/to/PGVL-Gym/benchmarks/additional_tasks/configs/slip/ubc_ocean_4shot.yaml",
+      "device": "cuda:1",
+      "status": "passed",
+      "stage": "complete",
+      "trainable_parameters": 2560,
+      "logits_shape": [
+        1,
+        5
+      ],
+      "logits_finite": true,
+      "seconds": 4.565,
+      "peak_gpu_mib": 283.8
+    },
+    {
+      "experiment": "top",
+      "method": "top",
+      "config": "/path/to/PGVL-Gym/benchmarks/additional_tasks/configs/top/ubc_ocean_4shot.yaml",
+      "device": "cuda:1",
+      "status": "passed",
+      "stage": "complete",
+      "trainable_parameters": 1602571,
+      "logits_shape": [
+        1,
+        5
+      ],
+      "logits_finite": true,
+      "seconds": 3.637,
+      "peak_gpu_mib": 251.6
+    },
+    {
+      "experiment": "vila_mil",
+      "method": "vila_mil",
+      "config": "/path/to/PGVL-Gym/benchmarks/additional_tasks/configs/vila_mil/ubc_ocean_4shot.yaml",
+      "device": "cuda:1",
+      "status": "passed",
+      "stage": "complete",
+      "trainable_parameters": 8817217,
+      "logits_shape": [
+        1,
+        5
+      ],
+      "logits_finite": true,
+      "seconds": 3.07,
+      "peak_gpu_mib": 435.5
+    },
+    {
+      "experiment": "wsi_five",
+      "method": "wsi_five",
+      "config": "/path/to/PGVL-Gym/benchmarks/additional_tasks/configs/wsi_five/ubc_ocean_4shot.yaml",
+      "device": "cuda:1",
+      "status": "passed",
+      "stage": "complete",
+      "trainable_parameters": 5127169,
+      "logits_shape": [
+        1,
+        5
+      ],
+      "logits_finite": true,
+      "seconds": 4.344,
+      "peak_gpu_mib": 470.7
+    }
+  ]
+}

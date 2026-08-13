@@ -1,0 +1,41 @@
+# FOCUS / LUNG / 16-shot / 10-fold
+# Source: official `LUNG.sh` style script from dddavid4real/FOCUS.
+# FOCUS uses CONCH only.
+
+method: "focus"
+backbone: "conch"
+feature_dim: 512
+n_classes: 2
+classnames: ["lung adenocarcinoma", "lung squamous cell carcinoma"]
+label_dict: {"LUAD": 0, "LUSC": 1}
+
+# --- few-shot setup ---
+shots: 16
+k: 10
+k_start: 0
+k_end: 10
+
+# --- training ---
+seed: 1
+epochs: 200
+lr: 1.0e-4
+weight_decay: 1.0e-5
+bag_loss: "ce"
+drop_out: true
+early_stopping: true
+es_patience: 20
+es_stop_epoch: 40
+
+# --- model ---
+prototype_number: 16
+mode: "transformer"
+loader_mode: "transformer"
+
+# --- paths (fill in your own) ---
+dataset_csv:    "splits/TCGA_Lung/dataset.csv"
+data_folder_s:  "path/to/TCGA_Lung/features_5x_conch"
+data_folder_l:  "path/to/TCGA_Lung/features_20x_conch"
+split_dir:      "splits/TCGA_Lung_16shots_10folds"
+text_prompt_path: "text_prompts/TCGA_Lung_two_scale_text_prompt.csv"
+conch_ckpt:     "ckpts/conch.pth"
+results_dir:    "results/focus_lung16"

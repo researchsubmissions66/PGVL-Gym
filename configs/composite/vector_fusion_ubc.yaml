@@ -1,0 +1,53 @@
+# Composite kitchen sink with VECTOR-LEVEL aggregator fusion.
+#
+# Same components as kitchen_sink_ubc.yaml, but aggregators emit (D,)
+# slide vectors that get fused before the classifier (concat by default;
+# try "gated" or "cross_attention" for higher capacity).
+
+method: "composite"
+backbone: "conch"
+feature_dim: 512
+n_classes: 5
+classnames: ["HGSC", "LGSC", "EC", "CC", "MC"]
+label_dict: {"HGSC": 0, "LGSC": 1, "EC": 2, "CC": 3, "MC": 4}
+
+selectors:
+  - {type: focus_three_stage, enabled: true,  window_size: 7, sim_threshold: 0.7, max_context: 4096}
+  - {type: cod_chain_mask,    enabled: true,  topk_ratio: 0.1}
+
+prompts:
+  coop_flat:     {enabled: true}
+  maple_graph:   {enabled: true,  text_path: "text_prompts/maple/UBC_attributes.json"}
+  slip_tissue:   {enabled: true,  tissue_classnames_path: "text_prompts/slip/UBC_tissues.json"}
+  fusion: {mode: weighted_sum}
+
+aggregators:
+  attn_pool:       {enabled: true}
+  vila_prototypes: {enabled: true}
+  focus_mha:       {enabled: true}
+  # NOTE: slip_routing only supports forward_logits cleanly; for vector-fusion
+  # we leave it off here. Use logit_ensemble if you want SLIP routing.
+  slip_routing:    {enabled: false}
+  pathpt_conv1d:   {enabled: true,  out_dim: 512}     # match other dims
+  fusion:      "vector_fusion"
+  vector_mode: "gated"          # concat | mean | weighted_sum | gated | cross_attention
+
+recipe:
+  type: "pathpt"
+  lr: 1.0e-4
+  epochs: 40
+  loss: {ce_weight: 1.0, aux_attribute_weight: 0.3}
+
+seed: 42
+k: 10
+k_start: 0
+k_end: 10
+early_stopping: true
+es_patience: 20
+es_stop_epoch: 30
+
+dataset_csv:    "splits/UBC-OCEAN/dataset.csv"
+data_folder_s:  "path/to/UBC-OCEAN/features_5x_conch"
+data_folder_l:  "path/to/UBC-OCEAN/features_20x_conch"
+split_dir:      "splits/UBC-OCEAN_16shots_10folds"
+results_dir:    "results/composite_vec_fusion_ubc"

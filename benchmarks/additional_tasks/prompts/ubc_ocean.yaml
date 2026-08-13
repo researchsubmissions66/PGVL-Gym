@@ -1,0 +1,56 @@
+version: 1
+provenance: released_ubc_multiscale_descriptions_with_declared_aliases
+description_source: train_data/gpt/description/UBC-OCEAN.json
+context: Histopathologic subtyping of primary ovarian carcinoma without access to the diagnostic label.
+mscpt_prompts_per_scale: 10
+classes:
+  CC:
+    classname: ovarian clear cell carcinoma
+    aliases:
+      - clear cell carcinoma of the ovary
+      - ovarian clear cell carcinoma
+      - clear cell carcinoma
+      - CC
+    tissues:
+      - ovarian clear cell carcinoma
+      - clear cell carcinoma of the ovary
+  EC:
+    classname: ovarian endometrioid carcinoma
+    aliases:
+      - endometrioid carcinoma of the ovary
+      - ovarian endometrioid carcinoma
+      - endometrioid carcinoma
+      - EC
+    tissues:
+      - ovarian endometrioid carcinoma
+      - endometrioid carcinoma of the ovary
+  HGSC:
+    classname: ovarian high-grade serous carcinoma
+    aliases:
+      - high-grade serous carcinoma of the ovary
+      - ovarian high-grade serous carcinoma
+      - high-grade serous ovarian cancer
+      - HGSC
+    tissues:
+      - ovarian high-grade serous carcinoma
+      - high-grade serous ovarian cancer
+  LGSC:
+    classname: ovarian low-grade serous carcinoma
+    aliases:
+      - low-grade serous carcinoma of the ovary
+      - ovarian low-grade serous carcinoma
+      - low-grade serous ovarian cancer
+      - LGSC
+    tissues:
+      - ovarian low-grade serous carcinoma
+      - low-grade serous ovarian cancer
+  MC:
+    classname: ovarian mucinous carcinoma
+    aliases:
+      - mucinous carcinoma of the ovary
+      - ovarian mucinous carcinoma
+      - mucinous adenocarcinoma of the ovary
+      - MC
+    tissues:
+      - ovarian mucinous carcinoma
+      - mucinous carcinoma of the ovary

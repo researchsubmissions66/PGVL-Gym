@@ -1,0 +1,59 @@
+backbone: clip-rn50
+backbone_weights: /path/to/model-cache/clip/RN50.pt
+encoder:
+  name: clip-rn50
+  weights: /path/to/model-cache/clip/RN50.pt
+  feature_space_id: openai/clip-rn50@official
+  feature_dim: 1024
+  initialization: pretrained
+feature_space_id: openai/clip-rn50@official
+n_classes: 2
+classnames:
+- lung adenocarcinoma
+- lung squamous cell carcinoma
+label_dict:
+  LUAD: 0
+  LUSC: 1
+shots: 4
+k: 5
+k_start: 0
+k_end: 5
+seed: 1
+batch_size: 1
+num_workers: 4
+feature_key: features
+feature_sources:
+  bag: clip_rn50_10x
+feature_resolutions:
+  bag: 10x
+feature_input_kinds:
+  bag: patch_bag
+include_metadata: true
+dataset_csv: /path/to/PGVL-Gym/benchmarks/tcga/data/nsclc/manifest.csv
+split_dir: /path/to/PGVL-Gym/benchmarks/tcga/splits/nsclc/4shot
+feature_dim: 1024
+method: slip
+experiment: slip
+epochs: 10
+results_dir: /path/to/PGVL-Gym/results/tcga_benchmark/slip/nsclc/4shot
+lr: 0.002
+weight_decay: 0.0
+early_stopping: false
+context_size: 1
+context_gain: 0.01
+topk: 50
+temp: 0.01
+image_size: 224
+text_templates:
+- a histopathology image of {}.
+tissue_classnames_path: /path/to/PGVL-Gym/text_prompts/slip/tcga_nsclc_tissues.json
+tissue_classnames:
+- - peripheral gland-forming, acinar, papillary, micropapillary, solid, or lepidic
+    tumor architecture
+  - malignant epithelial cells with glandular differentiation or mucin production
+- - solid squamous nests and sheets with necrosis or keratinization
+  - polygonal malignant cells with intercellular bridges, dyskeratosis, or keratin
+    pearls
+data_folder_s: /path/to/features/master_benchmark/10x_224px_0px_overlap/features_clip_rn50
+feature_path_column: feature__clip_rn50_10x
+prompt_source: slip_class_and_tissue_context

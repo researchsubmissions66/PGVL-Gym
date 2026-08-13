@@ -1,0 +1,372 @@
+{
+  "valid": true,
+  "cohorts": {
+    "nsclc": {
+      "slides": 1043,
+      "patients": 946,
+      "labels": {
+        "LUAD": 531,
+        "LUSC": 512
+      }
+    },
+    "brca": {
+      "slides": 1054,
+      "patients": 991,
+      "labels": {
+        "IDC": 843,
+        "ILC": 211
+      }
+    },
+    "rcc": {
+      "slides": 873,
+      "patients": 832,
+      "labels": {
+        "CCRCC": 455,
+        "PRCC": 297,
+        "CHRCC": 121
+      }
+    }
+  },
+  "missing_features": [
+    {
+      "cohort": "nsclc",
+      "feature_source": "conch_v1_5x",
+      "input_kind": "patch_bag",
+      "resolution": "5x",
+      "feature_column": "feature__conch_v1_5x",
+      "missing": 1043
+    },
+    {
+      "cohort": "nsclc",
+      "feature_source": "conch_v1_10x",
+      "input_kind": "patch_bag",
+      "resolution": "10x",
+      "feature_column": "feature__conch_v1_10x",
+      "missing": 1043
+    },
+    {
+      "cohort": "nsclc",
+      "feature_source": "conch_v1_20x",
+      "input_kind": "patch_bag",
+      "resolution": "20x",
+      "feature_column": "feature__conch_v1_20x",
+      "missing": 1043
+    },
+    {
+      "cohort": "nsclc",
+      "feature_source": "musk_10x",
+      "input_kind": "patch_bag",
+      "resolution": "10x",
+      "feature_column": "feature__musk_10x",
+      "missing": 1043
+    },
+    {
+      "cohort": "nsclc",
+      "feature_source": "keep_20x",
+      "input_kind": "patch_bag",
+      "resolution": "20x",
+      "feature_column": "feature__keep_20x",
+      "missing": 1043
+    },
+    {
+      "cohort": "nsclc",
+      "feature_source": "plip_5x",
+      "input_kind": "patch_bag",
+      "resolution": "5x",
+      "feature_column": "feature__plip_5x",
+      "missing": 1043
+    },
+    {
+      "cohort": "nsclc",
+      "feature_source": "plip_10x",
+      "input_kind": "patch_bag",
+      "resolution": "10x",
+      "feature_column": "feature__plip_10x",
+      "missing": 1043
+    },
+    {
+      "cohort": "nsclc",
+      "feature_source": "plip_20x",
+      "input_kind": "patch_bag",
+      "resolution": "20x",
+      "feature_column": "feature__plip_20x",
+      "missing": 1043
+    },
+    {
+      "cohort": "nsclc",
+      "feature_source": "clip_rn50_5x",
+      "input_kind": "patch_bag",
+      "resolution": "5x",
+      "feature_column": "feature__clip_rn50_5x",
+      "missing": 1043
+    },
+    {
+      "cohort": "nsclc",
+      "feature_source": "clip_rn50_10x",
+      "input_kind": "patch_bag",
+      "resolution": "10x",
+      "feature_column": "feature__clip_rn50_10x",
+      "missing": 1043
+    },
+    {
+      "cohort": "nsclc",
+      "feature_source": "clip_rn50_20x",
+      "input_kind": "patch_bag",
+      "resolution": "20x",
+      "feature_column": "feature__clip_rn50_20x",
+      "missing": 1043
+    },
+    {
+      "cohort": "nsclc",
+      "feature_source": "titan_slide_20x",
+      "input_kind": "slide_embedding",
+      "resolution": "20x",
+      "feature_column": "feature__titan_slide_20x",
+      "missing": 1043
+    },
+    {
+      "cohort": "nsclc",
+      "feature_source": "wsi_five_medclip_20x",
+      "input_kind": "patch_sequence",
+      "resolution": "20x",
+      "feature_column": "feature__wsi_five_medclip_20x",
+      "missing": 1043
+    },
+    {
+      "cohort": "nsclc",
+      "feature_source": "convlm_raw_tiles_20x",
+      "input_kind": "raw_tile_directory",
+      "resolution": "20x",
+      "feature_column": "feature__convlm_raw_tiles_20x",
+      "missing": 1043
+    },
+    {
+      "cohort": "brca",
+      "feature_source": "conch_v1_5x",
+      "input_kind": "patch_bag",
+      "resolution": "5x",
+      "feature_column": "feature__conch_v1_5x",
+      "missing": 1054
+    },
+    {
+      "cohort": "brca",
+      "feature_source": "conch_v1_10x",
+      "input_kind": "patch_bag",
+      "resolution": "10x",
+      "feature_column": "feature__conch_v1_10x",
+      "missing": 1054
+    },
+    {
+      "cohort": "brca",
+      "feature_source": "conch_v1_20x",
+      "input_kind": "patch_bag",
+      "resolution": "20x",
+      "feature_column": "feature__conch_v1_20x",
+      "missing": 1054
+    },
+    {
+      "cohort": "brca",
+      "feature_source": "musk_10x",
+      "input_kind": "patch_bag",
+      "resolution": "10x",
+      "feature_column": "feature__musk_10x",
+      "missing": 1054
+    },
+    {
+      "cohort": "brca",
+      "feature_source": "keep_20x",
+      "input_kind": "patch_bag",
+      "resolution": "20x",
+      "feature_column": "feature__keep_20x",
+      "missing": 1054
+    },
+    {
+      "cohort": "brca",
+      "feature_source": "plip_5x",
+      "input_kind": "patch_bag",
+      "resolution": "5x",
+      "feature_column": "feature__plip_5x",
+      "missing": 1054
+    },
+    {
+      "cohort": "brca",
+      "feature_source": "plip_10x",
+      "input_kind": "patch_bag",
+      "resolution": "10x",
+      "feature_column": "feature__plip_10x",
+      "missing": 1054
+    },
+    {
+      "cohort": "brca",
+      "feature_source": "plip_20x",
+      "input_kind": "patch_bag",
+      "resolution": "20x",
+      "feature_column": "feature__plip_20x",
+      "missing": 1054
+    },
+    {
+      "cohort": "brca",
+      "feature_source": "clip_rn50_5x",
+      "input_kind": "patch_bag",
+      "resolution": "5x",
+      "feature_column": "feature__clip_rn50_5x",
+      "missing": 1054
+    },
+    {
+      "cohort": "brca",
+      "feature_source": "clip_rn50_10x",
+      "input_kind": "patch_bag",
+      "resolution": "10x",
+      "feature_column": "feature__clip_rn50_10x",
+      "missing": 1054
+    },
+    {
+      "cohort": "brca",
+      "feature_source": "clip_rn50_20x",
+      "input_kind": "patch_bag",
+      "resolution": "20x",
+      "feature_column": "feature__clip_rn50_20x",
+      "missing": 1054
+    },
+    {
+      "cohort": "brca",
+      "feature_source": "titan_slide_20x",
+      "input_kind": "slide_embedding",
+      "resolution": "20x",
+      "feature_column": "feature__titan_slide_20x",
+      "missing": 1054
+    },
+    {
+      "cohort": "brca",
+      "feature_source": "wsi_five_medclip_20x",
+      "input_kind": "patch_sequence",
+      "resolution": "20x",
+      "feature_column": "feature__wsi_five_medclip_20x",
+      "missing": 1054
+    },
+    {
+      "cohort": "brca",
+      "feature_source": "convlm_raw_tiles_20x",
+      "input_kind": "raw_tile_directory",
+      "resolution": "20x",
+      "feature_column": "feature__convlm_raw_tiles_20x",
+      "missing": 1054
+    },
+    {
+      "cohort": "rcc",
+      "feature_source": "conch_v1_5x",
+      "input_kind": "patch_bag",
+      "resolution": "5x",
+      "feature_column": "feature__conch_v1_5x",
+      "missing": 873
+    },
+    {
+      "cohort": "rcc",
+      "feature_source": "conch_v1_10x",
+      "input_kind": "patch_bag",
+      "resolution": "10x",
+      "feature_column": "feature__conch_v1_10x",
+      "missing": 873
+    },
+    {
+      "cohort": "rcc",
+      "feature_source": "conch_v1_20x",
+      "input_kind": "patch_bag",
+      "resolution": "20x",
+      "feature_column": "feature__conch_v1_20x",
+      "missing": 873
+    },
+    {
+      "cohort": "rcc",
+      "feature_source": "musk_10x",
+      "input_kind": "patch_bag",
+      "resolution": "10x",
+      "feature_column": "feature__musk_10x",
+      "missing": 873
+    },
+    {
+      "cohort": "rcc",
+      "feature_source": "keep_20x",
+      "input_kind": "patch_bag",
+      "resolution": "20x",
+      "feature_column": "feature__keep_20x",
+      "missing": 873
+    },
+    {
+      "cohort": "rcc",
+      "feature_source": "plip_5x",
+      "input_kind": "patch_bag",
+      "resolution": "5x",
+      "feature_column": "feature__plip_5x",
+      "missing": 873
+    },
+    {
+      "cohort": "rcc",
+      "feature_source": "plip_10x",
+      "input_kind": "patch_bag",
+      "resolution": "10x",
+      "feature_column": "feature__plip_10x",
+      "missing": 873
+    },
+    {
+      "cohort": "rcc",
+      "feature_source": "plip_20x",
+      "input_kind": "patch_bag",
+      "resolution": "20x",
+      "feature_column": "feature__plip_20x",
+      "missing": 873
+    },
+    {
+      "cohort": "rcc",
+      "feature_source": "clip_rn50_5x",
+      "input_kind": "patch_bag",
+      "resolution": "5x",
+      "feature_column": "feature__clip_rn50_5x",
+      "missing": 873
+    },
+    {
+      "cohort": "rcc",
+      "feature_source": "clip_rn50_10x",
+      "input_kind": "patch_bag",
+      "resolution": "10x",
+      "feature_column": "feature__clip_rn50_10x",
+      "missing": 873
+    },
+    {
+      "cohort": "rcc",
+      "feature_source": "clip_rn50_20x",
+      "input_kind": "patch_bag",
+      "resolution": "20x",
+      "feature_column": "feature__clip_rn50_20x",
+      "missing": 873
+    },
+    {
+      "cohort": "rcc",
+      "feature_source": "titan_slide_20x",
+      "input_kind": "slide_embedding",
+      "resolution": "20x",
+      "feature_column": "feature__titan_slide_20x",
+      "missing": 873
+    },
+    {
+      "cohort": "rcc",
+      "feature_source": "wsi_five_medclip_20x",
+      "input_kind": "patch_sequence",
+      "resolution": "20x",
+      "feature_column": "feature__wsi_five_medclip_20x",
+      "missing": 873
+    },
+    {
+      "cohort": "rcc",
+      "feature_source": "convlm_raw_tiles_20x",
+      "input_kind": "raw_tile_directory",
+      "resolution": "20x",
+      "feature_column": "feature__convlm_raw_tiles_20x",
+      "missing": 873
+    }
+  ],
+  "configs": {
+    "total": 180,
+    "valid": 180
+  }
+}

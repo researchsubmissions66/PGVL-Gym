@@ -1,0 +1,20 @@
+[
+  "Normal Gastric Mucosa: Healthy gastric lining composed of surface epithelial cells, mucous cells, chief cells, and parietal cells",
+  "Gastric Adenocarcinoma: Cancerous epithelial cells forming glands or tubular structures within the gastric mucosa",
+  "Inflammatory Infiltrate: Presence of inflammatory cells (such as lymphocytes, plasma cells, and macrophages) within the tumor stroma or surrounding tissue",
+  "Desmoplastic Stroma: Dense fibrous tissue surrounding the tumor cells, often indicating an aggressive tumor phenotype",
+  "Necrotic Areas: Regions of tissue death within the tumor mass, which can indicate rapid tumor growth or inadequate blood supply",
+  "Ulceration: Loss of epithelial lining with exposure of the underlying tissue, often seen in more advanced stages of adenocarcinoma",
+  "Lymphovascular Invasion: Invasion of cancer cells into lymphatic or blood vessels, which may appear as tumor cells within vascular lumens",
+  "Perineural Invasion: Invasion of cancer cells into nerves, typically observed as tumor cells surrounding nerve bundles",
+  "Metastatic Deposits: Presence of tumor cells in regional lymph nodes or distant organs, indicating advanced disease stage",
+  "Focal Dysplasia: Areas of abnormal cellular growth and differentiation, which may precede the development of adenocarcinoma",
+  "Surface Epithelial Changes: Alterations in the surface epithelium such as hyperplasia, dysplasia, or metaplasia, which can be precursors to adenocarcinoma",
+  "Submucosal Invasion: Invasion of tumor cells beyond the mucosal layer into the submucosa of the stomach wall",
+  "Muscularis Propria Invasion: Invasion of tumor cells into the muscular layer of the stomach wall",
+  "Lymph Node Architecture: Examination of lymph node architecture for evidence of tumor involvement, such as effacement of normal nodal architecture by tumor cells",
+  "Lymph Node Metastasis: Presence of tumor cells within lymph node sinuses or parenchyma, indicating spread from the primary tumor",
+  "Intramucosal Carcinoma: Adenocarcinoma confined to the mucosal layer without invasion into deeper layers of the stomach wall",
+  "Subserosal Invasion: Invasion of tumor cells into the subserosal layer of the stomach wall, beyond the serosa",
+  "Serosal Involvement: Invasion of tumor cells through the serosal layer, potentially leading to peritoneal spread"
+]

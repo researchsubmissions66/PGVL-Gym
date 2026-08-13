@@ -1,0 +1,55 @@
+backbone: clip-rn50
+backbone_weights: /path/to/model-cache/clip/RN50.pt
+encoder:
+  name: clip-rn50
+  weights: /path/to/model-cache/clip/RN50.pt
+  feature_space_id: openai/clip-rn50@official
+  feature_dim: 1024
+  initialization: pretrained
+feature_space_id: openai/clip-rn50@official
+n_classes: 2
+classnames:
+- lung adenocarcinoma
+- lung squamous cell carcinoma
+label_dict:
+  LUAD: 0
+  LUSC: 1
+shots: 4
+k: 5
+k_start: 0
+k_end: 5
+seed: 1
+batch_size: 1
+num_workers: 4
+feature_key: features
+feature_sources:
+  low: clip_rn50_5x
+  high: clip_rn50_20x
+feature_resolutions:
+  low: 5x
+  high: 20x
+feature_input_kinds:
+  low: patch_bag
+  high: patch_bag
+include_metadata: true
+dataset_csv: /path/to/PGVL-Gym/benchmarks/tcga/data/nsclc/manifest.csv
+split_dir: /path/to/PGVL-Gym/benchmarks/tcga/splits/nsclc/4shot
+feature_dim: 1024
+method: cod_mil
+experiment: cod_mil
+epochs: 200
+results_dir: /path/to/PGVL-Gym/results/tcga_benchmark/cod_mil/nsclc/4shot
+lr: 0.0001
+weight_decay: 1.0e-05
+early_stopping: true
+es_patience: 20
+es_stop_epoch: 50
+data_folder_s: /path/to/features/master_benchmark/5x_224px_0px_overlap/features_clip_rn50
+data_folder_l: /path/to/features/master_benchmark/20x_224px_0px_overlap/features_clip_rn50
+feature_path_column_s: feature__clip_rn50_5x
+feature_path_column_l: feature__clip_rn50_20x
+text_prompt_path: /path/to/PGVL-Gym/text_prompts/cod_mil/nsclc_chain_of_diagnosis.json
+text_prompt_features: /path/to/PGVL-Gym/text_prompts/cod_mil/nsclc_text_prompt_features_clip_rn50.pt
+text_feature_space_id: openai/clip-rn50@official
+cross_mag_map_dir: /path/to/PGVL-Gym/benchmarks/tcga/maps/cod_mil/clip_rn50_5x__clip_rn50_20x
+prompt_source: cod_chain_precomputed_clip_rn50

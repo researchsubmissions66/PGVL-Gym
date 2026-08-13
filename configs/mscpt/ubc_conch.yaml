@@ -1,0 +1,35 @@
+# MSCPT / UBC / 8-shot / 5-seed / CONCH backbone
+# Source: scripts/mscpt/train_my_ubc.sh from Hanminghao/MSCPT.
+# NOTE: MSCPT uses different epoch counts per backbone:
+#   CLIP=100, PLIP=50, CONCH=50.
+
+method: "mscpt"
+backbone: "conch"
+n_classes: 5
+classnames: ["HGSC", "LGSC", "EC", "CC", "MC"]
+label_dict: {"HGSC": 0, "LGSC": 1, "EC": 2, "CC": 3, "MC": 4}
+dataset_name: "UBC-OCEAN"
+
+shots: 8
+k: 5
+k_start: 0
+k_end: 5
+
+seed: 1
+epochs: 50
+lr: 1.0e-4
+weight_decay: 1.0e-5
+batch_size: 1
+num_workers: 4
+
+n_tpro: 2
+n_vpro: 2
+n_set: 5
+num_k: 100
+
+dataset_csv:     "tcga_ubc.csv"
+feat_data_dir:   "path/to/UBC-OCEAN/conch/pt_files"
+selected_5x_dir: "path/to/UBC-OCEAN/selected_5x_patches"
+gpt_dir:         "./train_data/gpt"
+split_dir:       "numshots/UBC_8shot_5fold"
+results_dir:     "results/mscpt_ubc8_conch"

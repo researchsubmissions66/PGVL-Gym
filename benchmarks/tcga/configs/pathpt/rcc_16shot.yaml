@@ -1,0 +1,57 @@
+backbone: conch
+backbone_weights: /path/to/model-cache/huggingface/hub/models--MahmoodLab--conch/blobs/40a9644b9ba0e83a74576e0a5e5f7313599fa9c9cdaf3c20f8a3e271b0e9ae7c
+encoder:
+  name: conch
+  weights: /path/to/model-cache/huggingface/hub/models--MahmoodLab--conch/blobs/40a9644b9ba0e83a74576e0a5e5f7313599fa9c9cdaf3c20f8a3e271b0e9ae7c
+  feature_space_id: hf:MahmoodLab/conch
+  feature_dim: 512
+  initialization: pretrained
+feature_space_id: hf:MahmoodLab/conch
+n_classes: 3
+classnames:
+- clear cell renal cell carcinoma
+- papillary renal cell carcinoma
+- chromophobe renal cell carcinoma
+label_dict:
+  CCRCC: 0
+  PRCC: 1
+  CHRCC: 2
+shots: 16
+k: 5
+k_start: 0
+k_end: 5
+seed: 1
+batch_size: 1
+num_workers: 4
+feature_key: features
+feature_sources:
+  bag: conch_v1_10x
+feature_resolutions:
+  bag: 10x
+feature_input_kinds:
+  bag: patch_bag
+include_metadata: true
+dataset_csv: /path/to/PGVL-Gym/benchmarks/tcga/data/rcc/manifest.csv
+split_dir: /path/to/PGVL-Gym/benchmarks/tcga/splits/rcc/16shot
+feature_dim: 512
+method: pathpt
+experiment: pathpt
+epochs: 20
+results_dir: /path/to/PGVL-Gym/results/tcga_benchmark/pathpt/rcc/16shot
+lr: 0.0001
+n_ctx: 32
+prompt_init: template
+aux_weight: 0.5
+learnable: token
+vision_only: false
+vision_grad: true
+use_aug: false
+loss_weight:
+- 1.0
+- 0.5
+- 0.1
+feature_root: /path/to/features/master_benchmark/10x_256px_0px_overlap/features_conch_v1
+feature_path_column: feature__conch_v1_10x
+patch_num: null
+loader_mode: h5
+prompt_source: pathpt_classname_template

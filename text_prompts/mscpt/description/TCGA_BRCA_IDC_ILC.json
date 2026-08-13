@@ -1,0 +1,59 @@
+{
+  "_metadata": {
+    "task": "TCGA BRCA IDC versus ILC subtype classification",
+    "source": "Subtype-specific descriptions derived from the checked-in MAPLE BRCA attribute bank",
+    "label_order": ["IDC", "ILC"]
+  },
+  "IDC": {
+    "small_mag": [
+      "Invasive ductal carcinoma shows cohesive irregular glands, ducts, solid nests, or cords infiltrating breast stroma.",
+      "The tumor-stroma interface is often irregular and accompanied by a prominent desmoplastic fibrotic response.",
+      "Low-power architecture is heterogeneous, with variable tubule formation, solid growth, and occasional necrosis.",
+      "Tumor cells commonly form cohesive nests and clusters rather than single-file infiltrates.",
+      "Residual ductal structures may be distorted or replaced by invasive gland-forming carcinoma.",
+      "The invasive front can be poorly circumscribed, with angular glands extending into adipose or fibrous tissue.",
+      "Dense collagenous stroma frequently separates and surrounds malignant epithelial aggregates.",
+      "Areas of increased cellularity alternate with glandular regions and fibrotic stroma across the slide.",
+      "Tumor-associated inflammation and stromal remodeling may be conspicuous around invasive nests.",
+      "Overall low-resolution appearance favors a cohesive duct-forming carcinoma with desmoplastic invasion."
+    ],
+    "big_mag": [
+      "Invasive ductal carcinoma contains cohesive atypical epithelial cells with recognizable cell-cell adhesion.",
+      "Irregular tubules or glands are lined by malignant cells with enlarged pleomorphic nuclei.",
+      "Nucleoli may be prominent and mitotic figures may be present within cellular tumor regions.",
+      "Cell borders are generally more cohesive than in lobular carcinoma, producing compact nests and glands.",
+      "Luminal differentiation can be seen as small glandular spaces or duct-like structures.",
+      "Nuclear size and shape are variable, with hyperchromasia and loss of normal epithelial polarity.",
+      "Dense desmoplastic collagen is often directly apposed to malignant glands or solid epithelial clusters.",
+      "Necrotic debris or apoptotic material may occur within poorly formed glandular lumina.",
+      "Tumor cells can display moderate eosinophilic cytoplasm and irregular nuclear membranes.",
+      "High-resolution morphology favors cohesive malignant epithelial proliferation with ductal or glandular differentiation."
+    ]
+  },
+  "ILC": {
+    "small_mag": [
+      "Invasive lobular carcinoma shows diffuse, poorly circumscribed infiltration through otherwise preserved breast architecture.",
+      "Tumor cells spread as thin linear cords and single-file arrays through collagenous stroma.",
+      "A targetoid pattern may be present as malignant cells concentrically surround benign ducts and lobules.",
+      "Low-power tumor density can be deceptively low because cells infiltrate individually rather than forming a mass.",
+      "The stromal reaction is often less bulky than the desmoplasia surrounding invasive ductal carcinoma.",
+      "Normal structures may remain recognizable despite widespread permeation by small discohesive tumor cells.",
+      "Linear Indian-file infiltration creates subtle parallel tracks between collagen bundles.",
+      "The invasive boundary is indistinct, with diffuse extension beyond the apparent main tumor area.",
+      "Solid gland-forming nests and well-developed tubules are generally absent at low magnification.",
+      "Overall low-resolution appearance favors a diffuse discohesive carcinoma preserving background tissue contours."
+    ],
+    "big_mag": [
+      "Invasive lobular carcinoma contains small discohesive malignant cells infiltrating in single-file arrangements.",
+      "Loss of cell-cell cohesion produces isolated cells and loose linear cords without true gland formation.",
+      "Nuclei are often round to oval and relatively uniform, with inconspicuous nucleoli in classic areas.",
+      "Scant cytoplasm and subtle atypia can make individual infiltrating cells difficult to recognize.",
+      "Signet-ring morphology may occur when intracytoplasmic mucin displaces the nucleus eccentrically.",
+      "Tumor cells may encircle ducts in a targetoid pattern while leaving the duct epithelium intact.",
+      "Indian-file cords pass between collagen fibers with minimal disruption of the extracellular matrix.",
+      "Cell borders are indistinct and cohesive nests are uncommon compared with invasive ductal carcinoma.",
+      "Tubule and lumen formation are absent or very limited in classic invasive lobular carcinoma.",
+      "High-resolution morphology favors monotonous discohesive cells with single-file stromal infiltration."
+    ]
+  }
+}

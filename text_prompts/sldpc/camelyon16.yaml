@@ -1,0 +1,9 @@
+prompts:
+  normal:
+    - normal lymph node
+    - benign lymphoid tissue
+    - lymph node without metastatic carcinoma
+  tumor:
+    - metastatic lymph node
+    - lymph node metastasis
+    - lymph node involved by carcinoma

@@ -1,0 +1,166 @@
+{
+  "low": {
+    "entities": [
+      {
+        "name": "Architecture",
+        "general_feature": "Overall arrangement and organization of tumor cells and supporting stroma as seen at low magnification, including patterns and growth configurations.",
+        "attributes": {
+          "clear cell renal cell carcinoma": "Broad, sweeping nests or sheets of tumor cells with prominent alveolar, acinar, or solid growth, separated by a delicate, thin-walled vascular network giving a lobulated appearance.",
+          "papillary renal cell carcinoma": "Well-formed, finger-like papillary or tubulopapillary structures lined by layers of tumor cells, often with visible fibrovascular cores and frequent foamy macrophages in papillary cores.",
+          "chromophobe renal cell carcinoma": "Expansile, cohesive solid sheets or large nests of tumor cells, sometimes with a vaguely trabecular or organoid arrangement, typically lacking papillae or extensive vascular network, often surrounded by thin fibrous septa."
+        }
+      },
+      {
+        "name": "Stroma",
+        "general_feature": "The supporting connective tissue and extracellular matrix seen between nests, cords, or sheets of tumor cells; includes vascular elements and fibrous components discernible at low magnification.",
+        "attributes": {
+          "clear cell renal cell carcinoma": "Delicate and inconspicuous stroma with highly vascular background composed of fine, thin-walled blood vessels interspersed among the tumor nests; background may appear 'empty' due to abundant capillary network and minimal fibrous stroma.",
+          "papillary renal cell carcinoma": "Prominent, fibrovascular cores supporting papillary fronds; the stroma may show foamy macrophages and can appear edematous or sclerotic; overall, the stroma is more abundant and conspicuous compared to clear cell RCC.",
+          "chromophobe renal cell carcinoma": "Dense, hyalinized fibrous stroma surrounding well-circumscribed nests or alveolar groups of tumor cells; blood vessels are less prominent, and the stroma frequently appears as broad bands of eosinophilic, homogeneous material."
+        }
+      },
+      {
+        "name": "Cytoplasm",
+        "general_feature": "The portion of the tumor cell outside the nucleus, often visible as a layer or halo surrounding the nuclear material and occupying much of the cell body at low magnification.",
+        "attributes": {
+          "clear cell renal cell carcinoma": "Abundant, optically clear or pale cytoplasm due to accumulation of lipid and glycogen, giving cells a 'clear cell' appearance separated by delicate vascular septa.",
+          "papillary renal cell carcinoma": "Scant to moderate, basophilic or amphophilic cytoplasm; cells lining papillae typically appear more granular with less distinct clearing.",
+          "chromophobe renal cell carcinoma": "Abundant, translucent to pale eosinophilic cytoplasm with well-defined cell borders, often giving cells a 'plant cell-like' or polygonal outline with perinuclear halos."
+        }
+      },
+      {
+        "name": "Vascular Pattern",
+        "general_feature": "Distribution and appearance of blood vessels within the tumor region as appreciated at low magnification.",
+        "attributes": {
+          "clear cell renal cell carcinoma": "Prominent, elaborate, and branching (chicken-wire) vascular network; thin-walled vessels coursing among nests of tumor cells.",
+          "papillary renal cell carcinoma": "Fibrovascular cores within papillary structures; vessels arranged along papillae without extensive arborization.",
+          "chromophobe renal cell carcinoma": "Sparse and less conspicuous vasculature; vessels appear inconspicuous with wide, pale tumor cell sheets."
+        }
+      },
+      {
+        "name": "Capsule",
+        "general_feature": "A distinct rim or border surrounding the tumor mass, separating neoplastic tissue from surrounding renal parenchyma; can be visualized as a linear structure at the periphery of the tumor on low magnification.",
+        "attributes": {
+          "clear cell renal cell carcinoma": "Capsule may be absent, incomplete, or focally thin; tumor borders are often irregular with frequent extension or pseudocapsule formation due to compression of adjacent parenchyma.",
+          "papillary renal cell carcinoma": "Well-defined and often thick fibrous capsule is frequently present, creating a sharply demarcated interface between the tumor and surrounding tissue.",
+          "chromophobe renal cell carcinoma": "Capsule is usually present and well-delineated, thick and hyalinized; tumor margins appear rounded and distinct, with minimal irregular infiltration."
+        }
+      },
+      {
+        "name": "Nodule",
+        "general_feature": "Discrete, often roughly round to oval, cohesive aggregates of tumor cells distinguishable from the surrounding parenchyma or stroma, visible as distinct clusters or masses within the tumor region at low magnification.",
+        "attributes": {
+          "clear cell renal cell carcinoma": "Nodules are frequently irregular in contour, can show prominent expansile growth, and demonstrate areas with loosely cohesive clusters separated by delicate fibrovascular septae, giving a heterogeneous nodular appearance.",
+          "papillary renal cell carcinoma": "Nodules tend to be more uniform, often rounded and circumscribed, frequently forming tight, discrete masses that correspond to the underlying papillary architecture, sometimes with visible fibrovascular cores centrally.",
+          "chromophobe renal cell carcinoma": "Nodules appear as broad, fairly well-circumscribed, and more confluent masses, usually lacking significant fibrovascular separation, often displaying a homogenous sheet-like appearance to the nodular aggregates."
+        }
+      },
+      {
+        "name": "Lumina",
+        "general_feature": "Spaces or cavities within tumor cell aggregates or acini, noticeable as empty or pale areas surrounded by tumor cells.",
+        "attributes": {
+          "clear cell renal cell carcinoma": "Lumina are typically inconspicuous; tumor nests or sheets often show solid growth with only occasional microcystic or tubular spaces lacking conspicuous luminal definition.",
+          "papillary renal cell carcinoma": "Prominent intratumoral lumina are present, often forming well-defined papillae with central fibrovascular cores; tumor cells line the luminal spaces, accentuating a papillary or tubular architecture.",
+          "chromophobe renal cell carcinoma": "Lumina are generally inconspicuous; tumor sheets or nests may contain scattered small intracytoplasmic vacuoles, but true glandular or papillary lumina are rare or absent at low magnification."
+        }
+      },
+      {
+        "name": "Septum",
+        "general_feature": "Bands or partitions of connective tissue visible within or around tumor nests, commonly separating clusters of tumor cells.",
+        "attributes": {
+          "clear cell renal cell carcinoma": "Usually thin, delicate, and inconspicuous or absent; if present, they are often narrow and minimally fibrotic.",
+          "papillary renal cell carcinoma": "Prominent, broad, and often edematous; septa may contain foamy macrophages and abundant fibrovascular tissue.",
+          "chromophobe renal cell carcinoma": "Well-formed, thick, and fibrous; septa frequently show pronounced fibrosis and may radiate between solid tumor areas."
+        }
+      }
+    ],
+    "tumor": "typically appears as expansile, cellular areas with a heterogeneous architecture, often exhibiting nests or sheets of tumor cells, distinct from the adjacent renal parenchyma by their altered color, increased nuclear density, and possible presence of thick fibrous septa or areas of hemorrhage and necrosis.",
+    "global_info": {
+      "clear cell renal cell carcinoma": "Under low magnification, typically displays a nested or alveolar architecture with delicate branching vasculature (chicken-wire appearance), surrounded by scant fibrous stroma. Tumor nodules are sharply circumscribed and may abut a thin fibrous capsule. Cytoplasm appears pale or clear due to lipid/glycogen. Occasional thin septa separate nests, but lumina are usually inconspicuous.",
+      "papillary renal cell carcinoma": "Shows papillary or tubular-papillary architecture with fibrovascular cores lined by tumor cells, often forming distinct papillae. The stroma within papillary cores may show foamy macrophages or be edematous. Tumor nodules may be well-demarcated, sometimes encapsulated; cytoplasm appears basophilic. Lumina are prominent within papillae, and occasional fibrous septa may subdivide the tumor.",
+      "chromophobe renal cell carcinoma": "Reveals solid sheets or broad trabeculae of tumor cells, separated by delicate, often hyalinized stroma. Tumor nodules are well-defined, sometimes delineated by thick fibrous bands (septae) and a distinct capsule. Cells have pale eosinophilic or reticulated cytoplasm; vascular pattern is less prominent. Lumina are rare or absent at low power."
+    }
+  },
+  "high": {
+    "entities": [
+      {
+        "name": "Cell Membrane",
+        "general_feature": "Thin structure surrounding the cell, forming the outer boundary that separates the cytoplasm from the extracellular environment; directly visible as a distinct line under high magnification in many epithelial tumors.",
+        "attributes": {
+          "clear cell renal cell carcinoma": "Cell membranes are delicate and often indistinct due to abundant clear cytoplasm; cell borders may appear crisp in some areas but typically merge with adjacent cells, contributing to a uniform sheet-like appearance.",
+          "papillary renal cell carcinoma": "Cell membranes are more distinct and regular, outlining cuboidal to columnar cells that form true papillary structures; clear cell borders define small nests and papillae, often in association with foamy macrophages.",
+          "chromophobe renal cell carcinoma": "Cell membranes are prominent and sharply defined, often accompanied by a perinuclear halo; tumor cells display polygonal shapes with thick, well-delineated borders, sometimes resembling plant cells (vegetaloid appearance)."
+        }
+      },
+      {
+        "name": "Cytoplasm",
+        "general_feature": "The part of the cell surrounding the nucleus, appearing as the granular or clear area inside the cell body under high magnification.",
+        "attributes": {
+          "clear cell renal cell carcinoma": "Cytoplasm appears optically clear or empty due to high glycogen and lipid content; boundaries are often distinct.",
+          "papillary renal cell carcinoma": "Cytoplasm tends to be more basophilic or amphophilic, sometimes eosinophilic; less likely to be clear, with foamy macrophages present in papillary cores.",
+          "chromophobe renal cell carcinoma": "Cytoplasm appears pale or lightly eosinophilic, often with a granular quality and distinct cell borders, sometimes showing perinuclear halos."
+        }
+      },
+      {
+        "name": "Nucleolus",
+        "general_feature": "A distinct, dense, round structure within the nucleus, often visible as one or more dots that are sharply or variably demarcated from the surrounding chromatin under high magnification.",
+        "attributes": {
+          "clear cell renal cell carcinoma": "Nucleoli are variably prominent; low-grade tumors show inconspicuous or small nucleoli, while high-grade lesions display large, irregular, and sometimes multiple nucleoli often associated with perinuclear clearing.",
+          "papillary renal cell carcinoma": "Nucleoli are frequently prominent even in lower grades, often round and central within the nucleus, with notable macronucleoli especially in type 2 papillary RCC.",
+          "chromophobe renal cell carcinoma": "Nucleoli are generally small, round, and inconspicuous, rarely prominent, often situated centrally within the pale and irregular nuclei."
+        }
+      },
+      {
+        "name": "Vascular Structure",
+        "general_feature": "Branching and arrangement of blood vessels within and around tumor nests, visible as elongated or rounded channels lined by endothelial cells.",
+        "attributes": {
+          "clear cell renal cell carcinoma": "Prominent, thin-walled, and delicate vascular network with frequent sinusoidal capillaries interlacing between nests of tumor cells.",
+          "papillary renal cell carcinoma": "Fibrovascular cores lined by tumor cells, forming a central supportive stalk within papillary fronds, with vessels often seen within the papillary axis.",
+          "chromophobe renal cell carcinoma": "Sparse, thick-walled blood vessels with less prominent vascularization, vessels tend to be scattered with less branching compared to other subtypes."
+        }
+      },
+      {
+        "name": "Vacuole",
+        "general_feature": "Intracytoplasmic round to oval clear or pale spaces visible within tumor cells at high magnification.",
+        "attributes": {
+          "clear cell renal cell carcinoma": "Prominent, large, optically clear or empty-appearing vacuoles occupying most of the cytoplasm, often causing cytoplasmic clearing.",
+          "papillary renal cell carcinoma": "Small, inconspicuous vacuoles occasionally seen, typically less pronounced and focal within the cytoplasm.",
+          "chromophobe renal cell carcinoma": "Perinuclear halos and multiple small, well-defined cytoplasmic vacuoles giving a plant-cell-like appearance."
+        }
+      },
+      {
+        "name": "Cell Border",
+        "general_feature": "The outline or edge surrounding individual tumor cells, demarcating the separation from adjacent cells. Can appear distinct, thickened, pale, or blurred under high magnification.",
+        "attributes": {
+          "clear cell renal cell carcinoma": "Cell borders are typically delicate, thin, and often indistinct, with cells appearing to merge due to their clear cytoplasm. Outlines are frequently subtle, blending into the surrounding stroma.",
+          "papillary renal cell carcinoma": "Cell borders are usually more distinct and well-demarcated compared to clear cell subtype, often forming neat, cohesive boundaries along the papillary structures.",
+          "chromophobe renal cell carcinoma": "Cell borders are markedly prominent and sharply outlined, commonly thickened and sometimes described as having a 'plant-like' or 'vegetable cell' appearance due to the strong definition and angular contours."
+        }
+      },
+      {
+        "name": "Nuclear Membrane",
+        "general_feature": "The thin, well-defined structure encasing the nucleus, often appearing as a distinct outline separating nuclear material from the cytoplasm under high magnification.",
+        "attributes": {
+          "clear cell renal cell carcinoma": "Nuclear membrane is usually thin and smooth; nuclei may appear round or oval with delicate outlines. Prominent irregularities are uncommon.",
+          "papillary renal cell carcinoma": "Nuclear membrane is generally smooth but may exhibit mild to moderate irregularities and indentations; nuclei tend to have a more ovoid or elongated shape compared to clear cell RCC.",
+          "chromophobe renal cell carcinoma": "Nuclear membrane is often thickened and irregular, with frequent wrinkling or abnormal nuclear contours; nuclei may appear raisinoid or angular with exaggerated membrane folds."
+        }
+      },
+      {
+        "name": "Cytoplasmic Inclusion",
+        "general_feature": "Discrete structures or bodies found within the cytoplasm of tumor cells, distinct from nuclei, nucleoli, and vacuoles, often appearing as refractile or granular material under high magnification.",
+        "attributes": {
+          "clear cell renal cell carcinoma": "Cytoplasmic inclusions are typically sparse; when present, they may appear as fine lipid or glycogen droplets, contributing to the clear appearance of the cytoplasm but are rarely conspicuous as discrete bodies.",
+          "papillary renal cell carcinoma": "Inclusions are more commonly seen as small, eosinophilic hyaline globules; psammoma bodies (calcified, laminated inclusions) are frequently identified in tumor cells or associated stroma.",
+          "chromophobe renal cell carcinoma": "Cytoplasmic inclusions may present as perinuclear, pale, eosinophilic halos (perinuclear clearing due to microvesicles); true hyaline or calcific inclusions are infrequent, but coarse, granular cytoplasmic material can be observed."
+        }
+      }
+    ],
+    "tumor": "typically displays nests and sheets of polygonal cells with clear or granular cytoplasm, distinct cell borders, and prominent nucleoli, interspersed with a delicate network of thin-walled blood vessels.",
+    "global_info": {
+      "clear cell renal cell carcinoma": "Polygonal cells with well-defined borders, abundant clear cytoplasm due to glycogen and lipid, small round nuclei with prominent nucleoli, delicate branching vasculature (chicken-wire pattern), distinct cell membranes, and occasional cytoplasmic vacuoles; nuclear membranes generally smooth.",
+      "papillary renal cell carcinoma": "Papillary or tubulopapillary architecture with lining of single or pseudostratified cells, pale eosinophilic cytoplasm, foamy macrophages and occasional hemosiderin-laden cells within papillae, round to ovoid nuclei, variable nucleoli, and clear nuclear membranes are notable; sometimes intracytoplasmic inclusions and vacuoles seen.",
+      "chromophobe renal cell carcinoma": "Large polygonal cells with prominent cell borders giving a plant cell-like appearance, abundant pale to eosinophilic granular cytoplasm, perinuclear clearing (halos), wrinkled 'raisinoid' nuclei with distinct nuclear membranes, rarely prominent nucleoli; cytoplasmic inclusions and vacuolation may occur."
+    }
+  }
+}

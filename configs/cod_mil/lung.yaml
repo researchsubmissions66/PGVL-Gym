@@ -1,0 +1,33 @@
+# CoD-MIL / LUNG / full data / 5-fold
+# Source: README of Jiangbo-Shi/CoD-MIL.
+
+method: "cod_mil"
+backbone: "clip-rn50"
+feature_dim: 1024
+n_classes: 2
+classnames: ["lung adenocarcinoma", "lung squamous cell carcinoma"]
+label_dict: {"LUAD": 0, "LUSC": 1}
+
+shots: -1                    # CoD-MIL trains on full data by default
+k: 5
+k_start: 0
+k_end: 5
+
+seed: 1
+epochs: 200
+lr: 1.0e-4
+weight_decay: 1.0e-5
+early_stopping: true
+es_patience: 20
+es_stop_epoch: 50
+
+dataset_csv:    "splits/TCGA_Lung/dataset.csv"
+data_folder_s:  "path/to/TCGA_Lung/feats_5x"
+data_folder_l:  "path/to/TCGA_Lung/feats_20x"
+split_dir:      "splits/task_tcga_lung_subtyping"
+# No upstream Lung prompt embeddings are published. Supply matching CLIP-RN50
+# embeddings and maps before running this config.
+text_prompt_path: "text_prompts/cod_mil/lung_chain_of_diagnosis.json"
+text_prompt_features: null
+cross_mag_map_dir: "maps/TCGA_Lung_10x_to_20x"
+results_dir:    "results/cod_mil_lung"

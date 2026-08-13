@@ -1,0 +1,6 @@
+# Kept separate from the runtime requirements so documentation CI does not
+# download model-training dependencies. mkdocstrings reads the Python source
+# through Griffe and does not import the foundation models.
+mkdocs-material>=9.5,<10
+mkdocstrings[python]>=0.27,<1
+ruff>=0.6

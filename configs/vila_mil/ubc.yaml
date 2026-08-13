@@ -1,0 +1,35 @@
+# ViLa-MIL / UBC / 16-shot / 5-fold
+# Source: README of Jiangbo-Shi/ViLa-MIL.
+
+method: "vila_mil"
+backbone: "clip-rn50"
+feature_dim: 1024
+n_classes: 5
+classnames: ["HGSC", "LGSC", "EC", "CC", "MC"]
+label_dict: {"HGSC": 0, "LGSC": 1, "EC": 2, "CC": 3, "MC": 4}
+
+shots: 16
+k: 5
+k_start: 0
+k_end: 5
+
+seed: 1
+epochs: 200
+lr: 1.0e-4
+weight_decay: 1.0e-5
+bag_loss: "ce"
+drop_out: true
+early_stopping: true
+es_patience: 20
+es_stop_epoch: 80          # ViLa-MIL uses a longer warm-up than FOCUS
+
+prototype_number: 16
+mode: "transformer"
+loader_mode: "transformer"
+
+dataset_csv:    "splits/UBC-OCEAN/dataset.csv"
+data_folder_s:  "path/to/UBC-OCEAN/feats_5x"
+data_folder_l:  "path/to/UBC-OCEAN/feats_20x"
+split_dir:      "splits/task_UBC-OCEAN_subtyping_16shots_5folds"
+text_prompt_path: "text_prompts/UBC-OCEAN_two_scale_text_prompt.csv"
+results_dir:    "results/vila_mil_ubc16"

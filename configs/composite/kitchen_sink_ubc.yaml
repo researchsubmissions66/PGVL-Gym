@@ -1,0 +1,81 @@
+# Composite "kitchen sink" config for UBC-OCEAN
+#
+# Every contribution from the nine papers is enabled. Comment out any
+# block to ablate. This is the maximum-capacity configuration; use the
+# vanilla / single-contribution variants below for cleaner studies.
+
+method: "composite"
+backbone: "conch"
+feature_dim: 512
+n_classes: 5
+classnames: ["HGSC", "LGSC", "EC", "CC", "MC"]
+label_dict: {"HGSC": 0, "LGSC": 1, "EC": 2, "CC": 3, "MC": 4}
+
+# ---------------------------------------------------------------------
+#  1. SELECTOR PIPELINE (applied sequentially)
+# ---------------------------------------------------------------------
+selectors:
+  - {type: focus_three_stage, enabled: true,  window_size: 7, sim_threshold: 0.7, max_context: 4096}
+  - {type: cod_chain_mask,    enabled: true,  topk_ratio: 0.1}
+  - {type: mscpt_topk,        enabled: true,  k: 1024}
+
+# ---------------------------------------------------------------------
+#  2. PROMPT BANK (each enabled module contributes; outputs fused)
+# ---------------------------------------------------------------------
+prompts:
+  coop_flat:     {enabled: true,  n_ctx: 16, ctx_init: ""}
+  top_two_level: {enabled: true,  n_ctx_bag: 4, n_ctx_inst: 4, csc: true}
+  maple_graph:   {enabled: true,  text_path: "text_prompts/maple/UBC_attributes.json"}
+  cod_chain:     {enabled: true,  hierarchy_path: "text_prompts/cod_mil/UBC_chain.json"}
+  slip_tissue:   {enabled: true,  tissue_classnames_path: "text_prompts/slip/UBC_tissues.json"}
+  fusion: {mode: weighted_sum}    # average | weighted_sum | concat | first
+
+# ---------------------------------------------------------------------
+#  3. AGGREGATORS (run in parallel, then fused)
+# ---------------------------------------------------------------------
+aggregators:
+  attn_pool:        {enabled: true,  hidden_dim: 192, dropout: true}
+  vila_prototypes:  {enabled: true,  hidden_dim: 192, prototype_number: 16}
+  slip_routing:     {enabled: true,  temperature: 0.01}
+  pathpt_conv1d:    {enabled: true,  out_dim: 768}
+  focus_mha:        {enabled: true,  num_heads: 8}
+  transmil:         {enabled: false, hidden_dim: 512}     # off (large)
+
+  # Fusion mode determines whether you ensemble logits or fuse vectors:
+  #   logit_ensemble  -- each aggregator has its own classifier, then
+  #                      logits combine (mean / weighted_sum / max / voting)
+  #   vector_fusion   -- aggregators emit (D,) slide vectors, fused
+  #                      (concat / mean / weighted_sum / gated /
+  #                       cross_attention), then ONE classifier
+  fusion: "logit_ensemble"
+  logit_mode:  "weighted_sum"
+  vector_mode: "concat"
+
+# ---------------------------------------------------------------------
+#  4. RECIPE (optimizer + scheduler + epochs + losses)
+# ---------------------------------------------------------------------
+recipe:
+  type: "pathpt"          # focus | pathpt | top | slip | wsi_five
+  lr: 1.0e-4
+  epochs: 40
+  loss:
+    ce_weight: 1.0
+    slip_contrastive_weight: 0.3      # only active if slip_tissue prompts on
+    aux_attribute_weight:    0.3      # only active if maple_graph prompts on
+
+# ---------------------------------------------------------------------
+#  5. CROSS-VAL + paths
+# ---------------------------------------------------------------------
+seed: 42
+k: 10
+k_start: 0
+k_end: 10
+early_stopping: true
+es_patience: 20
+es_stop_epoch: 30
+
+dataset_csv:    "splits/UBC-OCEAN/dataset.csv"
+data_folder_s:  "path/to/UBC-OCEAN/features_5x_conch"
+data_folder_l:  "path/to/UBC-OCEAN/features_20x_conch"
+split_dir:      "splits/UBC-OCEAN_16shots_10folds"
+results_dir:    "results/composite_kitchen_sink_ubc"

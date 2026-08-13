@@ -1,0 +1,54 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "unified-wsi-vlm"
+version = "0.1.0"
+description = "Registry-based benchmark for few-shot WSI vision-language methods"
+readme = "README.md"
+requires-python = ">=3.9"
+license = {text = "Apache-2.0"}
+authors = [{name = "Unified WSI-VLM contributors"}]
+dependencies = [
+    "torch>=2.0",
+    "torchvision",
+    "numpy",
+    "pandas",
+    "pyyaml",
+    "scikit-learn",
+    "tensorboard",
+    "h5py",
+    "transformers>=4.40",
+    "ftfy",
+    "regex",
+    "tqdm",
+]
+
+[project.optional-dependencies]
+dev = ["pytest", "ruff", "mypy"]
+docs = [
+    "mkdocs-material>=9.5,<10",
+    "mkdocstrings[python]>=0.27,<1",
+    "ruff>=0.6",
+]
+slip = ["nystrom-attention", "open-clip-torch"]
+pathpt = ["nystrom-attention"]
+maple = ["einops", "torch-geometric"]
+mscpt = ["torch-geometric", "pytorch-lightning"]
+sldpc = ["einops-exts"]
+all = [
+    "nystrom-attention",
+    "einops",
+    "timm",
+    "torch-geometric",
+    "pytorch-lightning",
+    "einops-exts",
+    "openslide-python",
+    "opencv-python-headless",
+    "pillow",
+    "matplotlib",
+]
+
+[tool.setuptools.packages.find]
+include = ["common*", "methods*", "clip*"]

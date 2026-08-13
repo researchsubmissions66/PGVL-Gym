@@ -1,0 +1,970 @@
+{
+    "0": {
+        "classnames": {
+            "CC": "ovarian clear cell adenocarcinoma",
+            "EC": "endometrioid carcinoma, high-grade",
+            "HGSC": "high-grade serous carcinoma",
+            "LGSC": "ovarian low-grade serous carcinoma",
+            "MC": "mucinous carcinoma, intestinal type"
+        },
+        "templates": [
+            "a histopathological image of CLASSNAME.",
+            "an example of CLASSNAME.",
+            "CLASSNAME is shown.",
+            "a photomicrograph of CLASSNAME.",
+            "a histopathological image showing CLASSNAME.",
+            "an image of CLASSNAME.",
+            "shows CLASSNAME.",
+            "a histopathological photograph showing CLASSNAME.",
+            "an image showing CLASSNAME.",
+            "CLASSNAME.",
+            "presence of CLASSNAME."
+        ]
+    },
+    "1": {
+        "classnames": {
+            "CC": "ovarian clear cell carcinoma",
+            "EC": "endometrioid carcinoma, low-grade",
+            "HGSC": "high-grade serous adenocarcinoma of the ovary",
+            "LGSC": "low-grade serous carcinoma",
+            "MC": "ovarian mucinous carcinoma"
+        },
+        "templates": [
+            "an image showing CLASSNAME.",
+            "presence of CLASSNAME.",
+            "a histopathological image of CLASSNAME.",
+            "a histopathological photograph showing CLASSNAME.",
+            "a histopathological image showing CLASSNAME.",
+            "an image of CLASSNAME.",
+            "there is CLASSNAME.",
+            "this is CLASSNAME.",
+            "CLASSNAME.",
+            "shows CLASSNAME."
+        ]
+    },
+    "2": {
+        "classnames": {
+            "CC": "ovarian clear cell adenocarcinoma",
+            "EC": "endometrioid carcinoma, high-grade",
+            "HGSC": "serous carcinoma, high-grade",
+            "LGSC": "ovarian low-grade serous carcinoma",
+            "MC": "ovarian mucinous carcinoma"
+        },
+        "templates": [
+            "an example of CLASSNAME."
+        ]
+    },
+    "3": {
+        "classnames": {
+            "CC": "clear cell carcinoma, NOS",
+            "EC": "endometrioid carcinoma",
+            "HGSC": "serous carcinoma, high-grade",
+            "LGSC": "low-grade serous ovarian cancer",
+            "MC": "mucinous carcinoma, endocervical type"
+        },
+        "templates": [
+            "an image of CLASSNAME.",
+            "a histopathological photograph of CLASSNAME.",
+            "CLASSNAME is shown.",
+            "a histopathological photograph showing CLASSNAME.",
+            "a photomicrograph of CLASSNAME.",
+            "a histopathological image of CLASSNAME.",
+            "a photomicrograph showing CLASSNAME.",
+            "an image showing CLASSNAME.",
+            "presence of CLASSNAME."
+        ]
+    },
+    "4": {
+        "classnames": {
+            "CC": "clear cell carcinoma, NOS",
+            "EC": "endometrioid carcinoma, high-grade",
+            "HGSC": "serous carcinoma, high-grade",
+            "LGSC": "serous carcinoma, low-grade",
+            "MC": "mucinous carcinoma, intestinal type"
+        },
+        "templates": [
+            "shows CLASSNAME.",
+            "CLASSNAME is shown.",
+            "this is CLASSNAME.",
+            "a histopathological image of CLASSNAME.",
+            "an example of CLASSNAME.",
+            "a histopathological image showing CLASSNAME.",
+            "a histopathological photograph of CLASSNAME.",
+            "a photomicrograph showing CLASSNAME.",
+            "presence of CLASSNAME.",
+            "there is CLASSNAME."
+        ]
+    },
+    "5": {
+        "classnames": {
+            "CC": "clear cell carcinoma, NOS",
+            "EC": "endometrioid carcinoma, high-grade",
+            "HGSC": "serous carcinoma, high-grade",
+            "LGSC": "low-grade serous adenocarcinoma of the ovary",
+            "MC": "mucinous carcinoma, endocervical type"
+        },
+        "templates": [
+            "an image showing CLASSNAME.",
+            "shows CLASSNAME.",
+            "a histopathological image showing CLASSNAME.",
+            "presence of CLASSNAME.",
+            "CLASSNAME.",
+            "a histopathological image of CLASSNAME.",
+            "CLASSNAME is shown.",
+            "there is CLASSNAME.",
+            "a histopathological photograph of CLASSNAME.",
+            "a histopathological photograph showing CLASSNAME."
+        ]
+    },
+    "6": {
+        "classnames": {
+            "CC": "clear cell adenocarcinoma of the ovary",
+            "EC": "endometrioid adenocarcinoma of the ovary",
+            "HGSC": "high-grade serous ovarian cancer",
+            "LGSC": "low-grade serous adenocarcinoma of the ovary",
+            "MC": "mucinous carcinoma"
+        },
+        "templates": [
+            "this is CLASSNAME.",
+            "CLASSNAME is shown.",
+            "an image showing CLASSNAME.",
+            "CLASSNAME is present.",
+            "CLASSNAME.",
+            "an example of CLASSNAME.",
+            "an image of CLASSNAME.",
+            "a histopathological photograph showing CLASSNAME.",
+            "there is CLASSNAME.",
+            "a histopathological photograph of CLASSNAME.",
+            "a photomicrograph of CLASSNAME.",
+            "a photomicrograph showing CLASSNAME.",
+            "presence of CLASSNAME.",
+            "shows CLASSNAME.",
+            "a histopathological image showing CLASSNAME.",
+            "a histopathological image of CLASSNAME."
+        ]
+    },
+    "7": {
+        "classnames": {
+            "CC": "ovarian clear cell adenocarcinoma",
+            "EC": "endometrioid carcinoma",
+            "HGSC": "high-grade serous carcinoma",
+            "LGSC": "ovarian low-grade serous carcinoma",
+            "MC": "mucinous carcinoma, intestinal type"
+        },
+        "templates": [
+            "a histopathological image showing CLASSNAME."
+        ]
+    },
+    "8": {
+        "classnames": {
+            "CC": "clear cell carcinoma, NOS",
+            "EC": "endometrioid carcinoma",
+            "HGSC": "high-grade serous carcinoma",
+            "LGSC": "low-grade serous ovarian cancer",
+            "MC": "mucinous carcinoma, intestinal type"
+        },
+        "templates": [
+            "there is CLASSNAME.",
+            "a histopathological image showing CLASSNAME.",
+            "shows CLASSNAME.",
+            "a histopathological photograph of CLASSNAME.",
+            "a photomicrograph showing CLASSNAME.",
+            "presence of CLASSNAME.",
+            "a histopathological photograph showing CLASSNAME.",
+            "a histopathological image of CLASSNAME.",
+            "CLASSNAME.",
+            "this is CLASSNAME.",
+            "CLASSNAME is present.",
+            "an image showing CLASSNAME.",
+            "an example of CLASSNAME.",
+            "an image of CLASSNAME."
+        ]
+    },
+    "9": {
+        "classnames": {
+            "CC": "clear cell carcinoma",
+            "EC": "endometrioid carcinoma, low-grade",
+            "HGSC": "ovarian high-grade serous carcinoma",
+            "LGSC": "low-grade serous carcinoma",
+            "MC": "mucinous carcinoma, intestinal type"
+        },
+        "templates": [
+            "a photomicrograph showing CLASSNAME.",
+            "a photomicrograph of CLASSNAME.",
+            "an image showing CLASSNAME.",
+            "this is CLASSNAME."
+        ]
+    },
+    "10": {
+        "classnames": {
+            "CC": "ovarian clear cell carcinoma",
+            "EC": "endometrioid adenocarcinoma of the ovary",
+            "HGSC": "ovarian high-grade serous carcinoma",
+            "LGSC": "low-grade serous adenocarcinoma of the ovary",
+            "MC": "ovarian mucinous carcinoma"
+        },
+        "templates": [
+            "CLASSNAME.",
+            "a photomicrograph showing CLASSNAME.",
+            "a histopathological photograph of CLASSNAME.",
+            "an example of CLASSNAME.",
+            "a photomicrograph of CLASSNAME.",
+            "a histopathological photograph showing CLASSNAME.",
+            "an image of CLASSNAME.",
+            "a histopathological image of CLASSNAME.",
+            "there is CLASSNAME.",
+            "this is CLASSNAME.",
+            "an image showing CLASSNAME.",
+            "a histopathological image showing CLASSNAME.",
+            "CLASSNAME is present.",
+            "presence of CLASSNAME.",
+            "CLASSNAME is shown."
+        ]
+    },
+    "11": {
+        "classnames": {
+            "CC": "clear cell carcinoma",
+            "EC": "endometrioid carcinoma, high-grade",
+            "HGSC": "high-grade serous adenocarcinoma of the ovary",
+            "LGSC": "serous carcinoma, low-grade",
+            "MC": "ovarian mucinous carcinoma"
+        },
+        "templates": [
+            "an image of CLASSNAME.",
+            "a histopathological photograph showing CLASSNAME.",
+            "a photomicrograph showing CLASSNAME.",
+            "this is CLASSNAME.",
+            "presence of CLASSNAME.",
+            "an image showing CLASSNAME.",
+            "CLASSNAME.",
+            "CLASSNAME is present."
+        ]
+    },
+    "12": {
+        "classnames": {
+            "CC": "ovarian clear cell carcinoma",
+            "EC": "endometrioid carcinoma, high-grade",
+            "HGSC": "ovarian high-grade serous carcinoma",
+            "LGSC": "low-grade serous carcinoma",
+            "MC": "mucinous carcinoma, intestinal type"
+        },
+        "templates": [
+            "there is CLASSNAME.",
+            "a histopathological photograph of CLASSNAME.",
+            "CLASSNAME is present.",
+            "an example of CLASSNAME.",
+            "a histopathological image of CLASSNAME.",
+            "a histopathological image showing CLASSNAME.",
+            "a photomicrograph showing CLASSNAME.",
+            "an image of CLASSNAME.",
+            "a histopathological photograph showing CLASSNAME.",
+            "CLASSNAME.",
+            "an image showing CLASSNAME.",
+            "a photomicrograph of CLASSNAME.",
+            "shows CLASSNAME."
+        ]
+    },
+    "13": {
+        "classnames": {
+            "CC": "clear cell carcinoma, NOS",
+            "EC": "endometrioid carcinoma",
+            "HGSC": "high-grade serous ovarian cancer",
+            "LGSC": "low-grade serous ovarian cancer",
+            "MC": "ovarian mucinous carcinoma"
+        },
+        "templates": [
+            "presence of CLASSNAME."
+        ]
+    },
+    "14": {
+        "classnames": {
+            "CC": "ovarian clear cell carcinoma",
+            "EC": "endometrioid adenocarcinoma of the ovary",
+            "HGSC": "ovarian high-grade serous carcinoma",
+            "LGSC": "ovarian low-grade serous carcinoma",
+            "MC": "mucinous carcinoma, endocervical type"
+        },
+        "templates": [
+            "a histopathological photograph of CLASSNAME.",
+            "a photomicrograph showing CLASSNAME.",
+            "an image showing CLASSNAME."
+        ]
+    },
+    "15": {
+        "classnames": {
+            "CC": "clear cell adenocarcinoma of the ovary",
+            "EC": "endometrioid carcinoma",
+            "HGSC": "serous carcinoma, high-grade",
+            "LGSC": "serous carcinoma, low-grade",
+            "MC": "mucinous carcinoma"
+        },
+        "templates": [
+            "a histopathological image showing CLASSNAME.",
+            "a photomicrograph of CLASSNAME.",
+            "a histopathological image of CLASSNAME.",
+            "CLASSNAME is shown.",
+            "a photomicrograph showing CLASSNAME.",
+            "an example of CLASSNAME."
+        ]
+    },
+    "16": {
+        "classnames": {
+            "CC": "ovarian clear cell carcinoma",
+            "EC": "endometrioid adenocarcinoma of the ovary",
+            "HGSC": "ovarian high-grade serous carcinoma",
+            "LGSC": "low-grade serous adenocarcinoma of the ovary",
+            "MC": "mucinous carcinoma, endocervical type"
+        },
+        "templates": [
+            "a histopathological photograph showing CLASSNAME.",
+            "presence of CLASSNAME.",
+            "a photomicrograph showing CLASSNAME.",
+            "a photomicrograph of CLASSNAME.",
+            "CLASSNAME.",
+            "a histopathological image of CLASSNAME.",
+            "this is CLASSNAME.",
+            "a histopathological image showing CLASSNAME.",
+            "CLASSNAME is present."
+        ]
+    },
+    "17": {
+        "classnames": {
+            "CC": "ovarian clear cell carcinoma",
+            "EC": "endometrioid carcinoma, high-grade",
+            "HGSC": "ovarian high-grade serous carcinoma",
+            "LGSC": "ovarian low-grade serous carcinoma",
+            "MC": "mucinous carcinoma, intestinal type"
+        },
+        "templates": [
+            "a photomicrograph of CLASSNAME.",
+            "CLASSNAME is shown.",
+            "shows CLASSNAME.",
+            "presence of CLASSNAME."
+        ]
+    },
+    "18": {
+        "classnames": {
+            "CC": "ovarian clear cell adenocarcinoma",
+            "EC": "endometrioid carcinoma",
+            "HGSC": "high-grade serous carcinoma",
+            "LGSC": "low-grade serous ovarian cancer",
+            "MC": "mucinous carcinoma"
+        },
+        "templates": [
+            "CLASSNAME is present.",
+            "a photomicrograph of CLASSNAME.",
+            "a histopathological photograph of CLASSNAME.",
+            "a histopathological image showing CLASSNAME.",
+            "an image showing CLASSNAME.",
+            "there is CLASSNAME.",
+            "an image of CLASSNAME.",
+            "a photomicrograph showing CLASSNAME.",
+            "a histopathological image of CLASSNAME.",
+            "presence of CLASSNAME.",
+            "CLASSNAME is shown.",
+            "an example of CLASSNAME.",
+            "CLASSNAME.",
+            "a histopathological photograph showing CLASSNAME.",
+            "shows CLASSNAME."
+        ]
+    },
+    "19": {
+        "classnames": {
+            "CC": "ovarian clear cell carcinoma",
+            "EC": "ovarian endometrioid carcinoma",
+            "HGSC": "high-grade serous ovarian cancer",
+            "LGSC": "ovarian low-grade serous carcinoma",
+            "MC": "mucinous carcinoma, intestinal type"
+        },
+        "templates": [
+            "an example of CLASSNAME.",
+            "presence of CLASSNAME.",
+            "there is CLASSNAME.",
+            "a histopathological photograph of CLASSNAME.",
+            "a photomicrograph of CLASSNAME.",
+            "this is CLASSNAME.",
+            "a histopathological image showing CLASSNAME.",
+            "CLASSNAME is present.",
+            "a histopathological photograph showing CLASSNAME.",
+            "CLASSNAME is shown."
+        ]
+    },
+    "20": {
+        "classnames": {
+            "CC": "ovarian clear cell carcinoma",
+            "EC": "endometrioid carcinoma, high-grade",
+            "HGSC": "serous carcinoma, high-grade",
+            "LGSC": "ovarian low-grade serous carcinoma",
+            "MC": "mucinous carcinoma"
+        },
+        "templates": [
+            "a histopathological image of CLASSNAME.",
+            "a histopathological photograph of CLASSNAME.",
+            "CLASSNAME is present.",
+            "a photomicrograph showing CLASSNAME.",
+            "a photomicrograph of CLASSNAME."
+        ]
+    },
+    "21": {
+        "classnames": {
+            "CC": "clear cell carcinoma, NOS",
+            "EC": "endometrioid adenocarcinoma of the ovary",
+            "HGSC": "ovarian high-grade serous carcinoma",
+            "LGSC": "low-grade serous carcinoma",
+            "MC": "ovarian mucinous carcinoma"
+        },
+        "templates": [
+            "a photomicrograph of CLASSNAME.",
+            "a histopathological photograph of CLASSNAME."
+        ]
+    },
+    "22": {
+        "classnames": {
+            "CC": "ovarian clear cell carcinoma",
+            "EC": "endometrioid carcinoma, low-grade",
+            "HGSC": "ovarian high-grade serous carcinoma",
+            "LGSC": "ovarian low-grade serous carcinoma",
+            "MC": "mucinous carcinoma, endocervical type"
+        },
+        "templates": [
+            "a histopathological image of CLASSNAME.",
+            "a photomicrograph of CLASSNAME."
+        ]
+    },
+    "23": {
+        "classnames": {
+            "CC": "clear cell adenocarcinoma of the ovary",
+            "EC": "endometrioid adenocarcinoma of the ovary",
+            "HGSC": "high-grade serous ovarian cancer",
+            "LGSC": "low-grade serous ovarian cancer",
+            "MC": "mucinous carcinoma"
+        },
+        "templates": [
+            "this is CLASSNAME.",
+            "a histopathological photograph of CLASSNAME.",
+            "there is CLASSNAME.",
+            "an image of CLASSNAME.",
+            "CLASSNAME.",
+            "an example of CLASSNAME.",
+            "a histopathological photograph showing CLASSNAME.",
+            "a histopathological image of CLASSNAME.",
+            "a photomicrograph of CLASSNAME."
+        ]
+    },
+    "24": {
+        "classnames": {
+            "CC": "clear cell adenocarcinoma of the ovary",
+            "EC": "endometrioid adenocarcinoma of the ovary",
+            "HGSC": "high-grade serous carcinoma",
+            "LGSC": "low-grade serous ovarian cancer",
+            "MC": "ovarian mucinous carcinoma"
+        },
+        "templates": [
+            "an image showing CLASSNAME.",
+            "there is CLASSNAME.",
+            "this is CLASSNAME.",
+            "CLASSNAME.",
+            "a histopathological image showing CLASSNAME.",
+            "a photomicrograph of CLASSNAME.",
+            "presence of CLASSNAME.",
+            "a histopathological photograph of CLASSNAME.",
+            "CLASSNAME is present."
+        ]
+    },
+    "25": {
+        "classnames": {
+            "CC": "clear cell carcinoma, NOS",
+            "EC": "ovarian endometrioid carcinoma",
+            "HGSC": "high-grade serous carcinoma",
+            "LGSC": "low-grade serous ovarian cancer",
+            "MC": "mucinous carcinoma"
+        },
+        "templates": [
+            "presence of CLASSNAME.",
+            "this is CLASSNAME.",
+            "a photomicrograph of CLASSNAME.",
+            "CLASSNAME.",
+            "a histopathological photograph showing CLASSNAME.",
+            "CLASSNAME is present.",
+            "an image showing CLASSNAME.",
+            "a histopathological photograph of CLASSNAME.",
+            "there is CLASSNAME.",
+            "an image of CLASSNAME.",
+            "a photomicrograph showing CLASSNAME.",
+            "shows CLASSNAME."
+        ]
+    },
+    "26": {
+        "classnames": {
+            "CC": "clear cell carcinoma",
+            "EC": "endometrioid carcinoma",
+            "HGSC": "high-grade serous ovarian cancer",
+            "LGSC": "low-grade serous ovarian cancer",
+            "MC": "mucinous carcinoma, intestinal type"
+        },
+        "templates": [
+            "CLASSNAME.",
+            "a photomicrograph showing CLASSNAME.",
+            "a histopathological image showing CLASSNAME.",
+            "an image showing CLASSNAME.",
+            "a histopathological photograph showing CLASSNAME.",
+            "there is CLASSNAME.",
+            "CLASSNAME is shown.",
+            "this is CLASSNAME.",
+            "an image of CLASSNAME.",
+            "shows CLASSNAME.",
+            "an example of CLASSNAME."
+        ]
+    },
+    "27": {
+        "classnames": {
+            "CC": "clear cell carcinoma, NOS",
+            "EC": "endometrioid carcinoma, high-grade",
+            "HGSC": "high-grade serous ovarian cancer",
+            "LGSC": "serous carcinoma, low-grade",
+            "MC": "mucinous carcinoma, intestinal type"
+        },
+        "templates": [
+            "an example of CLASSNAME.",
+            "this is CLASSNAME."
+        ]
+    },
+    "28": {
+        "classnames": {
+            "CC": "ovarian clear cell carcinoma",
+            "EC": "endometrioid carcinoma, low-grade",
+            "HGSC": "ovarian high-grade serous carcinoma",
+            "LGSC": "serous carcinoma, low-grade",
+            "MC": "mucinous carcinoma, intestinal type"
+        },
+        "templates": [
+            "a histopathological photograph of CLASSNAME.",
+            "a photomicrograph showing CLASSNAME.",
+            "a histopathological image of CLASSNAME.",
+            "CLASSNAME is shown.",
+            "an image showing CLASSNAME.",
+            "there is CLASSNAME.",
+            "a photomicrograph of CLASSNAME.",
+            "an example of CLASSNAME."
+        ]
+    },
+    "29": {
+        "classnames": {
+            "CC": "clear cell carcinoma",
+            "EC": "endometrioid adenocarcinoma of the ovary",
+            "HGSC": "high-grade serous adenocarcinoma of the ovary",
+            "LGSC": "low-grade serous adenocarcinoma of the ovary",
+            "MC": "ovarian mucinous carcinoma"
+        },
+        "templates": [
+            "CLASSNAME is present.",
+            "an image showing CLASSNAME.",
+            "presence of CLASSNAME.",
+            "a histopathological photograph of CLASSNAME.",
+            "an image of CLASSNAME.",
+            "there is CLASSNAME.",
+            "a histopathological image of CLASSNAME.",
+            "this is CLASSNAME.",
+            "shows CLASSNAME.",
+            "a photomicrograph of CLASSNAME.",
+            "CLASSNAME."
+        ]
+    },
+    "30": {
+        "classnames": {
+            "CC": "clear cell carcinoma",
+            "EC": "endometrioid carcinoma, low-grade",
+            "HGSC": "serous carcinoma, high-grade",
+            "LGSC": "low-grade serous carcinoma",
+            "MC": "mucinous carcinoma"
+        },
+        "templates": [
+            "a photomicrograph showing CLASSNAME.",
+            "shows CLASSNAME.",
+            "a histopathological image showing CLASSNAME.",
+            "this is CLASSNAME.",
+            "a histopathological image of CLASSNAME.",
+            "CLASSNAME is shown.",
+            "a photomicrograph of CLASSNAME.",
+            "CLASSNAME.",
+            "an image showing CLASSNAME.",
+            "a histopathological photograph of CLASSNAME.",
+            "presence of CLASSNAME.",
+            "an image of CLASSNAME.",
+            "a histopathological photograph showing CLASSNAME.",
+            "an example of CLASSNAME.",
+            "there is CLASSNAME.",
+            "CLASSNAME is present."
+        ]
+    },
+    "31": {
+        "classnames": {
+            "CC": "clear cell adenocarcinoma of the ovary",
+            "EC": "endometrioid carcinoma, high-grade",
+            "HGSC": "ovarian high-grade serous carcinoma",
+            "LGSC": "serous carcinoma, low-grade",
+            "MC": "mucinous adenocarcinoma of the ovary"
+        },
+        "templates": [
+            "an example of CLASSNAME.",
+            "a photomicrograph showing CLASSNAME.",
+            "CLASSNAME.",
+            "a photomicrograph of CLASSNAME.",
+            "a histopathological photograph of CLASSNAME.",
+            "CLASSNAME is shown.",
+            "a histopathological image of CLASSNAME.",
+            "a histopathological photograph showing CLASSNAME.",
+            "shows CLASSNAME.",
+            "this is CLASSNAME.",
+            "a histopathological image showing CLASSNAME.",
+            "an image showing CLASSNAME.",
+            "an image of CLASSNAME.",
+            "presence of CLASSNAME."
+        ]
+    },
+    "32": {
+        "classnames": {
+            "CC": "clear cell carcinoma, NOS",
+            "EC": "endometrioid carcinoma",
+            "HGSC": "high-grade serous ovarian cancer",
+            "LGSC": "ovarian low-grade serous carcinoma",
+            "MC": "mucinous adenocarcinoma of the ovary"
+        },
+        "templates": [
+            "a photomicrograph of CLASSNAME."
+        ]
+    },
+    "33": {
+        "classnames": {
+            "CC": "clear cell adenocarcinoma of the ovary",
+            "EC": "ovarian endometrioid carcinoma",
+            "HGSC": "high-grade serous carcinoma",
+            "LGSC": "low-grade serous adenocarcinoma of the ovary",
+            "MC": "mucinous adenocarcinoma of the ovary"
+        },
+        "templates": [
+            "shows CLASSNAME.",
+            "an example of CLASSNAME.",
+            "CLASSNAME.",
+            "a histopathological image showing CLASSNAME.",
+            "CLASSNAME is present.",
+            "CLASSNAME is shown.",
+            "there is CLASSNAME.",
+            "this is CLASSNAME.",
+            "a histopathological photograph of CLASSNAME.",
+            "an image showing CLASSNAME.",
+            "a histopathological photograph showing CLASSNAME.",
+            "presence of CLASSNAME.",
+            "a histopathological image of CLASSNAME."
+        ]
+    },
+    "34": {
+        "classnames": {
+            "CC": "clear cell carcinoma",
+            "EC": "endometrioid adenocarcinoma of the ovary",
+            "HGSC": "high-grade serous carcinoma",
+            "LGSC": "serous carcinoma, low-grade",
+            "MC": "ovarian mucinous carcinoma"
+        },
+        "templates": [
+            "CLASSNAME.",
+            "this is CLASSNAME.",
+            "CLASSNAME is shown.",
+            "a histopathological photograph of CLASSNAME.",
+            "a histopathological image showing CLASSNAME."
+        ]
+    },
+    "35": {
+        "classnames": {
+            "CC": "ovarian clear cell adenocarcinoma",
+            "EC": "endometrioid carcinoma, high-grade",
+            "HGSC": "high-grade serous adenocarcinoma of the ovary",
+            "LGSC": "serous carcinoma, low-grade",
+            "MC": "mucinous carcinoma, endocervical type"
+        },
+        "templates": [
+            "shows CLASSNAME.",
+            "a photomicrograph of CLASSNAME.",
+            "there is CLASSNAME.",
+            "CLASSNAME is shown.",
+            "an image of CLASSNAME.",
+            "CLASSNAME is present.",
+            "a histopathological image showing CLASSNAME.",
+            "an image showing CLASSNAME.",
+            "this is CLASSNAME.",
+            "an example of CLASSNAME."
+        ]
+    },
+    "36": {
+        "classnames": {
+            "CC": "clear cell carcinoma",
+            "EC": "ovarian endometrioid carcinoma",
+            "HGSC": "high-grade serous ovarian cancer",
+            "LGSC": "serous carcinoma, low-grade",
+            "MC": "mucinous carcinoma, intestinal type"
+        },
+        "templates": [
+            "a photomicrograph of CLASSNAME.",
+            "CLASSNAME."
+        ]
+    },
+    "37": {
+        "classnames": {
+            "CC": "clear cell adenocarcinoma of the ovary",
+            "EC": "endometrioid adenocarcinoma of the ovary",
+            "HGSC": "serous carcinoma, high-grade",
+            "LGSC": "low-grade serous ovarian cancer",
+            "MC": "ovarian mucinous carcinoma"
+        },
+        "templates": [
+            "a histopathological photograph showing CLASSNAME.",
+            "an image of CLASSNAME.",
+            "there is CLASSNAME.",
+            "an example of CLASSNAME.",
+            "a histopathological image of CLASSNAME.",
+            "a histopathological image showing CLASSNAME.",
+            "presence of CLASSNAME."
+        ]
+    },
+    "38": {
+        "classnames": {
+            "CC": "ovarian clear cell carcinoma",
+            "EC": "endometrioid carcinoma, high-grade",
+            "HGSC": "ovarian high-grade serous carcinoma",
+            "LGSC": "low-grade serous ovarian cancer",
+            "MC": "ovarian mucinous carcinoma"
+        },
+        "templates": [
+            "an image showing CLASSNAME.",
+            "an example of CLASSNAME.",
+            "CLASSNAME is shown.",
+            "a histopathological image showing CLASSNAME.",
+            "a photomicrograph of CLASSNAME.",
+            "an image of CLASSNAME.",
+            "presence of CLASSNAME.",
+            "there is CLASSNAME.",
+            "a histopathological photograph showing CLASSNAME.",
+            "CLASSNAME.",
+            "CLASSNAME is present."
+        ]
+    },
+    "39": {
+        "classnames": {
+            "CC": "clear cell adenocarcinoma of the ovary",
+            "EC": "endometrioid carcinoma, low-grade",
+            "HGSC": "high-grade serous adenocarcinoma of the ovary",
+            "LGSC": "low-grade serous carcinoma",
+            "MC": "ovarian mucinous carcinoma"
+        },
+        "templates": [
+            "this is CLASSNAME.",
+            "an image of CLASSNAME.",
+            "a photomicrograph of CLASSNAME."
+        ]
+    },
+    "40": {
+        "classnames": {
+            "CC": "ovarian clear cell adenocarcinoma",
+            "EC": "endometrioid adenocarcinoma of the ovary",
+            "HGSC": "high-grade serous carcinoma",
+            "LGSC": "low-grade serous carcinoma",
+            "MC": "mucinous adenocarcinoma of the ovary"
+        },
+        "templates": [
+            "a photomicrograph showing CLASSNAME.",
+            "an image showing CLASSNAME.",
+            "a photomicrograph of CLASSNAME."
+        ]
+    },
+    "41": {
+        "classnames": {
+            "CC": "clear cell carcinoma, NOS",
+            "EC": "ovarian endometrioid carcinoma",
+            "HGSC": "high-grade serous carcinoma",
+            "LGSC": "ovarian low-grade serous carcinoma",
+            "MC": "mucinous adenocarcinoma of the ovary"
+        },
+        "templates": [
+            "a histopathological photograph of CLASSNAME.",
+            "presence of CLASSNAME.",
+            "an image of CLASSNAME.",
+            "a photomicrograph of CLASSNAME.",
+            "a histopathological image of CLASSNAME.",
+            "a histopathological photograph showing CLASSNAME.",
+            "this is CLASSNAME."
+        ]
+    },
+    "42": {
+        "classnames": {
+            "CC": "clear cell carcinoma, NOS",
+            "EC": "ovarian endometrioid carcinoma",
+            "HGSC": "serous carcinoma, high-grade",
+            "LGSC": "low-grade serous adenocarcinoma of the ovary",
+            "MC": "ovarian mucinous carcinoma"
+        },
+        "templates": [
+            "presence of CLASSNAME.",
+            "an image showing CLASSNAME.",
+            "a histopathological image of CLASSNAME.",
+            "a histopathological image showing CLASSNAME.",
+            "this is CLASSNAME.",
+            "a histopathological photograph of CLASSNAME.",
+            "a histopathological photograph showing CLASSNAME.",
+            "shows CLASSNAME.",
+            "there is CLASSNAME.",
+            "an image of CLASSNAME.",
+            "an example of CLASSNAME.",
+            "a photomicrograph of CLASSNAME.",
+            "CLASSNAME is present.",
+            "a photomicrograph showing CLASSNAME."
+        ]
+    },
+    "43": {
+        "classnames": {
+            "CC": "clear cell carcinoma, NOS",
+            "EC": "endometrioid carcinoma, low-grade",
+            "HGSC": "serous carcinoma, high-grade",
+            "LGSC": "low-grade serous carcinoma",
+            "MC": "mucinous carcinoma"
+        },
+        "templates": [
+            "CLASSNAME is shown.",
+            "a photomicrograph showing CLASSNAME.",
+            "a histopathological photograph of CLASSNAME.",
+            "presence of CLASSNAME.",
+            "shows CLASSNAME.",
+            "a histopathological image of CLASSNAME.",
+            "a histopathological image showing CLASSNAME.",
+            "a photomicrograph of CLASSNAME."
+        ]
+    },
+    "44": {
+        "classnames": {
+            "CC": "clear cell adenocarcinoma of the ovary",
+            "EC": "endometrioid carcinoma, low-grade",
+            "HGSC": "high-grade serous carcinoma",
+            "LGSC": "low-grade serous ovarian cancer",
+            "MC": "ovarian mucinous carcinoma"
+        },
+        "templates": [
+            "a photomicrograph showing CLASSNAME.",
+            "an image of CLASSNAME.",
+            "a photomicrograph of CLASSNAME.",
+            "CLASSNAME is present.",
+            "a histopathological photograph showing CLASSNAME.",
+            "CLASSNAME is shown.",
+            "there is CLASSNAME.",
+            "this is CLASSNAME.",
+            "shows CLASSNAME.",
+            "a histopathological image showing CLASSNAME."
+        ]
+    },
+    "45": {
+        "classnames": {
+            "CC": "clear cell carcinoma",
+            "EC": "ovarian endometrioid carcinoma",
+            "HGSC": "high-grade serous ovarian cancer",
+            "LGSC": "low-grade serous ovarian cancer",
+            "MC": "mucinous adenocarcinoma of the ovary"
+        },
+        "templates": [
+            "shows CLASSNAME.",
+            "a histopathological image showing CLASSNAME.",
+            "there is CLASSNAME.",
+            "a histopathological photograph of CLASSNAME.",
+            "a histopathological photograph showing CLASSNAME.",
+            "this is CLASSNAME.",
+            "a photomicrograph of CLASSNAME.",
+            "CLASSNAME.",
+            "CLASSNAME is present.",
+            "an example of CLASSNAME.",
+            "a histopathological image of CLASSNAME.",
+            "an image of CLASSNAME.",
+            "an image showing CLASSNAME."
+        ]
+    },
+    "46": {
+        "classnames": {
+            "CC": "ovarian clear cell adenocarcinoma",
+            "EC": "endometrioid adenocarcinoma of the ovary",
+            "HGSC": "serous carcinoma, high-grade",
+            "LGSC": "serous carcinoma, low-grade",
+            "MC": "mucinous carcinoma"
+        },
+        "templates": [
+            "an image of CLASSNAME.",
+            "a photomicrograph showing CLASSNAME.",
+            "an image showing CLASSNAME.",
+            "shows CLASSNAME.",
+            "a histopathological photograph of CLASSNAME.",
+            "CLASSNAME.",
+            "CLASSNAME is shown.",
+            "CLASSNAME is present.",
+            "a photomicrograph of CLASSNAME.",
+            "this is CLASSNAME.",
+            "presence of CLASSNAME.",
+            "a histopathological image of CLASSNAME.",
+            "there is CLASSNAME.",
+            "an example of CLASSNAME."
+        ]
+    },
+    "47": {
+        "classnames": {
+            "CC": "ovarian clear cell carcinoma",
+            "EC": "endometrioid carcinoma, low-grade",
+            "HGSC": "high-grade serous adenocarcinoma of the ovary",
+            "LGSC": "serous carcinoma, low-grade",
+            "MC": "mucinous carcinoma, intestinal type"
+        },
+        "templates": [
+            "a histopathological image showing CLASSNAME.",
+            "CLASSNAME is present.",
+            "presence of CLASSNAME.",
+            "shows CLASSNAME.",
+            "an image showing CLASSNAME.",
+            "a histopathological photograph showing CLASSNAME."
+        ]
+    },
+    "48": {
+        "classnames": {
+            "CC": "ovarian clear cell carcinoma",
+            "EC": "endometrioid carcinoma, high-grade",
+            "HGSC": "serous carcinoma, high-grade",
+            "LGSC": "low-grade serous ovarian cancer",
+            "MC": "mucinous carcinoma, intestinal type"
+        },
+        "templates": [
+            "an example of CLASSNAME.",
+            "an image showing CLASSNAME.",
+            "a histopathological image showing CLASSNAME.",
+            "CLASSNAME is shown.",
+            "a histopathological image of CLASSNAME.",
+            "an image of CLASSNAME.",
+            "shows CLASSNAME.",
+            "a histopathological photograph of CLASSNAME.",
+            "CLASSNAME.",
+            "a photomicrograph showing CLASSNAME.",
+            "there is CLASSNAME.",
+            "presence of CLASSNAME.",
+            "CLASSNAME is present.",
+            "a photomicrograph of CLASSNAME."
+        ]
+    },
+    "49": {
+        "classnames": {
+            "CC": "clear cell adenocarcinoma of the ovary",
+            "EC": "endometrioid carcinoma, high-grade",
+            "HGSC": "ovarian high-grade serous carcinoma",
+            "LGSC": "low-grade serous carcinoma",
+            "MC": "mucinous carcinoma, endocervical type"
+        },
+        "templates": [
+            "an image of CLASSNAME.",
+            "a histopathological photograph of CLASSNAME.",
+            "a photomicrograph showing CLASSNAME.",
+            "a histopathological photograph showing CLASSNAME.",
+            "a histopathological image showing CLASSNAME.",
+            "a photomicrograph of CLASSNAME."
+        ]
+    }
+}

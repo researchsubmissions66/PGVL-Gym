@@ -1,0 +1,65 @@
+backbone: clip-rn50
+backbone_weights: /path/to/model-cache/clip/RN50.pt
+encoder:
+  name: clip-rn50
+  weights: /path/to/model-cache/clip/RN50.pt
+  feature_space_id: openai/clip-rn50@official
+  feature_dim: 1024
+  initialization: pretrained
+feature_space_id: openai/clip-rn50@official
+n_classes: 5
+classnames:
+- ovarian clear cell carcinoma
+- ovarian endometrioid carcinoma
+- ovarian high-grade serous carcinoma
+- ovarian low-grade serous carcinoma
+- ovarian mucinous carcinoma
+label_dict:
+  CC: 0
+  EC: 1
+  HGSC: 2
+  LGSC: 3
+  MC: 4
+shots: 8
+k: 5
+k_start: 0
+k_end: 5
+seed: 1
+batch_size: 1
+num_workers: 4
+feature_key: features
+feature_sources:
+  low: clip_rn50_5x
+  high: clip_rn50_20x
+feature_resolutions:
+  low: 5x
+  high: 20x
+feature_input_kinds:
+  low: patch_bag
+  high: patch_bag
+include_metadata: true
+dataset_csv: /path/to/PGVL-Gym/benchmarks/additional_tasks/data/ubc_ocean/manifest.csv
+split_dir: /path/to/PGVL-Gym/benchmarks/additional_tasks/splits/ubc_ocean/8shot
+task: ubc_ocean
+benchmark: camelyon16_ubc_ocean_resolution_registry
+feature_dim: 1024
+method: cod_mil
+experiment: cod_mil
+epochs: 200
+prompt_provenance: released_ubc_multiscale_descriptions_with_declared_aliases
+results_dir: /path/to/PGVL-Gym/results/additional_tasks_benchmark/cod_mil/ubc_ocean/8shot
+lr: 0.0001
+weight_decay: 1.0e-05
+early_stopping: true
+es_patience: 20
+es_stop_epoch: 50
+data_folder_s: /path/to/features/additional_tasks/ubc_ocean/5x_224px_0px_overlap/features_clip_rn50
+data_folder_l: /path/to/features/additional_tasks/ubc_ocean/20x_224px_0px_overlap/features_clip_rn50
+feature_path_column_s: feature__clip_rn50_5x
+feature_path_column_l: feature__clip_rn50_20x
+text_prompt_path: /path/to/PGVL-Gym/benchmarks/additional_tasks/data/ubc_ocean/prompts/cod_chain.json
+text_prompt_features: null
+prompt_encoding: runtime_cached
+text_feature_space_id: openai/clip-rn50@official
+cross_mag_map_dir: /path/to/PGVL-Gym/benchmarks/additional_tasks/maps/cod_mil/clip_rn50_5x__clip_rn50_20x
+prompt_source: cod_chain_runtime_clip_rn50

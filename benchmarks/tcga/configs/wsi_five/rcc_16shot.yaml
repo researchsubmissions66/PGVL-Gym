@@ -1,0 +1,51 @@
+backbone: wsi-five-vit
+backbone_weights: /path/to/PGVL-Gym/checkpoints/wsi_five/medclip_vit.bin
+encoder:
+  name: wsi-five-vit
+  weights: /path/to/PGVL-Gym/checkpoints/wsi_five/medclip_vit.bin
+  feature_space_id: upstream:wsi-five-medclip-vit
+  feature_dim: 512
+  initialization: pretrained
+feature_space_id: upstream:wsi-five-medclip-vit
+n_classes: 3
+classnames:
+- clear cell renal cell carcinoma
+- papillary renal cell carcinoma
+- chromophobe renal cell carcinoma
+label_dict:
+  CCRCC: 0
+  PRCC: 1
+  CHRCC: 2
+shots: 16
+k: 5
+k_start: 0
+k_end: 5
+seed: 1
+batch_size: 1
+num_workers: 4
+feature_key: features
+feature_sources:
+  bag: wsi_five_medclip_20x
+feature_resolutions:
+  bag: 20x
+feature_input_kinds:
+  bag: patch_sequence
+include_metadata: true
+dataset_csv: /path/to/PGVL-Gym/benchmarks/tcga/data/rcc/manifest.csv
+split_dir: /path/to/PGVL-Gym/benchmarks/tcga/splits/rcc/16shot
+feature_dim: 512
+method: wsi_five
+experiment: wsi_five
+epochs: 30
+results_dir: /path/to/PGVL-Gym/results/tcga_benchmark/wsi_five/rcc/16shot
+lr: 8.0e-06
+weight_decay: 0.05
+early_stopping: false
+num_frames: 2048
+T_mit: 8
+is_img_pth: true
+feature_root: /path/to/features/master_benchmark/20x_224px_0px_overlap/features_wsi_five_medclip
+feature_path_column: feature__wsi_five_medclip_20x
+report_csv: /path/to/PGVL-Gym/methods/wsi_five/gpt_preprocess/TCGA_Reports.csv
+clinicalbert_weights: /path/to/model-cache/huggingface/hub/models--emilyalsentzer--Bio_ClinicalBERT/snapshots/d5892b39a4adaed74b92212a44081509db72f87b
+prompt_source: wsi_five_clinicalbert_reports_and_classnames

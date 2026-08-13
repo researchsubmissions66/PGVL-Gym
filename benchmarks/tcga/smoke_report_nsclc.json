@@ -1,0 +1,327 @@
+{
+  "matrix": "/path/to/PGVL-Gym/benchmarks/tcga/run_matrix.csv",
+  "cohort": "nsclc",
+  "device": "cuda:0",
+  "results": [
+    {
+      "experiment": "cod_mil",
+      "method": "cod_mil",
+      "config": "/path/to/PGVL-Gym/benchmarks/tcga/configs/cod_mil/nsclc_4shot.yaml",
+      "device": "cuda:0",
+      "status": "passed",
+      "stage": "complete",
+      "trainable_parameters": 6693443,
+      "logits_shape": [
+        1,
+        2
+      ],
+      "logits_finite": true,
+      "seconds": 0.689,
+      "peak_gpu_mib": 59.8
+    },
+    {
+      "experiment": "composite",
+      "method": "composite",
+      "config": "/path/to/PGVL-Gym/benchmarks/tcga/configs/composite/nsclc_4shot.yaml",
+      "device": "cuda:0",
+      "status": "passed",
+      "stage": "complete",
+      "trainable_parameters": 404035,
+      "logits_shape": [
+        1,
+        2
+      ],
+      "logits_finite": true,
+      "seconds": 4.845,
+      "peak_gpu_mib": 281.2
+    },
+    {
+      "experiment": "convlm",
+      "method": "convlm",
+      "config": "/path/to/PGVL-Gym/benchmarks/tcga/configs/convlm/nsclc_4shot.yaml",
+      "device": "cuda:0",
+      "status": "passed",
+      "stage": "complete",
+      "trainable_parameters": 90188544,
+      "logits_shape": [
+        1,
+        2
+      ],
+      "logits_finite": true,
+      "seconds": 1.368,
+      "peak_gpu_mib": 381.0
+    },
+    {
+      "experiment": "focus",
+      "method": "focus",
+      "config": "/path/to/PGVL-Gym/benchmarks/tcga/configs/focus/nsclc_4shot.yaml",
+      "device": "cuda:0",
+      "status": "passed",
+      "stage": "complete",
+      "trainable_parameters": 86875138,
+      "logits_shape": [
+        1,
+        2
+      ],
+      "logits_finite": true,
+      "seconds": 11.009,
+      "peak_gpu_mib": 1516.8
+    },
+    {
+      "experiment": "focus_5x20x",
+      "method": "focus",
+      "config": "/path/to/PGVL-Gym/benchmarks/tcga/configs/focus_5x20x/nsclc_4shot.yaml",
+      "device": "cuda:0",
+      "status": "passed",
+      "stage": "complete",
+      "trainable_parameters": 86875138,
+      "logits_shape": [
+        1,
+        2
+      ],
+      "logits_finite": true,
+      "seconds": 8.257,
+      "peak_gpu_mib": 1516.8
+    },
+    {
+      "experiment": "maple",
+      "method": "maple",
+      "config": "/path/to/PGVL-Gym/benchmarks/tcga/configs/maple/nsclc_4shot.yaml",
+      "device": "cuda:0",
+      "status": "passed",
+      "stage": "complete",
+      "trainable_parameters": 1840641,
+      "logits_shape": [
+        1,
+        2
+      ],
+      "logits_finite": true,
+      "seconds": 6.017,
+      "peak_gpu_mib": 648.7
+    },
+    {
+      "experiment": "maple_5x20x",
+      "method": "maple",
+      "config": "/path/to/PGVL-Gym/benchmarks/tcga/configs/maple_5x20x/nsclc_4shot.yaml",
+      "device": "cuda:0",
+      "status": "passed",
+      "stage": "complete",
+      "trainable_parameters": 1840641,
+      "logits_shape": [
+        1,
+        2
+      ],
+      "logits_finite": true,
+      "seconds": 5.711,
+      "peak_gpu_mib": 648.7
+    },
+    {
+      "experiment": "mscpt",
+      "method": "mscpt",
+      "config": "/path/to/PGVL-Gym/benchmarks/tcga/configs/mscpt/nsclc_4shot.yaml",
+      "device": "cuda:0",
+      "status": "passed",
+      "stage": "complete",
+      "trainable_parameters": 1667328,
+      "logits_shape": [
+        1,
+        2
+      ],
+      "logits_finite": true,
+      "seconds": 9.02,
+      "peak_gpu_mib": 1909.5
+    },
+    {
+      "experiment": "mscpt_5x20x",
+      "method": "mscpt",
+      "config": "/path/to/PGVL-Gym/benchmarks/tcga/configs/mscpt_5x20x/nsclc_4shot.yaml",
+      "device": "cuda:0",
+      "status": "passed",
+      "stage": "complete",
+      "trainable_parameters": 1667328,
+      "logits_shape": [
+        1,
+        2
+      ],
+      "logits_finite": true,
+      "seconds": 9.368,
+      "peak_gpu_mib": 1909.5
+    },
+    {
+      "experiment": "muse",
+      "method": "muse",
+      "config": "/path/to/PGVL-Gym/benchmarks/tcga/configs/muse/nsclc_4shot.yaml",
+      "device": "cuda:0",
+      "status": "passed",
+      "stage": "complete",
+      "trainable_parameters": 9723915,
+      "logits_shape": [
+        1,
+        2
+      ],
+      "logits_finite": true,
+      "seconds": 8.816,
+      "peak_gpu_mib": 1925.8
+    },
+    {
+      "experiment": "muse_keep",
+      "method": "muse",
+      "config": "/path/to/PGVL-Gym/benchmarks/tcga/configs/muse_keep/nsclc_4shot.yaml",
+      "device": "cuda:0",
+      "status": "passed",
+      "stage": "complete",
+      "trainable_parameters": 9854987,
+      "logits_shape": [
+        1,
+        2
+      ],
+      "logits_finite": true,
+      "seconds": 9.097,
+      "peak_gpu_mib": 1925.8
+    },
+    {
+      "experiment": "muse_musk",
+      "method": "muse",
+      "config": "/path/to/PGVL-Gym/benchmarks/tcga/configs/muse_musk/nsclc_4shot.yaml",
+      "device": "cuda:0",
+      "status": "passed",
+      "stage": "complete",
+      "trainable_parameters": 9986059,
+      "logits_shape": [
+        1,
+        2
+      ],
+      "logits_finite": true,
+      "seconds": 8.557,
+      "peak_gpu_mib": 1925.8
+    },
+    {
+      "experiment": "pathpt",
+      "method": "pathpt",
+      "config": "/path/to/PGVL-Gym/benchmarks/tcga/configs/pathpt/nsclc_4shot.yaml",
+      "device": "cuda:0",
+      "status": "passed",
+      "stage": "complete",
+      "trainable_parameters": 5034760,
+      "logits_shape": [
+        1,
+        2
+      ],
+      "logits_finite": true,
+      "seconds": 8.271,
+      "peak_gpu_mib": 1592.1
+    },
+    {
+      "experiment": "pathpt_keep",
+      "method": "pathpt",
+      "config": "/path/to/PGVL-Gym/benchmarks/tcga/configs/pathpt_keep/nsclc_4shot.yaml",
+      "device": "cuda:0",
+      "status": "passed",
+      "stage": "complete",
+      "trainable_parameters": 11262984,
+      "logits_shape": [
+        1,
+        2
+      ],
+      "logits_finite": true,
+      "seconds": 7.618,
+      "peak_gpu_mib": 1731.5
+    },
+    {
+      "experiment": "pathpt_musk",
+      "method": "pathpt",
+      "config": "/path/to/PGVL-Gym/benchmarks/tcga/configs/pathpt_musk/nsclc_4shot.yaml",
+      "device": "cuda:0",
+      "status": "passed",
+      "stage": "complete",
+      "trainable_parameters": 19997960,
+      "logits_shape": [
+        1,
+        2
+      ],
+      "logits_finite": true,
+      "seconds": 12.141,
+      "peak_gpu_mib": 2800.5
+    },
+    {
+      "experiment": "sldpc",
+      "method": "sldpc",
+      "config": "/path/to/PGVL-Gym/benchmarks/tcga/configs/sldpc/nsclc_4shot.yaml",
+      "device": "cuda:0",
+      "status": "passed",
+      "stage": "complete",
+      "trainable_parameters": 6144,
+      "logits_shape": [
+        1,
+        2
+      ],
+      "logits_finite": true,
+      "seconds": 6.409,
+      "peak_gpu_mib": 640.3
+    },
+    {
+      "experiment": "slip",
+      "method": "slip",
+      "config": "/path/to/PGVL-Gym/benchmarks/tcga/configs/slip/nsclc_4shot.yaml",
+      "device": "cuda:0",
+      "status": "passed",
+      "stage": "complete",
+      "trainable_parameters": 1024,
+      "logits_shape": [
+        1,
+        2
+      ],
+      "logits_finite": true,
+      "seconds": 4.072,
+      "peak_gpu_mib": 279.8
+    },
+    {
+      "experiment": "top",
+      "method": "top",
+      "config": "/path/to/PGVL-Gym/benchmarks/tcga/configs/top/nsclc_4shot.yaml",
+      "device": "cuda:0",
+      "status": "passed",
+      "stage": "complete",
+      "trainable_parameters": 1590280,
+      "logits_shape": [
+        1,
+        2
+      ],
+      "logits_finite": true,
+      "seconds": 3.252,
+      "peak_gpu_mib": 251.1
+    },
+    {
+      "experiment": "vila_mil",
+      "method": "vila_mil",
+      "config": "/path/to/PGVL-Gym/benchmarks/tcga/configs/vila_mil/nsclc_4shot.yaml",
+      "device": "cuda:0",
+      "status": "passed",
+      "stage": "complete",
+      "trainable_parameters": 8817217,
+      "logits_shape": [
+        1,
+        2
+      ],
+      "logits_finite": true,
+      "seconds": 3.265,
+      "peak_gpu_mib": 434.4
+    },
+    {
+      "experiment": "wsi_five",
+      "method": "wsi_five",
+      "config": "/path/to/PGVL-Gym/benchmarks/tcga/configs/wsi_five/nsclc_4shot.yaml",
+      "device": "cuda:0",
+      "status": "passed",
+      "stage": "complete",
+      "trainable_parameters": 5127169,
+      "logits_shape": [
+        1,
+        2
+      ],
+      "logits_finite": true,
+      "seconds": 4.559,
+      "peak_gpu_mib": 467.6
+    }
+  ]
+}

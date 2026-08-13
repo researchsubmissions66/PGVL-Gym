@@ -1,0 +1,79 @@
+backbone: convlm-vit
+backbone_weights: null
+encoder:
+  name: convlm-vit
+  weights: null
+  feature_space_id: rgb:imagenet-normalized
+  feature_dim: null
+  initialization: scratch
+feature_space_id: rgb:imagenet-normalized
+n_classes: 5
+classnames:
+- ovarian clear cell carcinoma
+- ovarian endometrioid carcinoma
+- ovarian high-grade serous carcinoma
+- ovarian low-grade serous carcinoma
+- ovarian mucinous carcinoma
+label_dict:
+  CC: 0
+  EC: 1
+  HGSC: 2
+  LGSC: 3
+  MC: 4
+shots: 16
+k: 5
+k_start: 0
+k_end: 5
+seed: 1
+batch_size: 1
+num_workers: 4
+feature_key: null
+feature_sources:
+  tiles: convlm_raw_tiles_20x
+feature_resolutions:
+  tiles: 20x
+feature_input_kinds:
+  tiles: raw_tile_directory
+include_metadata: true
+dataset_csv: /path/to/PGVL-Gym/benchmarks/additional_tasks/data/ubc_ocean/manifest.csv
+split_dir: /path/to/PGVL-Gym/benchmarks/additional_tasks/splits/ubc_ocean/16shot
+task: ubc_ocean
+benchmark: camelyon16_ubc_ocean_resolution_registry
+method: convlm
+experiment: convlm
+epochs: 40
+prompt_provenance: released_ubc_multiscale_descriptions_with_declared_aliases
+results_dir: /path/to/PGVL-Gym/results/additional_tasks_benchmark/convlm/ubc_ocean/16shot
+seen_class_indices:
+- 0
+- 1
+- 2
+- 3
+- 4
+image_root: /path/to/features/additional_tasks/ubc_ocean/20x_448px_0px_overlap/raw_tiles_convlm
+slide_tile_path_column: feature__convlm_raw_tiles_20x
+image_layout: per_slide_directory
+attribute_embeddings: null
+attribute_prompt_path: /path/to/PGVL-Gym/benchmarks/additional_tasks/data/ubc_ocean/prompts/convlm_attributes.json
+attribute_encoder:
+  model_name: ViT-B-32
+  weights: /path/to/model-cache/huggingface/hub/models--wisdomik--QuiltNet-B-32/snapshots/8ce77289ce35a90b2f1db1137dfa4bc2df175e33/open_clip_pytorch_model.bin
+  feature_space_id: hf:wisdomik/QuiltNet-B-32
+attribute_feature_space_id: hf:wisdomik/QuiltNet-B-32
+image_size: 448
+patch_size: 16
+embed_dim: 768
+depth: 12
+num_heads: 12
+keep_rate: 0.7
+max_tiles_per_slide: 64
+lr: 0.0001
+weight_decay: 1.0e-05
+lr_milestones:
+- 10
+- 20
+- 30
+loss_global_alignment: 1.0
+loss_sr: 1.0
+early_stopping: false
+prompt_source: convlm_runtime_quiltnet_attribute_prompts
