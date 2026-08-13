@@ -9,6 +9,7 @@
 </p>
 
 <p align="center">
+  <a href="https://researchsubmissions66.github.io/PGVL-Gym/project/"><img src="https://img.shields.io/badge/Project-Website-6b21a8?style=for-the-badge" alt="Project website"></a>
   <a href="https://researchsubmissions66.github.io/PGVL-Gym/"><img src="https://img.shields.io/badge/Documentation-6b21a8?style=for-the-badge" alt="Documentation"></a>
   <a href="https://github.com/researchsubmissions66/PGVL-Gym"><img src="https://img.shields.io/badge/Source-1e1b4b?style=for-the-badge&logo=github" alt="Source"></a>
 </p>

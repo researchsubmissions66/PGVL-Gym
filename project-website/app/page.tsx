@@ -50,7 +50,7 @@ export default function Home() {
         </div>
         <img
           className="hero-logo"
-          src="/logo-gym.png"
+          src="logo-gym.png"
           alt="PGVL-Gym: prompt-guided vision-language model benchmarking in computational pathology"
           width="1536"
           height="1024"

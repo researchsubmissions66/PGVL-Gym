@@ -108,4 +108,5 @@ nav:
       - Composite framework: api/composite.md
   - Contributing:
       - Writing documentation: contributing-docs.md
+      - Deploying the project website: project-website.md
       - Project use and citation: project.md
