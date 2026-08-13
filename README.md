@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/assets/logo_gym.png" alt="PGVL-Gym Logo" width="560">
+  <img src="docs/assets/logo_gym_no_text.png" alt="PGVL-Gym Logo" width="560">
 </p>
 
 <h1 align="center">PGVL-Gym</h1>
