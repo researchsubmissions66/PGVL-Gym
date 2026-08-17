@@ -3,7 +3,16 @@ import os
 import urllib
 import warnings
 from typing import Union, List
-from pkg_resources import packaging
+try:
+    # setuptools 81 removed pkg_resources, which the original OpenAI CLIP
+    # source imported for its torch version check. `packaging` provides the
+    # same parser and is a direct dependency of the benchmark stack.
+    import packaging.version as _packaging_version
+
+    class packaging:            # noqa: N801 - preserves the upstream call site
+        version = _packaging_version
+except ImportError:             # pragma: no cover - very old environments
+    from pkg_resources import packaging
 import torch
 from PIL import Image
 from torchvision.transforms import Compose, Resize, CenterCrop, ToTensor, Normalize
