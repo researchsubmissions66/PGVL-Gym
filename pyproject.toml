@@ -45,13 +45,13 @@ cod-mil = ["ml-collections", "yacs", "torch-geometric>=2.4,<3"]
 maple = ["einops>=0.7", "nmslib", "torch-geometric>=2.4,<3"]
 mscpt = ["torch-geometric>=2.4,<3", "pytorch-lightning>=2,<3"]
 pathpt = ["nystrom-attention"]
-pathpt-musk = ["nystrom-attention", "timm>=0.9,<1.1", "fairscale>=0.4.13"]
-slip = ["nystrom-attention", "open-clip-torch>=2.24", "timm>=0.9,<1.1"]
+pathpt-musk = ["nystrom-attention", "timm>=0.9,<1.0.16", "fairscale>=0.4.13"]
+slip = ["nystrom-attention", "open-clip-torch>=2.24", "timm>=0.9,<1.0.16"]
 wsi-five = [
     "diffdist",
     "imgaug",
     "peft>=0.10,<1",
-    "timm>=0.9,<1.1",
+    "timm>=0.9,<1.0.16",
     "yacs",
 ]
 convlm = ["open-clip-torch>=2.24"]
@@ -60,7 +60,7 @@ all = [
     "nystrom-attention",
     "open-clip-torch>=2.24",
     "einops>=0.7",
-    "timm>=0.9,<1.1",
+    "timm>=0.9,<1.0.16",
     "torch-geometric>=2.4,<3",
     "pytorch-lightning>=2,<3",
     "einops-exts",

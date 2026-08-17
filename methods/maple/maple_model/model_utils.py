@@ -534,7 +534,6 @@ class MultiheadAttention(Module):
 
 
 # for graph construction
-import nmslib
 import math
 class Hnsw:
     def __init__(self, space='cosinesimil', index_params=None,
@@ -545,6 +544,15 @@ class Hnsw:
         self.print_progress = print_progress
 
     def fit(self, X):
+        # nmslib is an optional extra used only by this graph-building method.
+        # Importing it at use keeps it from becoming a hard import dependency.
+        try:
+            import nmslib
+        except ImportError as error:                             # pragma: no cover
+            raise ImportError(
+                "Hnsw graph construction requires nmslib; install it with "
+                "`python -m pip install -e '.[maple]'`") from error
+
         index_params = self.index_params
         if index_params is None:
             index_params = {'M': 16, 'post': 0, 'efConstruction': 400}
