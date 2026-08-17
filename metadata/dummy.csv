@@ -1,0 +1,11 @@
+slide_id,label,case_id,source_filename
+dummy_0,KIRC,case_0,dummy.csv
+dummy_1,KIRP,case_1,dummy.csv
+dummy_2,KICH,case_2,dummy.csv
+dummy_3,Normal,case_3,dummy.csv
+dummy_4,Tumor,case_4,dummy.csv
+dummy_5,CC,case_5,dummy.csv
+dummy_6,EC,case_6,dummy.csv
+dummy_7,HGSC,case_7,dummy.csv
+dummy_8,LGSC,case_8,dummy.csv
+dummy_9,MC,case_9,dummy.csv
