@@ -10,6 +10,8 @@ site/
 # Outputs
 results/
 logs/
+slurm-*.out
+benchmarks/launch_report.csv
 checkpoints/
 ckpts/
 *.pt
