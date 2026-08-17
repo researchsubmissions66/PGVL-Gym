@@ -1,0 +1,20 @@
+{
+  "clear cell renal cell carcinoma": [
+    "A high-resolution renal tumor slide showing clear cell renal cell carcinoma with polygonal cells containing abundant optically clear glycogen- and lipid-rich cytoplasm, distinct borders, round nuclei with variable nucleoli, and a fine sinusoidal capillary network around tumor nests.",
+    "A low-resolution renal tumor slide showing clear cell renal cell carcinoma with expansile nests and alveolar or acinar architecture, a delicate branching capillary network, sharply demarcated tumor nodules, hemorrhage, necrosis, and cystic change.",
+    "cells with optically clear cytoplasm and round nuclei",
+    "nested or alveolar clear-cell tumor traversed by a delicate branching vascular network"
+  ],
+  "papillary renal cell carcinoma": [
+    "A high-resolution renal tumor slide showing papillary renal cell carcinoma with cuboidal or columnar tumor cells lining true fibrovascular cores, type 1 or type 2 cytology, foamy macrophages in papillary stalks, hemosiderin, and psammoma bodies.",
+    "A low-resolution renal tumor slide showing papillary renal cell carcinoma with papillary and tubulopapillary architecture, fibrovascular cores, a fibrous pseudocapsule, foamy macrophages, psammomatous calcification, hemorrhage, and cystic change.",
+    "cuboidal cells lining papillae with foamy macrophages or psammoma bodies",
+    "papillary renal tumor with fibrovascular cores and variable tubular architecture"
+  ],
+  "chromophobe renal cell carcinoma": [
+    "A high-resolution renal tumor slide showing chromophobe renal cell carcinoma with large polygonal cells, sharply defined plant-cell-like membranes, pale reticulated or eosinophilic cytoplasm, prominent perinuclear halos, wrinkled raisinoid nuclei, and frequent binucleation.",
+    "A low-resolution renal tumor slide showing chromophobe renal cell carcinoma with solid sheets, nests, and trabeculae, broad fibrous septa, sharply circumscribed lobules, and a pale tan or eosinophilic appearance with relatively uniform architecture.",
+    "chromophobe cells with perinuclear halos, wrinkled nuclei, and binucleation",
+    "solid nested renal tumor with pale eosinophilic cells and distinct borders"
+  ]
+}

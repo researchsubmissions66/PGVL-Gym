@@ -1,0 +1,32 @@
+{
+  "ovarian clear cell carcinoma": [
+    "Clear or eosinophilic hobnail cells with distinct borders and atypical nuclei.",
+    "Ovarian clear cell carcinoma with tubulocystic, papillary, or solid architecture and hyalinized stromal cores.",
+    "clear cell carcinoma of the ovary",
+    "ovarian clear cell carcinoma"
+  ],
+  "ovarian endometrioid carcinoma": [
+    "Columnar epithelial cells forming glands with variable squamous differentiation and nuclear atypia.",
+    "Ovarian endometrioid carcinoma with confluent glandular or cribriform architecture resembling endometrial glands.",
+    "endometrioid carcinoma of the ovary",
+    "ovarian endometrioid carcinoma"
+  ],
+  "ovarian high-grade serous carcinoma": [
+    "High-grade serous carcinoma with complex papillary, solid, or slit-like architecture and destructive invasion.",
+    "Marked nuclear pleomorphism, prominent nucleoli, brisk mitotic activity, and frequent apoptotic bodies.",
+    "high-grade serous ovarian cancer",
+    "ovarian high-grade serous carcinoma"
+  ],
+  "ovarian low-grade serous carcinoma": [
+    "Low-grade serous carcinoma with orderly micropapillary architecture, delicate papillae, and relatively uniform growth.",
+    "Monomorphic nuclei with mild atypia, low mitotic activity, and possible psammoma bodies.",
+    "low-grade serous ovarian cancer",
+    "ovarian low-grade serous carcinoma"
+  ],
+  "ovarian mucinous carcinoma": [
+    "Ovarian mucinous carcinoma with expansile or infiltrative mucinous glands and complex intestinal-type architecture.",
+    "Tall mucin-rich columnar cells with stratification, atypia, and intracytoplasmic mucin.",
+    "mucinous carcinoma of the ovary",
+    "ovarian mucinous carcinoma"
+  ]
+}

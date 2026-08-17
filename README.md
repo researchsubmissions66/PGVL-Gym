@@ -182,8 +182,8 @@ python scripts/list_backbone_compatibility.py --method sldpc --json
 ### How far the matrix reaches
 
 Across 13 methods and 9 registered encoders there are 117 combinations:
-**37 native**, **27 adaptable** (capabilities met, only the feature width
-differs), and **53 blocked**. Every registered encoder is a dual-tower
+**43 native**, **29 adaptable** (capabilities met, only the feature width
+differs), and **45 blocked**. Every registered encoder is a dual-tower
 vision-language model; vision-only pathology foundation models are deliberately
 absent, because a method that injects or learns text prompts has no text tower
 to attach to.
@@ -197,7 +197,7 @@ limitation of this benchmark rather than of the methods or encoders:
 | Method hardcodes one encoder's geometry (`top`, `cod_mil`) | 16 | Only by rewriting the method |
 | Encoder exposes no deep-prompt hooks (`mscpt`) | 6 | Per-encoder implementation, not adaptation |
 | TITAN is a slide encoder, not a tile encoder | 5 | No, and none is wanted — a feature-level mismatch |
-| KEEP and MUSK declare no text tower | 8 | Possibly — see the analysis |
+| ~~KEEP and MUSK declare no text tower~~ | ~~8~~ | **Resolved** — both verified and now declare `TEXT_ENCODE` |
 
 A `native` result and an `adapted` result are different claims and must not
 share a results table: an adapted run measures the method *and* its projection,

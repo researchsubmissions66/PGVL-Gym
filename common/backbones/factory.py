@@ -47,6 +47,11 @@ _TEXT_TILE = frozenset({Cap.TEXT_ENCODE, Cap.SOFT_PROMPT, Cap.TILE_ENCODE,
 _DEEP_PROMPT_TILE = frozenset(set(_TEXT_TILE) |
                               {Cap.DEEP_TEXT_PROMPT, Cap.DEEP_VISION_PROMPT})
 _NATIVE_PATHPT_TILE = frozenset({Cap.SOFT_PROMPT, Cap.PAIRED_TILE_TEXT})
+# KEEP and MUSK are dual-tower models whose text side is reachable through a
+# wrapper (_NativeText and _MuskText respectively), so they additionally
+# provide black-box text encoding. The bundle above is named for what PathPT
+# requires of them, not for the limit of what they can do.
+_NATIVE_TILE_WITH_TEXT = frozenset(set(_NATIVE_PATHPT_TILE) | {Cap.TEXT_ENCODE})
 
 _SPECS: Dict[str, BackboneSpec] = {
     "clip-rn50": BackboneSpec(
@@ -77,12 +82,12 @@ _SPECS: Dict[str, BackboneSpec] = {
         context_length=128, image_size=448, aliases=("CONCH",)),
     "musk": BackboneSpec(
         name="musk", family="musk", revision=None,
-        feature_space_id="hf:xiangjx/musk", capabilities=_NATIVE_PATHPT_TILE,
+        feature_space_id="hf:xiangjx/musk", capabilities=_NATIVE_TILE_WITH_TEXT,
         tile_dim=1024, vision_token_dim=1024, text_token_dim=768, shared_dim=1024,
         context_length=100, image_size=384, aliases=("MUSK",)),
     "keep": BackboneSpec(
         name="keep", family="keep", revision=None,
-        feature_space_id="hf:Astaxanthin/KEEP", capabilities=_NATIVE_PATHPT_TILE,
+        feature_space_id="hf:Astaxanthin/KEEP", capabilities=_NATIVE_TILE_WITH_TEXT,
         tile_dim=768, vision_token_dim=768, text_token_dim=768, shared_dim=768,
         context_length=77, image_size=224, aliases=("KEEP",)),
     "biomedclip": BackboneSpec(
@@ -282,10 +287,16 @@ class _NativeText:
                   else _token_batch(texts_or_tokens))
         device_tokens = tokens.to(_module_device(self.model))
         if hasattr(self.model, "encode_text"):
+            # Native APIs differ in how they take tokens: CLIP-style models want a
+            # bare id tensor, some accept the token fields as keywords, and KEEP
+            # takes the whole tokenizer mapping as one positional argument.
             try:
                 result = self.model.encode_text(device_tokens.input_ids)
             except TypeError:
-                result = self.model.encode_text(**device_tokens.as_kwargs())
+                try:
+                    result = self.model.encode_text(**device_tokens.as_kwargs())
+                except TypeError:
+                    result = self.model.encode_text(device_tokens.as_kwargs())
         elif hasattr(self.model, "get_text_features"):
             result = self.model.get_text_features(**device_tokens.as_kwargs())
         else:
@@ -293,6 +304,58 @@ class _NativeText:
                 f"{type(self.model).__name__} has no black-box text encoding API; "
                 "use its method-specific soft-prompt adapter.")
         return F.normalize(result.float(), dim=-1) if normalize else result
+
+
+class _MuskText:
+    """Text wrapper for MUSK's unified vision-language forward.
+
+    MUSK exposes neither ``encode_text`` nor ``get_text_features``. Its
+    ``ModelWrapper.forward`` takes both modalities and returns
+    ``(vision_cls, language_cls)``, so the text tower is reached by passing
+    ``text_description`` alone. ``with_head=True`` applies ``language_head``,
+    which is what projects the 768-wide text tokens into the 1024-d space the
+    vision tower shares; without it the two towers would not be comparable.
+
+    Tokenisation follows the released ``musk.utils.xlm_tokenizer``: strip the
+    tokenizer's own BOS/EOS, re-add MUSK's, pad to ``context_length``, and carry
+    a padding mask where 1 marks padding.
+    """
+
+    def __init__(self, model: nn.Module, tokenizer: Any, max_len: int = 100):
+        self.model, self.tokenizer, self.max_len = model, tokenizer, max_len
+
+    def _tokenize_one(self, text: str) -> tuple[list[int], list[int]]:
+        from musk import utils as musk_utils
+        return musk_utils.xlm_tokenizer(text, self.tokenizer, max_len=self.max_len)
+
+    def tokenize(self, texts: Sequence[str]) -> TokenBatch:
+        pairs = [self._tokenize_one(str(text)) for text in texts]
+        ids = torch.tensor([p[0] for p in pairs], dtype=torch.long)
+        padding = torch.tensor([p[1] for p in pairs], dtype=torch.long)
+        # TokenBatch.attention_mask marks real tokens; MUSK's padding_mask is
+        # the complement, so keep both and convert at the call site.
+        return TokenBatch(ids, (1 - padding), ids.ne(0).long().sum(-1).sub(1).clamp_min(0),
+                          {"padding_mask": padding})
+
+    def encode_text(self, texts_or_tokens: Any,
+                    normalize: bool = True) -> torch.Tensor:
+        if isinstance(texts_or_tokens, (list, tuple)):
+            tokens = self.tokenize(texts_or_tokens)
+        else:
+            tokens = _token_batch(texts_or_tokens)
+        device = _module_device(self.model)
+        ids = tokens.input_ids.to(device)
+        padding_mask = tokens.extras.get("padding_mask")
+        if padding_mask is None:
+            padding_mask = (1 - tokens.attention_mask)
+        _, language_cls = self.model(
+            image=None, text_description=ids,
+            padding_mask=padding_mask.to(device),
+            return_global=True, with_head=True, out_norm=bool(normalize))
+        if language_cls is None:
+            raise BackboneCompatibilityError(
+                "MUSK returned no language embedding for the given text.")
+        return language_cls.float()
 
 
 class _NativeTile:
@@ -556,8 +619,16 @@ def _load_builtin(name: str, weights_path: Optional[str], device: str
         model = create_model("musk_large_patch16_384")
         musk_utils.load_model_and_may_interpolate(
             checkpoint, model, "model|module", "")
-        tokenizer_path = os.path.join(
-            os.path.dirname(musk_modeling.__file__), "models", "tokenizer.spm")
+        # The released pip package does not always ship tokenizer.spm, but the
+        # published Hugging Face snapshot does, so look beside the checkpoint
+        # before giving up.
+        candidates = [
+            os.path.join(os.path.dirname(musk_modeling.__file__), "models", "tokenizer.spm"),
+            os.path.join(os.path.dirname(checkpoint), "tokenizer.spm"),
+            os.environ.get("MUSK_TOKENIZER", ""),
+        ]
+        tokenizer_path = next(
+            (c for c in candidates if c and os.path.isfile(c)), candidates[0])
         if not os.path.isfile(tokenizer_path):
             raise FileNotFoundError(
                 f"MUSK tokenizer model is missing: {tokenizer_path}")
@@ -626,6 +697,8 @@ def build_encoder(name: str, weights_path: Optional[str] = None,
         text = _HFClipText(model, tokenizer)
     elif spec.family == "conch":
         text = _ConchText(model, tokenizer)
+    elif spec.family == "musk":
+        text = _MuskText(model, tokenizer, max_len=spec.context_length or 100)
     else:
         text = _NativeText(model, tokenizer)
     return EncoderBundle(model, spec, raw_tokenizer=tokenizer,

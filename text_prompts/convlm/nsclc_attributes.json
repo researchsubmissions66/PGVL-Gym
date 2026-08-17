@@ -1,0 +1,14 @@
+{
+  "lung adenocarcinoma": [
+    "A high-resolution lung tumor slide showing adenocarcinoma with cohesive cuboidal or columnar malignant epithelial cells forming glands or acini, intracellular or extracellular mucin, enlarged pleomorphic nuclei, and prominent nucleoli.",
+    "A low-resolution lung tumor slide showing adenocarcinoma with peripheral gland-forming tumor, acinar, papillary, lepidic, micropapillary, or solid architecture, mucin production, and heterogeneous desmoplastic stroma.",
+    "malignant epithelial cells with glandular differentiation or mucin production",
+    "peripheral gland-forming, acinar, papillary, micropapillary, solid, or lepidic tumor architecture"
+  ],
+  "lung squamous cell carcinoma": [
+    "A high-resolution lung tumor slide showing squamous cell carcinoma with polygonal malignant cells, dense eosinophilic cytoplasm, intercellular bridges, dyskeratosis, keratin pearls, nuclear pleomorphism, and frequent mitoses.",
+    "A low-resolution lung tumor slide showing squamous cell carcinoma with central or proximal solid tumor nests, sheets and lobules, pushing or infiltrative borders, stromal desmoplasia, and geographic keratinization or necrosis.",
+    "polygonal malignant cells with intercellular bridges, dyskeratosis, or keratin pearls",
+    "solid squamous nests and sheets with necrosis or keratinization"
+  ]
+}

@@ -45,7 +45,8 @@ cod-mil = ["ml-collections", "yacs", "torch-geometric>=2.4,<3"]
 maple = ["einops>=0.7", "nmslib", "torch-geometric>=2.4,<3"]
 mscpt = ["torch-geometric>=2.4,<3", "pytorch-lightning>=2,<3"]
 pathpt = ["nystrom-attention"]
-pathpt-musk = ["nystrom-attention", "timm>=0.9,<1.0.16", "fairscale>=0.4.13"]
+pathpt-musk = ["nystrom-attention", "timm>=0.9,<1.0.16", "fairscale>=0.4.13",
+               "sentencepiece"]
 slip = ["nystrom-attention", "open-clip-torch>=2.24", "timm>=0.9,<1.0.16"]
 wsi-five = [
     "diffdist",
@@ -75,6 +76,7 @@ all = [
     "imgaug",
     "peft>=0.10,<1",
     "fairscale>=0.4.13",
+    "sentencepiece",
 ]
 
 [tool.setuptools.packages.find]
