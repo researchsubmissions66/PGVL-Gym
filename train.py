@@ -42,7 +42,13 @@ except ImportError:
         def add_scalar(self, *a, **k): pass
 
 from methods import get_method
+from common.preflight import preflight
 from common.utils.core_utils import EarlyStopping, Accuracy_Logger
+
+# Exit code meaning "this configuration cannot produce a result and was skipped".
+# Distinct from 0 (completed) and from any real failure, so a campaign launcher
+# can tell a skipped configuration apart from a broken one.
+EXIT_SKIPPED = 3
 
 
 # -----------------------------------------------------------------------------
@@ -347,6 +353,11 @@ def train_one_fold(fold: int, cfg, method, writer):
                 print(f"  >>> early stopping at epoch {epoch}")
                 break
 
+    # Unconditionally save the final epoch model
+    final_ckpt = Path(cfg["results_dir"]) / f"fold{fold}_final.pt"
+    final_ckpt.parent.mkdir(parents=True, exist_ok=True)
+    torch.save(model.state_dict(), str(final_ckpt))
+
     # ---- test ------------------------------------------------------
     if not cfg.get("evaluate_test", True):
         print(
@@ -442,23 +453,69 @@ def main():
     if args.seed is not None:
         cfg["seed"] = args.seed
     cfg.setdefault("results_dir", f"./results/{args.method}")
-    Path(cfg["results_dir"]).mkdir(parents=True, exist_ok=True)
+    results_dir = Path(cfg["results_dir"])
+    results_dir.mkdir(parents=True, exist_ok=True)
     Path("logs").mkdir(exist_ok=True)
-    with open(Path(cfg["results_dir"]) / "config.json", "w") as f:
+    with open(results_dir / "config.json", "w") as f:
         json.dump(cfg, f, indent=2)
+
+    # A benchmark matrix always contains configurations whose assets have not
+    # been produced yet. Those must skip visibly rather than fail on a GPU or
+    # train on an empty set, so the campaign as a whole keeps moving.
+    skip_marker = results_dir / "skipped.json"
+    report = preflight(cfg)
+    for warning in report.warnings:
+        print(f"  ! {warning}")
+    if not report.ok:
+        print(f"\nSKIPPED {args.method} / {args.config}")
+        for problem in report.problems:
+            print(f"  - {problem}")
+        payload = {"method": args.method, "config": args.config,
+                   **report.as_dict()}
+        with open(skip_marker, "w") as handle:
+            json.dump(payload, handle, indent=2)
+        print(f"\n  reason recorded in {skip_marker}")
+        return EXIT_SKIPPED
+
+    # Preconditions are met now, so clear any marker from an earlier attempt.
+    skip_marker.unlink(missing_ok=True)
 
     method = get_method(args.method)(cfg, device=args.device)
     writer = SummaryWriter(log_dir=f"logs/{args.method}")
 
+    metrics_path = Path(cfg["results_dir"]) / "metrics.json"
     fold_metrics = []
-    for fold in range(cfg.get("k_start", 0), cfg.get("k_end", cfg.get("k", 5))):
-        m = train_one_fold(fold, cfg, method, writer)
+
+    # Load existing metrics to resume
+    if metrics_path.exists():
+        try:
+            with open(metrics_path, "r") as handle:
+                old_metrics = json.load(handle)
+                if "folds" in old_metrics:
+                    fold_metrics = old_metrics["folds"]
+                    print(f"Resuming from {len(fold_metrics)} completed folds...")
+        except Exception as e:
+            print(f"Failed to load existing metrics for resume: {e}")
+
+    k_start = cfg.get("k_start", 0)
+    k_end = cfg.get("k_end", cfg.get("k", 5))
+
+    # Resume from the highest recorded fold index rather than from the number of
+    # entries, so a partially written or out-of-order metrics.json cannot cause a
+    # fold to be silently skipped or repeated. Files written before the fold
+    # index was recorded fall back to the old length-based behaviour.
+    completed = [entry["fold"] for entry in fold_metrics
+                 if isinstance(entry, dict) and isinstance(entry.get("fold"), int)]
+    start_fold = max(completed) + 1 if completed else k_start + len(fold_metrics)
+
+    for fold in range(start_fold, k_end):
+        m = {"fold": fold, **train_one_fold(fold, cfg, method, writer)}
         fold_metrics.append(m)
         method.on_fold_end(fold, m)
 
-    metrics_path = Path(cfg["results_dir"]) / "metrics.json"
-    with open(metrics_path, "w") as handle:
-        json.dump({"method": args.method, "folds": fold_metrics}, handle, indent=2)
+        # Incrementally save metrics so we don't lose them if the job is preempted
+        with open(metrics_path, "w") as handle:
+            json.dump({"method": args.method, "folds": fold_metrics}, handle, indent=2)
 
     test_accs = [m["test_acc"] for m in fold_metrics
                  if m["test_acc"] is not None]
@@ -470,7 +527,8 @@ def main():
     else:
         print("  Holdout test evaluation: skipped")
     print("=" * 60)
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())
