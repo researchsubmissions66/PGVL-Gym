@@ -1,0 +1,141 @@
+{
+  "_metadata": {
+    "source": "miccaiif/TOP train_TCGAFeat_MIL_CLIP.py get_pathological_tissue_level_prompts(), knowledge_from_chatGPT",
+    "paper": "TOP, NeurIPS 2023; supplementary Figure 1 shows 6 of these 26",
+    "template": "an H&E stained image of {tissue}, which is {description}",
+    "role": "instance-level prompt prototypes; task-agnostic tissue phenotypes, not the bag-level class names",
+    "count": 26
+  },
+  "prototypes": [
+    {
+      "tissue": "Squamous epithelium",
+      "description": "Flat, plate-like cells with a centrally located nucleus.",
+      "prompt": "an H&E stained image of Squamous epithelium, which is Flat, plate-like cells with a centrally located nucleus."
+    },
+    {
+      "tissue": "Columnar epithelium",
+      "description": "Elongated cells with a basally located, oval-shaped nucleus.",
+      "prompt": "an H&E stained image of Columnar epithelium, which is Elongated cells with a basally located, oval-shaped nucleus."
+    },
+    {
+      "tissue": "Glandular epithelium",
+      "description": "Cells organized in gland-like structures, secreting various substances.",
+      "prompt": "an H&E stained image of Glandular epithelium, which is Cells organized in gland-like structures, secreting various substances."
+    },
+    {
+      "tissue": "Adipose tissue",
+      "description": "Large, round cells with a thin rim of cytoplasm and a peripheral nucleus, filled with a lipid droplet.",
+      "prompt": "an H&E stained image of Adipose tissue, which is Large, round cells with a thin rim of cytoplasm and a peripheral nucleus, filled with a lipid droplet."
+    },
+    {
+      "tissue": "Fibrous connective tissue",
+      "description": "Dense arrangement of collagen fibers and fibroblast cells with elongated nuclei.",
+      "prompt": "an H&E stained image of Fibrous connective tissue, which is Dense arrangement of collagen fibers and fibroblast cells with elongated nuclei."
+    },
+    {
+      "tissue": "Cartilage",
+      "description": "Chondrocytes embedded in a matrix with a basophilic appearance, arranged in lacunae.",
+      "prompt": "an H&E stained image of Cartilage, which is Chondrocytes embedded in a matrix with a basophilic appearance, arranged in lacunae."
+    },
+    {
+      "tissue": "Bone tissue",
+      "description": "Calcified matrix with embedded osteocytes in lacunae, connected by canaliculi.",
+      "prompt": "an H&E stained image of Bone tissue, which is Calcified matrix with embedded osteocytes in lacunae, connected by canaliculi."
+    },
+    {
+      "tissue": "Skeletal muscle",
+      "description": "Long, cylindrical, multinucleated cells with visible striations.",
+      "prompt": "an H&E stained image of Skeletal muscle, which is Long, cylindrical, multinucleated cells with visible striations."
+    },
+    {
+      "tissue": "Smooth muscle",
+      "description": "Spindle-shaped cells with a single, centrally located nucleus and no visible striations.",
+      "prompt": "an H&E stained image of Smooth muscle, which is Spindle-shaped cells with a single, centrally located nucleus and no visible striations."
+    },
+    {
+      "tissue": "Cardiac muscle",
+      "description": "Branching, striated cells with a single, centrally located nucleus and intercalated discs between cells.",
+      "prompt": "an H&E stained image of Cardiac muscle, which is Branching, striated cells with a single, centrally located nucleus and intercalated discs between cells."
+    },
+    {
+      "tissue": "Neurons",
+      "description": "Large, star-shaped cells with a prominent, round nucleus and several processes extending from the cell body.",
+      "prompt": "an H&E stained image of Neurons, which is Large, star-shaped cells with a prominent, round nucleus and several processes extending from the cell body."
+    },
+    {
+      "tissue": "Glial cells",
+      "description": "Smaller, supportive cells with a less-defined shape and a small, dark nucleus.",
+      "prompt": "an H&E stained image of Glial cells, which is Smaller, supportive cells with a less-defined shape and a small, dark nucleus."
+    },
+    {
+      "tissue": "Lymphocytes",
+      "description": "Small, round cells with a large, dark nucleus and a thin rim of cytoplasm.",
+      "prompt": "an H&E stained image of Lymphocytes, which is Small, round cells with a large, dark nucleus and a thin rim of cytoplasm."
+    },
+    {
+      "tissue": "Germinal centers",
+      "description": "Areas of active lymphocyte proliferation and differentiation, appearing as lighter-stained regions in lymphoid tissue.",
+      "prompt": "an H&E stained image of Germinal centers, which is Areas of active lymphocyte proliferation and differentiation, appearing as lighter-stained regions in lymphoid tissue."
+    },
+    {
+      "tissue": "Erythrocytes",
+      "description": "Anucleate, biconcave, disc-shaped cells.",
+      "prompt": "an H&E stained image of Erythrocytes, which is Anucleate, biconcave, disc-shaped cells."
+    },
+    {
+      "tissue": "Leukocytes",
+      "description": "Nucleated white blood cells with various morphologies, including neutrophils, lymphocytes, and monocytes.",
+      "prompt": "an H&E stained image of Leukocytes, which is Nucleated white blood cells with various morphologies, including neutrophils, lymphocytes, and monocytes."
+    },
+    {
+      "tissue": "Hepatocytes",
+      "description": "Large, polygonal cells with a round, centrally located nucleus and abundant cytoplasm.",
+      "prompt": "an H&E stained image of Hepatocytes, which is Large, polygonal cells with a round, centrally located nucleus and abundant cytoplasm."
+    },
+    {
+      "tissue": "Sinusoids",
+      "description": "Vascular channels between hepatocytes, lined by endothelial cells and Kupffer cells in liver tissue.",
+      "prompt": "an H&E stained image of Sinusoids, which is Vascular channels between hepatocytes, lined by endothelial cells and Kupffer cells in liver tissue."
+    },
+    {
+      "tissue": "Glomeruli",
+      "description": "Compact, round structures composed of capillaries and specialized cells with a visible Bowman's space in kidney tissue.",
+      "prompt": "an H&E stained image of Glomeruli, which is Compact, round structures composed of capillaries and specialized cells with a visible Bowman's space in kidney tissue."
+    },
+    {
+      "tissue": "Tubules",
+      "description": "Epithelial-lined structures with various cell types, including proximal and distal tubule cells in kidney tissue.",
+      "prompt": "an H&E stained image of Tubules, which is Epithelial-lined structures with various cell types, including proximal and distal tubule cells in kidney tissue."
+    },
+    {
+      "tissue": "Carcinoma",
+      "description": "Disorganized tissue architecture, cellular atypia, and possible invasion into surrounding tissues in epithelial-derived tissues.",
+      "prompt": "an H&E stained image of Carcinoma, which is Disorganized tissue architecture, cellular atypia, and possible invasion into surrounding tissues in epithelial-derived tissues."
+    },
+    {
+      "tissue": "Sarcoma",
+      "description": "Pleomorphic cells, high cellularity, and possible invasion into surrounding tissues in mesenchymal-derived tissues.",
+      "prompt": "an H&E stained image of Sarcoma, which is Pleomorphic cells, high cellularity, and possible invasion into surrounding tissues in mesenchymal-derived tissues."
+    },
+    {
+      "tissue": "Lymphoma",
+      "description": "Atypical lymphocytes, disrupted lymphoid architecture, and possible effacement of normal lymphoid structures.",
+      "prompt": "an H&E stained image of Lymphoma, which is Atypical lymphocytes, disrupted lymphoid architecture, and possible effacement of normal lymphoid structures."
+    },
+    {
+      "tissue": "Leukemia",
+      "description": "Increased number of abnormal white blood cells in blood smears or bone marrow aspirates, with variable size and nuclear morphology.",
+      "prompt": "an H&E stained image of Leukemia, which is Increased number of abnormal white blood cells in blood smears or bone marrow aspirates, with variable size and nuclear morphology."
+    },
+    {
+      "tissue": "Glioma",
+      "description": "Atypical glial cells, increased cellularity, possible necrosis, and disruption of normal central nervous system tissue architecture.",
+      "prompt": "an H&E stained image of Glioma, which is Atypical glial cells, increased cellularity, possible necrosis, and disruption of normal central nervous system tissue architecture."
+    },
+    {
+      "tissue": "Melanoma",
+      "description": "Atypical melanocytes with variable size, shape, and pigmentation, cellular atypia, and invasion of surrounding tissues.",
+      "prompt": "an H&E stained image of Melanoma, which is Atypical melanocytes with variable size, shape, and pigmentation, cellular atypia, and invasion of surrounding tissues."
+    }
+  ]
+}

@@ -30,6 +30,42 @@ class TOPMethod(BaseMethod):
         required_capabilities=frozenset({Cap.SOFT_PROMPT, Cap.PAIRED_TILE_TEXT}),
         rationale="TOP hardcodes RN50-width instance and bag prompt attention.")
 
+    # Upstream appends ten learnable slots to every initialised prompt.
+    LEARNABLE_SLOTS = " " + " ".join(["*"] * 10)
+
+    def _instance_ctx_init(self) -> list[str]:
+        """Return TOP's instance prototype prompts, or [] to fall back.
+
+        ``instance_prompt_path`` names the prototype bank exported from the
+        paper's released ``knowledge_from_chatGPT`` table. Each entry becomes
+        ``an H&E stained image of {tissue}, which is {description}`` followed by
+        the learnable context slots, matching the upstream initialisation.
+        """
+        path = self.cfg.get("instance_prompt_path")
+        if not path:
+            return []
+        import json
+        with open(path, encoding="utf-8") as handle:
+            payload = json.load(handle)
+        prototypes = payload["prototypes"] if isinstance(payload, dict) else payload
+        return [f"{item['prompt']}.{self.LEARNABLE_SLOTS}" for item in prototypes]
+
+    def _bag_ctx_init(self):
+        """Return per-class bag prompts when declared, else the configured init."""
+        path = self.cfg.get("bag_prompt_path")
+        if not path:
+            return self.cfg.get("ctx_init_bag", "")
+        import json
+        with open(path, encoding="utf-8") as handle:
+            prompts = json.load(handle)["prompts"]
+        labels = list(self.cfg["label_dict"])
+        missing = [label for label in labels if label not in prompts]
+        if missing:
+            raise KeyError(
+                f"{path}: bag prompts missing entries for {missing}; "
+                f"file provides {sorted(prompts)}")
+        return [f"{prompts[label]}{self.LEARNABLE_SLOTS}" for label in labels]
+
     def build_model(self) -> nn.Module:
         from .learnable_prompt import (
             MIL_CLIP, PromptLearner)
@@ -42,14 +78,22 @@ class TOPMethod(BaseMethod):
             classnames=self.cfg["classnames"],
             clip_model=clip_model,
             n_ctx=self.cfg.get("n_ctx_bag", 4),
-            ctx_init=self.cfg.get("ctx_init_bag", ""),
+            ctx_init=self._bag_ctx_init(),
             csc=self.cfg.get("csc", True),
         )
+        # TOP's instance branch is prototype-based: its prompts are tissue
+        # phenotypes shared across tasks, not the bag class names. Upstream
+        # passes the templated descriptions as ctx_init and uses positional
+        # "Prototype i" placeholders as classnames, so the learner sizes itself
+        # from the number of prototypes rather than the number of classes.
+        instance_ctx = self._instance_ctx_init()
         inst_pl = PromptLearner(
-            classnames=self.cfg.get("instance_classnames", self.cfg["classnames"]),
+            classnames=[f"Prototype {index}" for index in range(len(instance_ctx))]
+            if instance_ctx else self.cfg.get(
+                "instance_classnames", self.cfg["classnames"]),
             clip_model=clip_model,
             n_ctx=self.cfg.get("n_ctx_inst", 4),
-            ctx_init=self.cfg.get("ctx_init_inst", ""),
+            ctx_init=instance_ctx or self.cfg.get("ctx_init_inst", ""),
             csc=self.cfg.get("csc", True),
         )
         model = MIL_CLIP(bag_pl, inst_pl,
@@ -82,19 +126,38 @@ class TOPMethod(BaseMethod):
         return None
 
     def _slide_logits(self, output):
+        """Reduce TOP's prototype-conditioned output to one slide prediction.
+
+        ``learnablePrompt_multi`` returns ``(n_prototypes, n_classes)``: each
+        instance prototype pools the bag into its own representation, which is
+        then scored against the bag class prompts. Upstream takes the slide
+        probability as the mean over prototypes *after* softmax
+        (``bag_prediction.mean(0)`` in train_TCGAFeat_MIL_CLIP.py), so the mean
+        is over probabilities, not logits.
+
+        The value returned here is ``log`` of that mean. Because the mean of
+        softmax rows already sums to one, ``softmax(log p) == p`` exactly, so
+        the benchmark's shared metric code recovers upstream's probabilities and
+        cross-entropy against it is the correct negative log-likelihood.
+
+        The auxiliary term is TOP's LossA: an off-diagonal correlation penalty
+        on the instance attention scores that pushes prototypes apart. It is
+        computed from the attention matrix the model returns alongside the
+        logits, not from the logits themselves.
+        """
         raw = output[0] if isinstance(output, tuple) else output
+        attention = output[1] if isinstance(output, tuple) and len(output) > 1 else None
+
         auxiliary = None
-        if (raw.ndim == 2 and raw.shape ==
-                (self.cfg["n_classes"], self.cfg["n_classes"])):
-            # ``learnablePrompt_multi`` produces a class-conditioned
-            # cross-correlation matrix. Its diagonal is the slide-level
-            # class score; row-wise identity classification preserves TOP's
-            # two-level alignment objective.
-            targets = torch.arange(raw.shape[0], device=raw.device)
-            auxiliary = F.cross_entropy(raw, targets)
-            raw = torch.diagonal(raw).unsqueeze(0)
-        elif raw.ndim == 1:
+        if attention is not None and attention.ndim == 2:
+            normed = torch.softmax(attention, dim=0)
+            auxiliary = torch.triu(normed.T @ normed, diagonal=1).mean()
+
+        if raw.ndim == 1:
             raw = raw.unsqueeze(0)
+        if raw.ndim == 2 and raw.shape[0] > 1 and raw.shape[1] == self.cfg["n_classes"]:
+            probabilities = raw.softmax(dim=1).mean(dim=0, keepdim=True)
+            raw = probabilities.clamp_min(1e-12).log()
         return raw, auxiliary
 
     def train_step(self, batch, model, optimizer, loss_fn):

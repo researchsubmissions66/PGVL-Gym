@@ -1,0 +1,15 @@
+{
+  "_metadata": {
+    "source": "TOP NeurIPS 2023 supplementary, Figure 4 (bag descriptive prompts, TCGA Lung Cancer subtyping)",
+    "url": "https://proceedings.neurips.cc/paper_files/paper/2023/file/d599b81036fd1a3b3949b7d444f31082-Supplemental-Conference.pdf",
+    "role": "bag-level class descriptions",
+    "label_order": [
+      "LUAD",
+      "LUSC"
+    ]
+  },
+  "prompts": {
+    "LUAD": "A subtype of non-small cell lung cancer, lung adenocarcinoma is characterized by the presence of glandular structures, mucin production, and lepidic growth patterns.",
+    "LUSC": "Another subtype of non-small cell lung cancer. It is characterized by the presence of keratinization, intercellular bridges, and large, polygonal-shaped cells."
+  }
+}
