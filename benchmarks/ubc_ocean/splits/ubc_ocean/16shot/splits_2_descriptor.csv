@@ -1,0 +1,6 @@
+label,train_slides,train_patients,val_slides,val_patients,test_slides,test_patients
+CC,16,16,16,16,18,18
+EC,16,16,16,16,24,24
+HGSC,16,16,16,16,43,43
+LGSC,16,16,16,16,9,9
+MC,16,16,16,16,9,9

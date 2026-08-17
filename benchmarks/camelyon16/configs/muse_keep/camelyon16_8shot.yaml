@@ -1,0 +1,70 @@
+backbone: conch
+backbone_weights: /work/hdd/bhwm/.cache_huggingface/hub/models--MahmoodLab--conch/blobs/40a9644b9ba0e83a74576e0a5e5f7313599fa9c9cdaf3c20f8a3e271b0e9ae7c
+encoder:
+  name: conch
+  weights: /work/hdd/bhwm/.cache_huggingface/hub/models--MahmoodLab--conch/blobs/40a9644b9ba0e83a74576e0a5e5f7313599fa9c9cdaf3c20f8a3e271b0e9ae7c
+  feature_space_id: hf:MahmoodLab/conch
+  feature_dim: 512
+  initialization: pretrained
+feature_space_id: hf:Astaxanthin/KEEP
+n_classes: 2
+classnames:
+- normal lymph node
+- metastatic lymph node
+label_dict:
+  normal: 0
+  tumor: 1
+shots: 8
+k: 5
+k_start: 0
+k_end: 5
+seed: 1
+batch_size: 1
+num_workers: 4
+feature_key: features
+feature_sources:
+  bag: keep_20x
+feature_resolutions:
+  bag: 20x
+feature_input_kinds:
+  bag: patch_bag
+include_metadata: true
+dataset_csv: /u/dchanda/PGVL-Gym/benchmarks/camelyon16/data/camelyon16/manifest.csv
+split_dir: /u/dchanda/PGVL-Gym/benchmarks/camelyon16/splits/camelyon16/8shot
+task: camelyon16
+benchmark: camelyon16_resolution_registry
+feature_dim: 768
+method: muse
+experiment: muse_keep
+epochs: 200
+prompt_provenance: user_defined_from_focus_camelyon_domain
+results_dir: /u/dchanda/PGVL-Gym/results/camelyon16_benchmark/muse_keep/camelyon16/8shot
+prompt_feature_space_id: hf:MahmoodLab/conch
+patch_encoder:
+  input_kind: patch_bag
+  name: keep
+  weights: /work/hdd/bhwm/.cache_huggingface/hub/models--Astaxanthin--KEEP/snapshots/28a25d95cc6ba27a7e6fab3f144e13dbafd8b21e
+  feature_space_id: hf:Astaxanthin/KEEP
+  feature_dim: 768
+  feature_key: features
+  resolution: 20x
+  path_template: /work/hdd/bhwm/CAMELYON16/20x_256px_0px_overlap/features_keep/{slide_id}.h5
+lr: 0.0001
+weight_decay: 1.0e-05
+early_stopping: true
+es_patience: 20
+es_stop_epoch: 50
+embed_dim: 512
+num_heads: 8
+num_experts: 8
+num_selected: 2
+retrieval_k: 8
+dropout: 0.25
+text_batch_size: 64
+prompt_csvs:
+  normal lymph node: /u/dchanda/PGVL-Gym/benchmarks/camelyon16/data/camelyon16/prompts/muse/generated_new_0.csv
+  metastatic lymph node: /u/dchanda/PGVL-Gym/benchmarks/camelyon16/data/camelyon16/prompts/muse/generated_new_1.csv
+prompt_source: muse_description_csvs
+conch_ckpt: /work/hdd/bhwm/.cache_huggingface/hub/models--MahmoodLab--conch/blobs/40a9644b9ba0e83a74576e0a5e5f7313599fa9c9cdaf3c20f8a3e271b0e9ae7c
+data_folder_s: /work/hdd/bhwm/CAMELYON16/20x_256px_0px_overlap/features_keep
+feature_path_column: feature__keep_20x

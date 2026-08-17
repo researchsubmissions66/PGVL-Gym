@@ -1,0 +1,139 @@
+{
+  "matrix": "/u/dchanda/PGVL-Gym/benchmarks/tcga_brca/run_matrix.csv",
+  "cohort": "brca",
+  "device": "cpu",
+  "results": [
+    {
+      "experiment": "focus",
+      "method": "focus",
+      "config": "/u/dchanda/PGVL-Gym/benchmarks/tcga_brca/configs/focus/brca_4shot.yaml",
+      "device": "cpu",
+      "status": "passed",
+      "stage": "complete",
+      "trainable_parameters": 86875138,
+      "logits_shape": [
+        1,
+        2
+      ],
+      "logits_finite": true,
+      "seconds": 58.697
+    },
+    {
+      "experiment": "focus_5x20x",
+      "method": "focus",
+      "config": "/u/dchanda/PGVL-Gym/benchmarks/tcga_brca/configs/focus_5x20x/brca_4shot.yaml",
+      "device": "cpu",
+      "status": "passed",
+      "stage": "complete",
+      "trainable_parameters": 86875138,
+      "logits_shape": [
+        1,
+        2
+      ],
+      "logits_finite": true,
+      "seconds": 76.262
+    },
+    {
+      "experiment": "mscpt",
+      "method": "mscpt",
+      "config": "/u/dchanda/PGVL-Gym/benchmarks/tcga_brca/configs/mscpt/brca_4shot.yaml",
+      "device": "cpu",
+      "status": "passed",
+      "stage": "complete",
+      "trainable_parameters": 1667328,
+      "logits_shape": [
+        1,
+        2
+      ],
+      "logits_finite": true,
+      "seconds": 227.668
+    },
+    {
+      "experiment": "mscpt_5x20x",
+      "method": "mscpt",
+      "config": "/u/dchanda/PGVL-Gym/benchmarks/tcga_brca/configs/mscpt_5x20x/brca_4shot.yaml",
+      "device": "cpu",
+      "status": "passed",
+      "stage": "complete",
+      "trainable_parameters": 1667328,
+      "logits_shape": [
+        1,
+        2
+      ],
+      "logits_finite": true,
+      "seconds": 132.995
+    },
+    {
+      "experiment": "muse",
+      "method": "muse",
+      "config": "/u/dchanda/PGVL-Gym/benchmarks/tcga_brca/configs/muse/brca_4shot.yaml",
+      "device": "cpu",
+      "status": "passed",
+      "stage": "complete",
+      "trainable_parameters": 9723915,
+      "logits_shape": [
+        1,
+        2
+      ],
+      "logits_finite": true,
+      "seconds": 429.206
+    },
+    {
+      "experiment": "muse_keep",
+      "method": "muse",
+      "config": "/u/dchanda/PGVL-Gym/benchmarks/tcga_brca/configs/muse_keep/brca_4shot.yaml",
+      "device": "cpu",
+      "status": "passed",
+      "stage": "complete",
+      "trainable_parameters": 9854987,
+      "logits_shape": [
+        1,
+        2
+      ],
+      "logits_finite": true,
+      "seconds": 512.03
+    },
+    {
+      "experiment": "pathpt",
+      "method": "pathpt",
+      "config": "/u/dchanda/PGVL-Gym/benchmarks/tcga_brca/configs/pathpt/brca_4shot.yaml",
+      "device": "cpu",
+      "status": "passed",
+      "stage": "complete",
+      "trainable_parameters": 5034760,
+      "logits_shape": [
+        1,
+        2
+      ],
+      "logits_finite": true,
+      "seconds": 474.915
+    },
+    {
+      "experiment": "pathpt_keep",
+      "method": "pathpt",
+      "config": "/u/dchanda/PGVL-Gym/benchmarks/tcga_brca/configs/pathpt_keep/brca_4shot.yaml",
+      "device": "cpu",
+      "status": "failed",
+      "stage": "model_build",
+      "error_type": "TypeError",
+      "error": "RenameLayerScale.__init__() got an unexpected keyword argument 'device'",
+      "traceback": "Traceback (most recent call last):\n  File \"/u/dchanda/PGVL-Gym/scripts/smoke_test.py\", line 125, in smoke_one\n    model = method.build_model()\n  File \"/u/dchanda/PGVL-Gym/methods/pathpt/adapter.py\", line 42, in build_model\n    encoder = self.load_encoder(weights_path=self.cfg.get(\"backbone_weights\"))\n  File \"/u/dchanda/PGVL-Gym/methods/base.py\", line 101, in load_encoder\n    bundle = build_encoder(self.backbone_name, weights_path=weights_path,\n  File \"/u/dchanda/PGVL-Gym/common/backbones/factory.py\", line 622, in build_encoder\n    model, tokenizer, preprocess = _load_builtin(canonical, weights_path, device)\n  File \"/u/dchanda/PGVL-Gym/common/backbones/factory.py\", line 569, in _load_builtin\n    model = AutoModel.from_pretrained(repo, trust_remote_code=True).to(device)\n  File \"/work/hdd/bhwm/dchanda/envs/pgvl-gym/lib/python3.10/site-packages/transformers/models/auto/auto_factory.py\", line 597, in from_pretrained\n    return model_class.from_pretrained(\n  File \"/work/hdd/bhwm/dchanda/envs/pgvl-gym/lib/python3.10/site-packages/transformers/modeling_utils.py\", line 277, in _wrapper\n    return func(*args, **kwargs)\n  File \"/work/hdd/bhwm/dchanda/envs/pgvl-gym/lib/python3.10/site-packages/transformers/modeling_utils.py\", line 4971, in from_pretrained\n    model = cls(config, *model_args, **model_kwargs)\n  File \"/work/hdd/bhwm/.cache_huggingface/modules/transformers_modules/_28a25d95cc6ba27a7e6fab3f144e13dbafd8b21e/modeling_keep.py\", line 48, in __init__\n    self.visual = timm.create_model(\n  File \"/work/hdd/bhwm/dchanda/envs/pgvl-gym/lib/python3.10/site-packages/timm/models/_factory.py\", line 138, in create_model\n    model = create_fn(\n  File \"/work/hdd/bhwm/dchanda/envs/pgvl-gym/lib/python3.10/site-packages/timm/models/vision_transformer.py\", line 3242, in vit_large_patch16_224\n    model = _create_vision_transformer('vit_large_patch16_224', pretrained=pretrained, **dict(model_args, **kwargs))\n  File \"/work/hdd/bhwm/dchanda/envs/pgvl-gym/lib/python3.10/site-packages/timm/models/vision_transformer.py\", line 3093, in _create_vision_transformer\n    return build_model_with_cfg(\n  File \"/work/hdd/bhwm/dchanda/envs/pgvl-gym/lib/python3.10/site-packages/timm/models/_builder.py\", line 445, in build_model_with_cfg\n    model = model_cls(**kwargs)\n  File \"/work/hdd/bhwm/dchanda/envs/pgvl-gym/lib/python3.10/site-packages/timm/models/vision_transformer.py\", line 855, in __init__\n    self.blocks = nn.Sequential(*[\n  File \"/work/hdd/bhwm/dchanda/envs/pgvl-gym/lib/python3.10/site-packages/timm/models/vision_transformer.py\", line 856, in <listcomp>\n    block_fn(\n  File \"/work/hdd/bhwm/dchanda/envs/pgvl-gym/lib/python3.10/site-packages/timm/models/vision_transformer.py\", line 190, in __init__\n    self.ls1 = LayerScale(dim, init_values=init_values, **dd) if init_values else nn.Identity()\nTypeError: RenameLayerScale.__init__() got an unexpected keyword argument 'device'\n",
+      "seconds": 230.667
+    },
+    {
+      "experiment": "sldpc",
+      "method": "sldpc",
+      "config": "/u/dchanda/PGVL-Gym/benchmarks/tcga_brca/configs/sldpc/brca_4shot.yaml",
+      "device": "cpu",
+      "status": "passed",
+      "stage": "complete",
+      "trainable_parameters": 6144,
+      "logits_shape": [
+        1,
+        2
+      ],
+      "logits_finite": true,
+      "seconds": 65.846
+    }
+  ]
+}

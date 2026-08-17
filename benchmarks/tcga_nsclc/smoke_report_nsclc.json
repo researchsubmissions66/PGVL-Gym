@@ -1,0 +1,130 @@
+{
+  "matrix": "/u/dchanda/PGVL-Gym/benchmarks/tcga_nsclc/run_matrix.csv",
+  "cohort": "nsclc",
+  "device": "cpu",
+  "results": [
+    {
+      "experiment": "focus",
+      "method": "focus",
+      "config": "/u/dchanda/PGVL-Gym/benchmarks/tcga_nsclc/configs/focus/nsclc_4shot.yaml",
+      "device": "cpu",
+      "status": "passed",
+      "stage": "complete",
+      "trainable_parameters": 86875138,
+      "logits_shape": [
+        1,
+        2
+      ],
+      "logits_finite": true,
+      "seconds": 447.739
+    },
+    {
+      "experiment": "focus_5x20x",
+      "method": "focus",
+      "config": "/u/dchanda/PGVL-Gym/benchmarks/tcga_nsclc/configs/focus_5x20x/nsclc_4shot.yaml",
+      "device": "cpu",
+      "status": "passed",
+      "stage": "complete",
+      "trainable_parameters": 86875138,
+      "logits_shape": [
+        1,
+        2
+      ],
+      "logits_finite": true,
+      "seconds": 402.495
+    },
+    {
+      "experiment": "mscpt",
+      "method": "mscpt",
+      "config": "/u/dchanda/PGVL-Gym/benchmarks/tcga_nsclc/configs/mscpt/nsclc_4shot.yaml",
+      "device": "cpu",
+      "status": "passed",
+      "stage": "complete",
+      "trainable_parameters": 1667328,
+      "logits_shape": [
+        1,
+        2
+      ],
+      "logits_finite": true,
+      "seconds": 446.629
+    },
+    {
+      "experiment": "mscpt_5x20x",
+      "method": "mscpt",
+      "config": "/u/dchanda/PGVL-Gym/benchmarks/tcga_nsclc/configs/mscpt_5x20x/nsclc_4shot.yaml",
+      "device": "cpu",
+      "status": "passed",
+      "stage": "complete",
+      "trainable_parameters": 1667328,
+      "logits_shape": [
+        1,
+        2
+      ],
+      "logits_finite": true,
+      "seconds": 418.891
+    },
+    {
+      "experiment": "muse",
+      "method": "muse",
+      "config": "/u/dchanda/PGVL-Gym/benchmarks/tcga_nsclc/configs/muse/nsclc_4shot.yaml",
+      "device": "cpu",
+      "status": "passed",
+      "stage": "complete",
+      "trainable_parameters": 9723915,
+      "logits_shape": [
+        1,
+        2
+      ],
+      "logits_finite": true,
+      "seconds": 555.891
+    },
+    {
+      "experiment": "muse_keep",
+      "config": "/u/dchanda/PGVL-Gym/benchmarks/tcga_nsclc/configs/muse_keep/nsclc_4shot.yaml",
+      "device": "cpu",
+      "status": "failed",
+      "stage": "subprocess",
+      "seconds": 646.728,
+      "error": "No result produced; child exit code -9"
+    },
+    {
+      "experiment": "pathpt",
+      "method": "pathpt",
+      "config": "/u/dchanda/PGVL-Gym/benchmarks/tcga_nsclc/configs/pathpt/nsclc_4shot.yaml",
+      "device": "cpu",
+      "status": "passed",
+      "stage": "complete",
+      "trainable_parameters": 5034760,
+      "logits_shape": [
+        1,
+        2
+      ],
+      "logits_finite": true,
+      "seconds": 426.729
+    },
+    {
+      "experiment": "pathpt_keep",
+      "method": "pathpt",
+      "config": "/u/dchanda/PGVL-Gym/benchmarks/tcga_nsclc/configs/pathpt_keep/nsclc_4shot.yaml",
+      "device": "cpu",
+      "status": "passed",
+      "stage": "complete",
+      "trainable_parameters": 11262984,
+      "logits_shape": [
+        1,
+        2
+      ],
+      "logits_finite": true,
+      "seconds": 511.88
+    },
+    {
+      "experiment": "sldpc",
+      "config": "/u/dchanda/PGVL-Gym/benchmarks/tcga_nsclc/configs/sldpc/nsclc_4shot.yaml",
+      "device": "cpu",
+      "status": "timeout",
+      "stage": "subprocess",
+      "seconds": 900.616,
+      "error": "No result produced; child exit code -15"
+    }
+  ]
+}

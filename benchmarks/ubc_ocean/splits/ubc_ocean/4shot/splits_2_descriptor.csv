@@ -1,0 +1,6 @@
+label,train_slides,train_patients,val_slides,val_patients,test_slides,test_patients
+CC,4,4,4,4,18,18
+EC,4,4,4,4,24,24
+HGSC,4,4,4,4,43,43
+LGSC,4,4,4,4,9,9
+MC,4,4,4,4,9,9

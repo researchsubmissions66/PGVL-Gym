@@ -1,0 +1,60 @@
+backbone: clip-rn50
+backbone_weights: /u/dchanda/.cache/clip/RN50.pt
+encoder:
+  name: clip-rn50
+  weights: /u/dchanda/.cache/clip/RN50.pt
+  feature_space_id: openai/clip-rn50@official
+  feature_dim: 1024
+  initialization: pretrained
+feature_space_id: openai/clip-rn50@official
+n_classes: 2
+classnames:
+- invasive ductal carcinoma
+- invasive lobular carcinoma
+label_dict:
+  IDC: 0
+  ILC: 1
+shots: 16
+k: 5
+k_start: 0
+k_end: 5
+seed: 1
+batch_size: 1
+num_workers: 4
+feature_key: features
+feature_sources:
+  bag: clip_rn50_10x
+feature_resolutions:
+  bag: 10x
+feature_input_kinds:
+  bag: patch_bag
+include_metadata: true
+dataset_csv: /u/dchanda/PGVL-Gym/benchmarks/tcga_brca/data/brca/manifest.csv
+split_dir: /u/dchanda/PGVL-Gym/benchmarks/tcga_brca/splits/brca/16shot
+task: brca
+benchmark: tcga_brca_resolution_registry
+feature_dim: 1024
+method: top
+experiment: top
+epochs: 8000
+prompt_provenance: generated
+results_dir: /u/dchanda/PGVL-Gym/results/tcga_benchmark/top/brca/16shot
+clip_arch: RN50
+lr: 0.02
+lr_TB: 0.02
+lr_IB: 0.02
+weight_decay: 0.0
+early_stopping: false
+n_ctx_bag: 4
+n_ctx_inst: 4
+ctx_init_bag: ''
+ctx_init_inst: ''
+instance_prompt_path: /u/dchanda/PGVL-Gym/text_prompts/top/instance_prototypes.json
+csc: true
+p_drop_out: 0.2
+p_bag_drop_out: 0.2
+weight_lossA: 25
+pooling_strategy: learnablePrompt_multi
+data_folder_s: /work/hdd/bhwm/trident_features/master_benchmark/10x_224px_0px_overlap/features_clip_rn50
+feature_path_column: feature__clip_rn50_10x
+prompt_source: top_instance_prototypes_and_bag_context

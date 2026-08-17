@@ -1,0 +1,4 @@
+label,train_slides,train_patients,val_slides,val_patients,test_slides,test_patients
+CCRCC,8,8,8,8,106,102
+PRCC,8,8,8,8,65,55
+CHRCC,8,8,8,8,24,22

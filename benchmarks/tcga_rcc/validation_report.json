@@ -1,0 +1,60 @@
+{
+  "valid": true,
+  "cohorts": {
+    "rcc": {
+      "slides": 939,
+      "patients": 897,
+      "labels": {
+        "CCRCC": 519,
+        "PRCC": 299,
+        "CHRCC": 121
+      }
+    }
+  },
+  "missing_features": [
+    {
+      "cohort": "rcc",
+      "feature_source": "conch_v1_5x",
+      "input_kind": "patch_bag",
+      "resolution": "5x",
+      "feature_column": "feature__conch_v1_5x",
+      "missing": 939
+    },
+    {
+      "cohort": "rcc",
+      "feature_source": "conch_v1_10x",
+      "input_kind": "patch_bag",
+      "resolution": "10x",
+      "feature_column": "feature__conch_v1_10x",
+      "missing": 939
+    },
+    {
+      "cohort": "rcc",
+      "feature_source": "conch_v1_20x",
+      "input_kind": "patch_bag",
+      "resolution": "20x",
+      "feature_column": "feature__conch_v1_20x",
+      "missing": 939
+    },
+    {
+      "cohort": "rcc",
+      "feature_source": "keep_20x",
+      "input_kind": "patch_bag",
+      "resolution": "20x",
+      "feature_column": "feature__keep_20x",
+      "missing": 939
+    },
+    {
+      "cohort": "rcc",
+      "feature_source": "titan_slide_20x",
+      "input_kind": "slide_embedding",
+      "resolution": "20x",
+      "feature_column": "feature__titan_slide_20x",
+      "missing": 939
+    }
+  ],
+  "configs": {
+    "total": 21,
+    "valid": 21
+  }
+}

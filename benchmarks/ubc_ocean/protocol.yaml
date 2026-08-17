@@ -1,0 +1,132 @@
+version: 3
+name: ubc_ocean_resolution_registry
+results_namespace: ubc_ocean_benchmark
+seed: 1
+folds: 5
+shots:
+- 4
+- 8
+- 16
+train_slides_per_case: 1
+val_slides_per_case: 1
+test_slides: all
+feature_sources:
+  conch_v1_5x:
+    availability: future
+    resolution: 5x
+    backbone: conch
+    encoder_weights: /work/hdd/bhwm/.cache_huggingface/hub/models--MahmoodLab--conch/snapshots/f9ca9f877171a28ade80228fb195ac5d79003357/pytorch_model.bin
+    feature_key: features
+    feature_dim: 512
+    feature_space_id: hf:MahmoodLab/conch
+    path_template: /work/hdd/bhwm/UBC-OCEAN/5x_256px_0px_overlap/features_conch_v1/{slide_id}.h5
+  conch_v1_10x:
+    availability: future
+    resolution: 10x
+    backbone: conch
+    encoder_weights: /work/hdd/bhwm/.cache_huggingface/hub/models--MahmoodLab--conch/snapshots/f9ca9f877171a28ade80228fb195ac5d79003357/pytorch_model.bin
+    feature_key: features
+    feature_dim: 512
+    feature_space_id: hf:MahmoodLab/conch
+    path_template: /work/hdd/bhwm/UBC-OCEAN/10x_256px_0px_overlap/features_conch_v1/{slide_id}.h5
+  conch_v1_20x:
+    availability: future
+    resolution: 20x
+    backbone: conch
+    encoder_weights: /work/hdd/bhwm/.cache_huggingface/hub/models--MahmoodLab--conch/snapshots/f9ca9f877171a28ade80228fb195ac5d79003357/pytorch_model.bin
+    feature_key: features
+    feature_dim: 512
+    feature_space_id: hf:MahmoodLab/conch
+    path_template: /work/hdd/bhwm/UBC-OCEAN/20x_256px_0px_overlap/features_conch_v1/{slide_id}.h5
+  keep_20x:
+    availability: future
+    resolution: 20x
+    backbone: keep
+    encoder_weights: /work/hdd/bhwm/.cache_huggingface/hub/models--Astaxanthin--KEEP/snapshots/28a25d95cc6ba27a7e6fab3f144e13dbafd8b21e
+    feature_key: features
+    feature_dim: 768
+    feature_space_id: hf:Astaxanthin/KEEP
+    path_template: /work/hdd/bhwm/UBC-OCEAN/20x_256px_0px_overlap/features_keep/{slide_id}.h5
+cohorts:
+  ubc_ocean:
+    metadata_csv: /u/dchanda/PGVL-Gym/metadata/ubc_ocean.csv
+    slide_id_column: slide_id
+    case_id_column: case_id
+    slide_suffixes: []
+    label_column: label
+    filters:
+      is_tma: false
+    labels:
+    - CC
+    - EC
+    - HGSC
+    - LGSC
+    - MC
+    classnames:
+    - ovarian clear cell carcinoma
+    - ovarian endometrioid carcinoma
+    - ovarian high-grade serous carcinoma
+    - ovarian low-grade serous carcinoma
+    - ovarian mucinous carcinoma
+    prompt_spec: benchmarks/ubc_ocean/prompts/ubc_ocean.yaml
+    muse_prompt_json: train_data/gpt/description/UBC-OCEAN.json
+    focus_prompt_csv: text_prompts/focus/UBC_OCEAN_two_scale_text_prompt.csv
+    mscpt_prompt_json: train_data/gpt/description/UBC-OCEAN.json
+    slip_tissue_json: text_prompts/slip/ubc_ocean_tissues.json
+    sldpc_prompt_yaml: text_prompts/sldpc/ubc_ocean.yaml
+    prompts:
+      focus: text_prompts/focus/UBC_OCEAN_two_scale_text_prompt.csv
+      vila_mil: text_prompts/focus/UBC_OCEAN_two_scale_text_prompt.csv
+      mscpt: train_data/gpt/description/UBC-OCEAN.json
+      slip: text_prompts/slip/ubc_ocean_tissues.json
+      sldpc: text_prompts/sldpc/ubc_ocean.yaml
+experiments:
+  pathpt:
+    method: pathpt
+    features:
+      bag: conch_v1_10x
+    epochs: 20
+  pathpt_keep:
+    method: pathpt
+    features:
+      bag: keep_20x
+    epochs: 20
+  muse:
+    method: muse
+    features:
+      bag: conch_v1_10x
+    prompt_encoder: &id001
+      name: conch
+      weights: /work/hdd/bhwm/.cache_huggingface/hub/models--MahmoodLab--conch/snapshots/f9ca9f877171a28ade80228fb195ac5d79003357/pytorch_model.bin
+      feature_space_id: hf:MahmoodLab/conch
+    epochs: 200
+  muse_keep:
+    method: muse
+    features:
+      bag: keep_20x
+    prompt_encoder: *id001
+    epochs: 200
+  focus:
+    method: focus
+    features:
+      low: conch_v1_10x
+      high: conch_v1_20x
+    epochs: 200
+  focus_5x20x:
+    method: focus
+    features:
+      low: conch_v1_5x
+      high: conch_v1_20x
+    epochs: 200
+  mscpt:
+    method: mscpt
+    features:
+      low: conch_v1_10x
+      high: conch_v1_20x
+    epochs: 50
+  mscpt_5x20x:
+    method: mscpt
+    features:
+      low: conch_v1_5x
+      high: conch_v1_20x
+    epochs: 50
