@@ -27,7 +27,7 @@ Use the same engine with another protocol:
 
 ```bash
 python scripts/tcga_benchmark.py all \
-  --protocol benchmarks/additional_tasks/protocol.yaml
+  --protocol benchmarks/tcga_brca/protocol.yaml
 ```
 
 `--output-dir` may be used to write generated artifacts somewhere other than
@@ -54,7 +54,7 @@ Test one generated configuration:
 
 ```bash
 python -u scripts/smoke_test.py \
-  --config benchmarks/tcga/configs/maple/nsclc_4shot.yaml \
+  --config benchmarks/tcga_nsclc/configs/maple/nsclc_4shot.yaml \
   --device cuda:0
 ```
 
@@ -62,11 +62,11 @@ Test one representative 4-shot run per experiment variant:
 
 ```bash
 python -u scripts/smoke_test.py \
-  --matrix benchmarks/tcga/run_matrix.csv \
+  --matrix benchmarks/tcga_brca/run_matrix.csv \
   --cohort nsclc \
   --device cuda:0 \
   --timeout 300 \
-  --result-json benchmarks/tcga/smoke_report_nsclc.json
+  --result-json benchmarks/tcga_nsclc/smoke_report_nsclc.json
 ```
 
 Matrix entries run in isolated subprocesses so a previous model cannot retain
@@ -81,7 +81,7 @@ the run matrix:
 ```bash
 python train.py \
   --method pathpt \
-  --config benchmarks/tcga/configs/pathpt_musk/rcc_4shot.yaml \
+  --config benchmarks/tcga_rcc/configs/pathpt_musk/rcc_4shot.yaml \
   --device cuda:0
 ```
 
@@ -114,7 +114,7 @@ matrix:
 ```bash
 python scripts/tcga_benchmark.py aggregate
 python scripts/tcga_benchmark.py aggregate \
-  --protocol benchmarks/additional_tasks/protocol.yaml
+  --protocol benchmarks/tcga_brca/protocol.yaml
 ```
 
 Missing runs are skipped rather than imputed. Always inspect the reported fold

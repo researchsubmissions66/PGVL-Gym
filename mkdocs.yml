@@ -98,6 +98,7 @@ nav:
   - Reference:
       - Method support matrix: support-matrix.md
       - Backbone interfaces: BACKBONE_INTERFACES.md
+      - Compatibility analysis: compatibility-analysis.md
       - Glossary: glossary.md
   - API reference:
       - Registry and method contract: api/methods.md

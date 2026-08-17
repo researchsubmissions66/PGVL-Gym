@@ -15,6 +15,19 @@ PyTorch build. Gated model packages and weights remain explicit opt-ins. See
 [Environment setup](environment.md) for lean per-method profiles, CONCH and
 MUSK installation, GPU verification, updates, and removal.
 
+On a shared cluster, build the environment under a project filesystem instead
+and let the job wrapper activate it, because a home quota rarely holds a 15-25 GB
+PyTorch and CUDA stack:
+
+```bash
+conda env create --file environment.yml --prefix /path/to/project/envs/pgvl-gym
+export PGVL_CONDA_ENV=/path/to/project/envs/pgvl-gym
+export HF_HOME=/path/to/project/.cache_huggingface   # compute nodes are offline
+export HF_HUB_OFFLINE=1
+```
+
+See [Install on a shared cluster](environment.md#install-on-a-shared-cluster).
+
 For documentation-only work, create the smaller documentation environment:
 
 ```bash
@@ -43,7 +56,7 @@ python scripts/tcga_benchmark.py validate
 
 # CAMELYON16 and UBC-OCEAN
 python scripts/tcga_benchmark.py validate \
-  --protocol benchmarks/additional_tasks/protocol.yaml
+  --protocol benchmarks/tcga_brca/protocol.yaml
 ```
 
 Validation checks config structure, prompt assets, encoder contracts, feature
@@ -54,7 +67,7 @@ separately from invalid configurations.
 
 ```bash
 python -u scripts/smoke_test.py \
-  --matrix benchmarks/tcga/run_matrix.csv \
+  --matrix benchmarks/tcga_brca/run_matrix.csv \
   --cohort rcc \
   --device cuda:0
 ```
@@ -70,7 +83,7 @@ Use the exact command stored in a run matrix row whose `ready` field is true:
 
 ```bash
 python train.py --method focus \
-  --config benchmarks/tcga/configs/focus/nsclc_4shot.yaml \
+  --config benchmarks/tcga_nsclc/configs/focus/nsclc_4shot.yaml \
   --device cuda:0
 ```
 

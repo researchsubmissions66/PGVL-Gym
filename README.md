@@ -24,22 +24,54 @@ experiment contract. It preserves each paper's model-specific architecture
 while standardizing protocols, feature provenance, folds, shots, seeds, and
 reporting.
 
-Systematic protocols cover TCGA NSCLC/BRCA/RCC plus
-[CAMELYON16 and UBC-OCEAN](benchmarks/additional_tasks/README.md).
+Systematic protocols cover TCGA NSCLC, BRCA and RCC plus
+[UBC-OCEAN](benchmarks/ubc_ocean/README.md) and
+[CAMELYON16](benchmarks/camelyon16/README.md).
+
+## Benchmark layout
+
+Each cohort owns one benchmark directory under `benchmarks/`, holding its
+`protocol.yaml` and everything generated from it (manifests, splits, configs,
+`run_matrix.csv`, readiness reports). Cohorts are kept separate so one whose
+data is not ready cannot hold back the ones that are:
+
+| Benchmark | Task |
+| --------- | ---- |
+| `benchmarks/tcga_nsclc` | LUAD vs LUSC |
+| `benchmarks/tcga_brca`  | IDC vs ILC |
+| `benchmarks/tcga_rcc`   | RCC subtyping |
+| `benchmarks/ubc_ocean`  | five-class ovarian carcinoma subtyping |
+| `benchmarks/camelyon16` | lymph-node metastasis detection |
 
 ## Configure local paths
 
 The committed protocols and generated examples use anonymous placeholders such
 as `/path/to/PGVL-Gym`, `/path/to/features`, `/path/to/metadata`, and
-`/path/to/model-cache`. Before generating or launching runs, update the two
-protocol files for your own storage layout:
+`/path/to/model-cache`. Before generating or launching runs, update the
+`protocol.yaml` of each cohort you intend to run for your own storage layout.
 
-- `benchmarks/tcga/protocol.yaml`
-- `benchmarks/additional_tasks/protocol.yaml`
+Then regenerate manifests, splits, run configs, and readiness reports:
 
-Then regenerate manifests, splits, run configs, and readiness reports with
-`python scripts/tcga_benchmark.py all --protocol <protocol>`. Do not infer a
-cohort from whatever feature files happen to exist.
+```bash
+python scripts/tcga_benchmark.py all --protocol benchmarks/<cohort>/protocol.yaml
+```
+
+Do not infer a cohort from whatever feature files happen to exist.
+
+## Launching a campaign
+
+`./launch_pgvl.sh` walks every benchmark's `run_matrix.csv` and submits only the
+runs that are ready and not already complete or queued. A run that cannot
+proceed is skipped with a recorded reason instead of failing on a GPU, and
+resume state is read from each run's `metrics.json`, so the launcher is safe to
+re-run at any time.
+
+```bash
+./launch_pgvl.sh --dry-run                    # show the plan, submit nothing
+./launch_pgvl.sh                              # submit everything outstanding
+./launch_pgvl.sh --regenerate                 # rebuild configs first, then submit
+./launch_pgvl.sh --cohort brca --shots 4 --limit 3   # canary batch
+```
 
 ## Supported Methods
 
@@ -147,6 +179,34 @@ python scripts/list_backbone_compatibility.py
 python scripts/list_backbone_compatibility.py --method sldpc --json
 ```
 
+### How far the matrix reaches
+
+Across 13 methods and 9 registered encoders there are 117 combinations:
+**37 native**, **27 adaptable** (capabilities met, only the feature width
+differs), and **53 blocked**. Every registered encoder is a dual-tower
+vision-language model; vision-only pathology foundation models are deliberately
+absent, because a method that injects or learns text prompts has no text tower
+to attach to.
+
+The blocked combinations have five distinct causes, and only one of them is a
+limitation of this benchmark rather than of the methods or encoders:
+
+| Cause | Cells | Can it be resolved? |
+| --- | ---: | --- |
+| Method owns its vision tower (`wsi_five`, `convlm`) | 18 | No — the tower is part of the published architecture |
+| Method hardcodes one encoder's geometry (`top`, `cod_mil`) | 16 | Only by rewriting the method |
+| Encoder exposes no deep-prompt hooks (`mscpt`) | 6 | Per-encoder implementation, not adaptation |
+| TITAN is a slide encoder, not a tile encoder | 5 | No, and none is wanted — a feature-level mismatch |
+| KEEP and MUSK declare no text tower | 8 | Possibly — see the analysis |
+
+A `native` result and an `adapted` result are different claims and must not
+share a results table: an adapted run measures the method *and* its projection,
+not the encoder alone. Equal widths never establish compatibility, and no
+adapter is inserted implicitly.
+
+See [Which method and encoder combinations are possible](docs/compatibility-analysis.md)
+for the full matrix and the reasoning behind every blocked cell.
+
 SLDPC keeps native paired projection as its default, while explicitly selected
 linear/MLP variants can align another registered slide-vector source to its
 prompt space. MUSE independently registers an offline patch encoder and a
@@ -199,15 +259,15 @@ Build every experiment variant from its generated configuration and run a
 finite-logit forward pass without requiring dataset features:
 
 ```bash
-# One representative 4-shot config for all 20 variants on CAMELYON16
-conda run -n trident python -u scripts/smoke_test.py \
-  --matrix benchmarks/additional_tasks/run_matrix.csv \
-  --cohort camelyon16 --device cuda:0
+# One representative 4-shot config for every variant of a cohort
+python -u scripts/smoke_test.py \
+  --matrix benchmarks/ubc_ocean/run_matrix.csv \
+  --cohort ubc_ocean --device cuda:0
 
 # The same check for a TCGA cohort
-conda run -n trident python -u scripts/smoke_test.py \
-  --matrix benchmarks/tcga/run_matrix.csv \
-  --cohort rcc --device cuda:0
+python -u scripts/smoke_test.py \
+  --matrix benchmarks/tcga_brca/run_matrix.csv \
+  --cohort brca --device cuda:0
 ```
 
 Each model runs in an isolated subprocess with a configurable `--timeout`.
@@ -307,6 +367,32 @@ python -m pip install -e ".[maple,mscpt,pathpt-musk]"
 CONCH and MUSK code and weights are gated upstream and remain explicit opt-in
 installs. See the complete [environment guide](docs/environment.md) for the
 per-method profiles, gated model setup, GPU checks, updates, and removal.
+
+### On a shared cluster
+
+A full PyTorch and CUDA stack is 15-25 GB, which most home quotas will not
+hold, so build the environment under a project filesystem and activate it by
+path:
+
+```bash
+conda env create --file environment.yml --prefix /path/to/project/envs/pgvl-gym
+export PGVL_CONDA_ENV=/path/to/project/envs/pgvl-gym
+```
+
+Compute nodes are usually offline while login nodes are not, so download the
+encoder weights once from a login node and point jobs at that cache:
+
+```bash
+export HF_HOME=/path/to/project/.cache_huggingface
+export HF_HUB_OFFLINE=1
+```
+
+`scripts/pgvl_job.sh` reads `PGVL_CONDA_ENV` and sets the Hugging Face variables
+for every submitted run. A site-provided `pytorch` module is *not* a substitute:
+it lacks `h5py`, `ftfy`, `torch_geometric` and the gated encoder packages. See
+[Install on a shared cluster](docs/environment.md#install-on-a-shared-cluster)
+for the full setup, including the first-import cost of an environment on a
+parallel filesystem.
 
 ## Preprocessing pipeline
 

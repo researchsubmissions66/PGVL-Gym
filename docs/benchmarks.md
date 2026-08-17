@@ -13,14 +13,14 @@ The TCGA protocol covers:
 
 It generates 180 validated configs: 20 experiment variants, three cohorts,
 and 4/8/16-shot settings. See the repository's
-`benchmarks/tcga/README.md` for cohort construction, feature coverage, and
+`benchmarks/tcga_brca/README.md` for cohort construction, feature coverage, and
 readiness details.
 
 ## Additional tasks
 
 The additional-task protocol covers CAMELYON16 and UBC-OCEAN with the same
 fold, shot, encoder, prompt, and feature-provenance machinery. It generates 120
-validated configs. See `benchmarks/additional_tasks/README.md` for task-specific
+validated configs. See `benchmarks/tcga_brca/README.md` for task-specific
 metadata expectations.
 
 ## Fair-comparison controls
