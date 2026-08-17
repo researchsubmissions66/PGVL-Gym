@@ -1,3 +1,0 @@
-label,train_slides,train_patients,val_slides,val_patients,test_slides,test_patients
-normal,16,16,16,16,47,47
-tumor,16,16,16,16,32,32

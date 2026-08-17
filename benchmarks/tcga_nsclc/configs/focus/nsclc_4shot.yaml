@@ -1,0 +1,61 @@
+backbone: conch
+backbone_weights: /work/hdd/bhwm/.cache_huggingface/hub/models--MahmoodLab--conch/blobs/40a9644b9ba0e83a74576e0a5e5f7313599fa9c9cdaf3c20f8a3e271b0e9ae7c
+encoder:
+  name: conch
+  weights: /work/hdd/bhwm/.cache_huggingface/hub/models--MahmoodLab--conch/blobs/40a9644b9ba0e83a74576e0a5e5f7313599fa9c9cdaf3c20f8a3e271b0e9ae7c
+  feature_space_id: hf:MahmoodLab/conch
+  feature_dim: 512
+  initialization: pretrained
+feature_space_id: hf:MahmoodLab/conch
+n_classes: 2
+classnames:
+- lung adenocarcinoma
+- lung squamous cell carcinoma
+label_dict:
+  LUAD: 0
+  LUSC: 1
+shots: 4
+k: 5
+k_start: 0
+k_end: 5
+seed: 1
+batch_size: 1
+num_workers: 4
+feature_key: features
+feature_sources:
+  low: conch_v1_10x
+  high: conch_v1_20x
+feature_resolutions:
+  low: 10x
+  high: 20x
+feature_input_kinds:
+  low: patch_bag
+  high: patch_bag
+include_metadata: true
+dataset_csv: /u/dchanda/PGVL-Gym/benchmarks/tcga_nsclc/data/nsclc/manifest.csv
+split_dir: /u/dchanda/PGVL-Gym/benchmarks/tcga_nsclc/splits/nsclc/4shot
+task: nsclc
+benchmark: tcga_nsclc_resolution_registry
+feature_dim: 512
+method: focus
+experiment: focus
+epochs: 200
+prompt_provenance: upstream
+results_dir: /u/dchanda/PGVL-Gym/results/tcga_benchmark/focus/nsclc/4shot
+lr: 0.0001
+weight_decay: 1.0e-05
+bag_loss: ce
+drop_out: true
+early_stopping: true
+es_patience: 20
+es_stop_epoch: 40
+prototype_number: 16
+mode: transformer
+loader_mode: transformer
+data_folder_s: /work/hdd/bhwm/trident_features/master_benchmark/10x_256px_0px_overlap/features_conch_v1
+data_folder_l: /work/hdd/bhwm/trident_features/master_benchmark/20x_512px_0px_overlap/features_conch_v1
+feature_path_column_s: feature__conch_v1_10x
+feature_path_column_l: feature__conch_v1_20x
+text_prompt_path: /u/dchanda/PGVL-Gym/text_prompts/focus/TCGA_NSCLC_two_scale_text_prompt.csv
+prompt_source: focus_two_scale_csv
+conch_ckpt: /work/hdd/bhwm/.cache_huggingface/hub/models--MahmoodLab--conch/blobs/40a9644b9ba0e83a74576e0a5e5f7313599fa9c9cdaf3c20f8a3e271b0e9ae7c

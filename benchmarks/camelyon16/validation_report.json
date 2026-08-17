@@ -1,0 +1,16 @@
+{
+  "valid": true,
+  "cohorts": {
+    "camelyon16": {
+      "slides": 0,
+      "patients": 0,
+      "labels": {},
+      "status": "awaiting_metadata"
+    }
+  },
+  "missing_features": [],
+  "configs": {
+    "total": 24,
+    "valid": 24
+  }
+}

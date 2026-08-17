@@ -1,0 +1,70 @@
+backbone: conch
+backbone_weights: /work/hdd/bhwm/.cache_huggingface/hub/models--MahmoodLab--conch/blobs/40a9644b9ba0e83a74576e0a5e5f7313599fa9c9cdaf3c20f8a3e271b0e9ae7c
+encoder:
+  name: conch
+  weights: /work/hdd/bhwm/.cache_huggingface/hub/models--MahmoodLab--conch/blobs/40a9644b9ba0e83a74576e0a5e5f7313599fa9c9cdaf3c20f8a3e271b0e9ae7c
+  feature_space_id: hf:MahmoodLab/conch
+  feature_dim: 512
+  initialization: pretrained
+feature_space_id: hf:xiangjx/musk
+n_classes: 2
+classnames:
+- invasive ductal carcinoma
+- invasive lobular carcinoma
+label_dict:
+  IDC: 0
+  ILC: 1
+shots: 16
+k: 5
+k_start: 0
+k_end: 5
+seed: 1
+batch_size: 1
+num_workers: 4
+feature_key: features
+feature_sources:
+  bag: musk_10x
+feature_resolutions:
+  bag: 10x
+feature_input_kinds:
+  bag: patch_bag
+include_metadata: true
+dataset_csv: /u/dchanda/PGVL-Gym/benchmarks/tcga_brca/data/brca/manifest.csv
+split_dir: /u/dchanda/PGVL-Gym/benchmarks/tcga_brca/splits/brca/16shot
+task: brca
+benchmark: tcga_brca_resolution_registry
+feature_dim: 1024
+method: muse
+experiment: muse_musk
+epochs: 200
+prompt_provenance: upstream
+results_dir: /u/dchanda/PGVL-Gym/results/tcga_benchmark/muse_musk/brca/16shot
+prompt_feature_space_id: hf:MahmoodLab/conch
+patch_encoder:
+  input_kind: patch_bag
+  name: musk
+  weights: /work/hdd/bhwm/.cache_huggingface/hub/models--xiangjx--musk/blobs/83d9f2429ec3f04fc3bdc4bc6d8e6c78035ea196fdce9fe05d76ea0e8cad0375
+  feature_space_id: hf:xiangjx/musk
+  feature_dim: 1024
+  feature_key: features
+  resolution: 10x
+  path_template: /work/hdd/bhwm/trident_features/master_benchmark/10x_384px_0px_overlap/features_musk/{slide_id}.h5
+lr: 0.0001
+weight_decay: 1.0e-05
+early_stopping: true
+es_patience: 20
+es_stop_epoch: 50
+embed_dim: 512
+num_heads: 8
+num_experts: 8
+num_selected: 2
+retrieval_k: 8
+dropout: 0.25
+text_batch_size: 64
+prompt_csvs:
+  invasive ductal carcinoma: /u/dchanda/PGVL-Gym/text_prompts/muse/tcga_brca/generated_new_0.csv
+  invasive lobular carcinoma: /u/dchanda/PGVL-Gym/text_prompts/muse/tcga_brca/generated_new_1.csv
+prompt_source: muse_description_csvs
+conch_ckpt: /work/hdd/bhwm/.cache_huggingface/hub/models--MahmoodLab--conch/blobs/40a9644b9ba0e83a74576e0a5e5f7313599fa9c9cdaf3c20f8a3e271b0e9ae7c
+data_folder_s: /work/hdd/bhwm/trident_features/master_benchmark/10x_384px_0px_overlap/features_musk
+feature_path_column: feature__musk_10x

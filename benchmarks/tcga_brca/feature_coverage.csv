@@ -1,0 +1,8 @@
+cohort,feature_source,input_kind,resolution,backbone,feature_column,feature_dim,available_slides,annotated_slides,coverage,metadata_ready
+brca,clip_rn50_10x,patch_bag,10x,clip-rn50,feature__clip_rn50_10x,1024,960,960,1.0,True
+brca,conch_v1_10x,patch_bag,10x,conch,feature__conch_v1_10x,512,960,960,1.0,True
+brca,conch_v1_20x,patch_bag,20x,conch,feature__conch_v1_20x,512,960,960,1.0,True
+brca,conch_v1_5x,patch_bag,5x,conch,feature__conch_v1_5x,512,960,960,1.0,True
+brca,keep_20x,patch_bag,20x,keep,feature__keep_20x,768,960,960,1.0,True
+brca,musk_10x,patch_bag,10x,musk,feature__musk_10x,1024,960,960,1.0,True
+brca,titan_slide_20x,slide_embedding,20x,titan,feature__titan_slide_20x,768,960,960,1.0,True

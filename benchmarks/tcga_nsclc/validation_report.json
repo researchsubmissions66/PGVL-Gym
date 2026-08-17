@@ -1,0 +1,43 @@
+{
+  "valid": true,
+  "cohorts": {
+    "nsclc": {
+      "slides": 1043,
+      "patients": 946,
+      "labels": {
+        "LUAD": 531,
+        "LUSC": 512
+      }
+    }
+  },
+  "missing_features": [
+    {
+      "cohort": "nsclc",
+      "feature_source": "conch_v1_5x",
+      "input_kind": "patch_bag",
+      "resolution": "5x",
+      "feature_column": "feature__conch_v1_5x",
+      "missing": 1043
+    },
+    {
+      "cohort": "nsclc",
+      "feature_source": "conch_v1_20x",
+      "input_kind": "patch_bag",
+      "resolution": "20x",
+      "feature_column": "feature__conch_v1_20x",
+      "missing": 1043
+    },
+    {
+      "cohort": "nsclc",
+      "feature_source": "keep_20x",
+      "input_kind": "patch_bag",
+      "resolution": "20x",
+      "feature_column": "feature__keep_20x",
+      "missing": 1043
+    }
+  ],
+  "configs": {
+    "total": 33,
+    "valid": 33
+  }
+}

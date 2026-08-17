@@ -1,0 +1,112 @@
+{
+  "matrix": "/u/dchanda/PGVL-Gym/benchmarks/tcga_rcc/run_matrix.csv",
+  "cohort": "rcc",
+  "device": "cpu",
+  "results": [
+    {
+      "experiment": "focus",
+      "method": "focus",
+      "config": "/u/dchanda/PGVL-Gym/benchmarks/tcga_rcc/configs/focus/rcc_4shot.yaml",
+      "device": "cpu",
+      "status": "passed",
+      "stage": "complete",
+      "trainable_parameters": 86875651,
+      "logits_shape": [
+        1,
+        3
+      ],
+      "logits_finite": true,
+      "seconds": 252.105
+    },
+    {
+      "experiment": "focus_5x20x",
+      "method": "focus",
+      "config": "/u/dchanda/PGVL-Gym/benchmarks/tcga_rcc/configs/focus_5x20x/rcc_4shot.yaml",
+      "device": "cpu",
+      "status": "passed",
+      "stage": "complete",
+      "trainable_parameters": 86875651,
+      "logits_shape": [
+        1,
+        3
+      ],
+      "logits_finite": true,
+      "seconds": 188.048
+    },
+    {
+      "experiment": "mscpt",
+      "method": "mscpt",
+      "config": "/u/dchanda/PGVL-Gym/benchmarks/tcga_rcc/configs/mscpt/rcc_4shot.yaml",
+      "device": "cpu",
+      "status": "passed",
+      "stage": "complete",
+      "trainable_parameters": 1667328,
+      "logits_shape": [
+        1,
+        3
+      ],
+      "logits_finite": true,
+      "seconds": 121.183
+    },
+    {
+      "experiment": "mscpt_5x20x",
+      "method": "mscpt",
+      "config": "/u/dchanda/PGVL-Gym/benchmarks/tcga_rcc/configs/mscpt_5x20x/rcc_4shot.yaml",
+      "device": "cpu",
+      "status": "passed",
+      "stage": "complete",
+      "trainable_parameters": 1667328,
+      "logits_shape": [
+        1,
+        3
+      ],
+      "logits_finite": true,
+      "seconds": 79.187
+    },
+    {
+      "experiment": "pathpt",
+      "method": "pathpt",
+      "config": "/u/dchanda/PGVL-Gym/benchmarks/tcga_rcc/configs/pathpt/rcc_4shot.yaml",
+      "device": "cpu",
+      "status": "passed",
+      "stage": "complete",
+      "trainable_parameters": 5059336,
+      "logits_shape": [
+        1,
+        3
+      ],
+      "logits_finite": true,
+      "seconds": 59.956
+    },
+    {
+      "experiment": "pathpt_keep",
+      "method": "pathpt",
+      "config": "/u/dchanda/PGVL-Gym/benchmarks/tcga_rcc/configs/pathpt_keep/rcc_4shot.yaml",
+      "device": "cpu",
+      "status": "passed",
+      "stage": "complete",
+      "trainable_parameters": 11287560,
+      "logits_shape": [
+        1,
+        3
+      ],
+      "logits_finite": true,
+      "seconds": 106.127
+    },
+    {
+      "experiment": "sldpc",
+      "method": "sldpc",
+      "config": "/u/dchanda/PGVL-Gym/benchmarks/tcga_rcc/configs/sldpc/rcc_4shot.yaml",
+      "device": "cpu",
+      "status": "passed",
+      "stage": "complete",
+      "trainable_parameters": 6144,
+      "logits_shape": [
+        1,
+        3
+      ],
+      "logits_finite": true,
+      "seconds": 64.374
+    }
+  ]
+}

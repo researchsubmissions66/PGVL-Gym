@@ -1,4 +1,0 @@
-label,train_slides,train_patients,val_slides,val_patients,test_slides,test_patients
-CCRCC,4,4,4,4,90,90
-PRCC,4,4,4,4,58,55
-CHRCC,4,4,4,4,26,22

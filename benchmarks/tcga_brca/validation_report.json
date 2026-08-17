@@ -1,0 +1,18 @@
+{
+  "valid": true,
+  "cohorts": {
+    "brca": {
+      "slides": 960,
+      "patients": 900,
+      "labels": {
+        "IDC": 771,
+        "ILC": 189
+      }
+    }
+  },
+  "missing_features": [],
+  "configs": {
+    "total": 36,
+    "valid": 36
+  }
+}

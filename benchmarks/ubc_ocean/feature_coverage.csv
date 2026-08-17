@@ -1,0 +1,5 @@
+cohort,feature_source,input_kind,resolution,backbone,feature_column,feature_dim,available_slides,annotated_slides,coverage,metadata_ready
+ubc_ocean,conch_v1_10x,patch_bag,10x,conch,feature__conch_v1_10x,512,1,513,0.001949317738791423,True
+ubc_ocean,conch_v1_20x,patch_bag,20x,conch,feature__conch_v1_20x,512,513,513,1.0,True
+ubc_ocean,conch_v1_5x,patch_bag,5x,conch,feature__conch_v1_5x,512,513,513,1.0,True
+ubc_ocean,keep_20x,patch_bag,20x,keep,feature__keep_20x,768,1,513,0.001949317738791423,True

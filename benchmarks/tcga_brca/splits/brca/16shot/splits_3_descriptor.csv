@@ -1,0 +1,3 @@
+label,train_slides,train_patients,val_slides,val_patients,test_slides,test_patients
+IDC,16,16,16,16,153,145
+ILC,16,16,16,16,40,35

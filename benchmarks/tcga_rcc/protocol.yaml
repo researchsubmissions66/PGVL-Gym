@@ -1,0 +1,140 @@
+version: 3
+name: tcga_rcc_resolution_registry
+seed: 1
+folds: 5
+shots:
+- 4
+- 8
+- 16
+train_slides_per_case: 1
+val_slides_per_case: 1
+test_slides: all
+feature_sources:
+  conch_v1_5x:
+    resolution: 5x
+    backbone: conch
+    encoder_weights: /work/hdd/bhwm/.cache_huggingface/hub/models--MahmoodLab--conch/snapshots/f9ca9f877171a28ade80228fb195ac5d79003357/pytorch_model.bin
+    feature_key: features
+    feature_dim: 512
+    feature_space_id: hf:MahmoodLab/conch
+    path_template: /work/hdd/bhwm/trident_features/master_benchmark/5x_512px_0px_overlap/features_conch_v1/{slide_id}.h5
+  conch_v1_10x:
+    resolution: 10x
+    backbone: conch
+    encoder_weights: /work/hdd/bhwm/.cache_huggingface/hub/models--MahmoodLab--conch/snapshots/f9ca9f877171a28ade80228fb195ac5d79003357/pytorch_model.bin
+    feature_key: features
+    feature_dim: 512
+    feature_space_id: hf:MahmoodLab/conch
+    path_template: /work/hdd/bhwm/trident_features/master_benchmark/10x_256px_0px_overlap/features_conch_v1/{slide_id}.h5
+  conch_v1_20x:
+    resolution: 20x
+    backbone: conch
+    encoder_weights: /work/hdd/bhwm/.cache_huggingface/hub/models--MahmoodLab--conch/snapshots/f9ca9f877171a28ade80228fb195ac5d79003357/pytorch_model.bin
+    feature_key: features
+    feature_dim: 512
+    feature_space_id: hf:MahmoodLab/conch
+    path_template: /work/hdd/bhwm/trident_features/master_benchmark/20x_512px_0px_overlap/features_conch_v1/{slide_id}.h5
+  keep_20x:
+    resolution: 20x
+    backbone: keep
+    encoder_weights: /work/hdd/bhwm/.cache_huggingface/hub/models--Astaxanthin--KEEP/snapshots/28a25d95cc6ba27a7e6fab3f144e13dbafd8b21e
+    feature_key: features
+    feature_dim: 768
+    feature_space_id: hf:Astaxanthin/KEEP
+    path_template: /work/hdd/bhwm/trident_features/master_benchmark/20x_256px_0px_overlap/features_keep/{slide_id}.h5
+  titan_slide_20x:
+    input_kind: slide_embedding
+    runtime_encoder: true
+    resolution: 20x
+    backbone: titan
+    encoder_weights: /work/hdd/bhwm/.cache_huggingface/hub/models--MahmoodLab--TITAN/snapshots/dac6773d9961cfc75503440676ff157a2c6e8d2e
+    feature_key: features
+    feature_dim: 768
+    feature_space_id: hf:MahmoodLab/TITAN@dac6773d9961cfc75503440676ff157a2c6e8d2e
+    path_template: /work/hdd/bhwm/trident_features/master_benchmark/20x_512px_0px_overlap/slide_features_titan/{slide_id}.h5
+cohorts:
+  rcc:
+    metadata_csv: /u/dchanda/PGVL-Gym/metadata/tcga_rcc.csv
+    labels:
+    - CCRCC
+    - PRCC
+    - CHRCC
+    classnames:
+    - clear cell renal cell carcinoma
+    - papillary renal cell carcinoma
+    - chromophobe renal cell carcinoma
+    label_column: label
+    slide_id_column: slide_id
+    case_id_column: case_id
+    prompts:
+      focus: text_prompts/focus/TCGA_RCC_two_scale_text_prompt.csv
+      vila_mil: text_prompts/focus/TCGA_RCC_two_scale_text_prompt.csv
+      mscpt: train_data/gpt/description/RCC.json
+      slip: text_prompts/slip/tcga_rcc_tissues.json
+      sldpc: text_prompts/sldpc/tcga_rcc.yaml
+      cod_mil: text_prompts/cod_mil/rcc_chain_of_diagnosis.json
+    cod_prompt_features: text_prompts/cod_mil/rcc_text_prompt_features_clip_rn50.pt
+experiments:
+  pathpt:
+    method: pathpt
+    features:
+      bag: conch_v1_10x
+    epochs: 20
+  muse:
+    method: muse
+    features:
+      bag: conch_v1_10x
+    prompt_encoder: &id001
+      name: conch
+      weights: /work/hdd/bhwm/.cache_huggingface/hub/models--MahmoodLab--conch/snapshots/f9ca9f877171a28ade80228fb195ac5d79003357/pytorch_model.bin
+      feature_space_id: hf:MahmoodLab/conch
+    epochs: 200
+  muse_keep:
+    method: muse
+    features:
+      bag: keep_20x
+    prompt_encoder: *id001
+    epochs: 200
+  focus:
+    method: focus
+    features:
+      low: conch_v1_10x
+      high: conch_v1_20x
+    epochs: 200
+  focus_5x20x:
+    method: focus
+    features:
+      low: conch_v1_5x
+      high: conch_v1_20x
+    epochs: 200
+  mscpt:
+    method: mscpt
+    features:
+      low: conch_v1_10x
+      high: conch_v1_20x
+    epochs: 50
+  mscpt_5x20x:
+    method: mscpt
+    features:
+      low: conch_v1_5x
+      high: conch_v1_20x
+    epochs: 50
+  pathpt_keep:
+    method: pathpt
+    features:
+      bag: keep_20x
+    epochs: 20
+  sldpc:
+    method: sldpc
+    features:
+      bag: titan_slide_20x
+    prompt_encoder:
+      name: titan
+      weights: /work/hdd/bhwm/.cache_huggingface/hub/models--MahmoodLab--TITAN/snapshots/dac6773d9961cfc75503440676ff157a2c6e8d2e
+      model_id: MahmoodLab/TITAN
+      revision: dac6773d9961cfc75503440676ff157a2c6e8d2e
+      feature_space_id: hf:MahmoodLab/TITAN@dac6773d9961cfc75503440676ff157a2c6e8d2e
+      local_files_only: true
+    slide_projection:
+      mode: native
+    epochs: 100

@@ -1,0 +1,38 @@
+{
+  "valid": true,
+  "cohorts": {
+    "ubc_ocean": {
+      "slides": 513,
+      "patients": 513,
+      "labels": {
+        "HGSC": 217,
+        "EC": 119,
+        "CC": 94,
+        "LGSC": 42,
+        "MC": 41
+      }
+    }
+  },
+  "missing_features": [
+    {
+      "cohort": "ubc_ocean",
+      "feature_source": "conch_v1_10x",
+      "input_kind": "patch_bag",
+      "resolution": "10x",
+      "feature_column": "feature__conch_v1_10x",
+      "missing": 512
+    },
+    {
+      "cohort": "ubc_ocean",
+      "feature_source": "keep_20x",
+      "input_kind": "patch_bag",
+      "resolution": "20x",
+      "feature_column": "feature__keep_20x",
+      "missing": 512
+    }
+  ],
+  "configs": {
+    "total": 24,
+    "valid": 24
+  }
+}
