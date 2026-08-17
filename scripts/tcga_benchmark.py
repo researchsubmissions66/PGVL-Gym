@@ -19,7 +19,10 @@ from sklearn.model_selection import StratifiedKFold
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT))
-DEFAULT_PROTOCOL = REPO_ROOT / "benchmarks" / "tcga" / "protocol.yaml"
+# Each cohort owns its protocol, so there is no meaningful default: generating
+# against the wrong cohort silently produces a benchmark for the wrong data.
+# --protocol is required instead.
+BENCHMARKS_DIR = REPO_ROOT / "benchmarks"
 
 
 def _load_protocol(path: Path) -> dict[str, Any]:
@@ -55,8 +58,15 @@ def _feature_path(
             slide_id=slide_id, task=task or "validation-task")
     except KeyError as error:
         raise ValueError(
-            f"Unsupported feature path placeholder {error} in {template}") from error
-    return Path(resolved).expanduser()
+            f"Feature path template uses undefined keys: {template}") from error
+            
+    path = Path(resolved)
+    if not path.exists() and path.parent.exists():
+        # Handle TCGA UUID suffixes (e.g. slide_id.UUID.h5)
+        matches = list(path.parent.glob(f"{slide_id}*.*"))
+        if matches:
+            return matches[0]
+    return path.expanduser()
 
 
 def _source_present(feature_cfg: dict[str, Any], path: Path) -> bool:
@@ -805,7 +815,16 @@ def _resolve_feature_bindings(
 def _muse_prompt_paths(
     cohort: str, cohort_cfg: dict[str, Any], output_dir: Path
 ) -> list[str]:
+    explicit = _explicit_prompt(cohort_cfg, "muse")
+    if explicit is not None:
+        return list(explicit) if isinstance(explicit, list) else [explicit]
     generated = cohort_cfg.get("_generated_prompt_assets", {})
+    if str(cohort_cfg.get("prompt_precedence", "upstream")).lower() == "upstream" \
+            and cohort_cfg.get("muse_prompt_csvs"):
+        return [
+            str(_absolute_repo_path(value))
+            for value in cohort_cfg["muse_prompt_csvs"]
+        ]
     if generated.get("muse"):
         return list(generated["muse"])
     if cohort_cfg.get("muse_prompt_csvs"):
@@ -820,18 +839,141 @@ def _muse_prompt_paths(
     ]
 
 
+def _explicit_prompt(cohort_cfg: dict[str, Any], method: str) -> Any:
+    """Return the path a cohort's ``prompts:`` block names for one method.
+
+    The block maps a method name to the prompt file that method reads, so the
+    prompt in force for a run is stated in the protocol rather than resolved::
+
+        cohorts:
+          ubc_ocean:
+            prompts:
+              focus: text_prompts/focus/UBC_OCEAN_two_scale_text_prompt.csv
+              mscpt: train_data/gpt/description/UBC-OCEAN.json
+              muse:
+                - text_prompts/muse/ubc_ocean/generated_new_0.csv
+                - text_prompts/muse/ubc_ocean/generated_new_1.csv
+
+    Paths are repository-relative or absolute. A named file that does not exist
+    is an error rather than a silent fallback: a prompt the author asked for and
+    did not get would change what the model reads without saying so.
+
+    Returns:
+        A resolved path, a list of resolved paths, or None when the method has
+        no explicit entry.
+    """
+    prompts = cohort_cfg.get("prompts")
+    if not prompts:
+        return None
+    if not isinstance(prompts, dict):
+        raise ValueError("cohort `prompts` must map method names to paths")
+    if method not in prompts:
+        return None
+
+    value = prompts[method]
+    values = value if isinstance(value, (list, tuple)) else [value]
+    resolved: list[str] = []
+    for item in values:
+        path = _absolute_repo_path(item)
+        if not Path(path).exists():
+            raise FileNotFoundError(
+                f"prompts.{method} names a file that does not exist: {path}")
+        resolved.append(str(path))
+    return resolved if isinstance(value, (list, tuple)) else resolved[0]
+
+
 def _prompt_asset(
     cohort_cfg: dict[str, Any], method: str, legacy_key: str | None = None,
 ) -> Any:
-    """Resolve a compiled prompt asset before a legacy method-specific path."""
+    """Resolve the prompt asset a method reads, honouring declared precedence.
+
+    Most upstream repositories ship their prompts as an explicit per-task file --
+    FOCUS reads a ``class_name,low_res_prompt,high_res_prompt`` CSV, MUSE reads
+    per-class description CSVs, MSCPT reads a GPT description JSON. When a cohort
+    declares that published asset, it is what the paper actually used, so it wins
+    by default; the ``prompt_spec`` compiler is the fallback for tasks that have
+    no published prompts.
+
+    Set ``prompt_precedence: generated`` on the cohort (or on the protocol, as a
+    default for every cohort) to deliberately prefer compiled prompts instead --
+    for example to compare methods under one uniform prompt style. The choice is
+    recorded per config in ``prompt_provenance``.
+    """
+    # An explicit `prompts:` entry names the file for this method outright and
+    # always wins. Nothing is inferred, so what a run embeds is readable from
+    # the cohort definition without tracing resolution rules.
+    explicit = _explicit_prompt(cohort_cfg, method)
+    if explicit is not None:
+        return explicit
+
     generated = cohort_cfg.get("_generated_prompt_assets", {})
-    if method in generated:
-        return generated[method]
+    precedence = str(cohort_cfg.get("prompt_precedence", "upstream")).lower()
+    if precedence not in {"upstream", "generated"}:
+        raise ValueError(
+            f"prompt_precedence must be 'upstream' or 'generated', "
+            f"got {precedence!r}")
+
+    upstream: str | None = None
     if legacy_key and cohort_cfg.get(legacy_key) is not None:
-        return str(_absolute_repo_path(cohort_cfg[legacy_key]))
+        candidate = _absolute_repo_path(cohort_cfg[legacy_key])
+        if Path(candidate).exists():
+            upstream = str(candidate)
+
+    order = ((upstream, generated.get(method)) if precedence == "upstream"
+             else (generated.get(method), upstream))
+    for asset in order:
+        if asset is not None:
+            return asset
+
     raise ValueError(
         f"Task has no prompt_spec-generated {method} asset"
         + (f" or {legacy_key}" if legacy_key else ""))
+
+
+# The cohort key naming each method's published, paper-native prompt asset.
+_UPSTREAM_PROMPT_KEYS = {
+    "focus": "focus_prompt_csv",
+    "vila_mil": "focus_prompt_csv",
+    "mscpt": "mscpt_prompt_json",
+    "maple": "maple_prompt_json",
+    "cod_mil": "cod_prompt_json",
+    "slip": "slip_tissue_json",
+    "sldpc": "sldpc_prompt_yaml",
+    "muse": "muse_prompt_csvs",
+    "convlm": "convlm_attribute_prompt_json",
+}
+
+# Methods that build their prompt from `classnames` rather than reading a file.
+_CLASSNAME_PROMPT_METHODS = frozenset({"pathpt", "wsi_five"})
+
+
+def _prompt_provenance(cohort_cfg: dict[str, Any], method: str) -> str:
+    """Describe which prompt source *this method* actually resolved to.
+
+    Reported per method, not per cohort: a cohort commonly has a published asset
+    for one method and only a compiled one for another, and recording the
+    cohort's best case for every method would misreport what a run embedded.
+    """
+    if _explicit_prompt_declared(cohort_cfg, method):
+        return "explicit"
+    if method in _CLASSNAME_PROMPT_METHODS:
+        return "classname_template"
+
+    generated = cohort_cfg.get("_generated_prompt_assets", {})
+    precedence = str(cohort_cfg.get("prompt_precedence", "upstream")).lower()
+    legacy_key = _UPSTREAM_PROMPT_KEYS.get(method)
+    has_upstream = bool(legacy_key and cohort_cfg.get(legacy_key) is not None)
+
+    if precedence == "upstream" and has_upstream:
+        return "upstream"
+    if method in generated:
+        return generated.get("provenance", "generated")
+    return "upstream" if has_upstream else "generated"
+
+
+def _explicit_prompt_declared(cohort_cfg: dict[str, Any], method: str) -> bool:
+    prompts = cohort_cfg.get("prompts")
+    return isinstance(prompts, dict) and method in prompts
 
 
 def _method_config(
@@ -851,8 +993,7 @@ def _method_config(
         "method": method,
         "experiment": experiment,
         "epochs": int(experiment_cfg["epochs"]),
-        "prompt_provenance": cohort_cfg.get(
-            "_generated_prompt_assets", {}).get("provenance", "upstream"),
+        "prompt_provenance": _prompt_provenance(cohort_cfg, method),
         "results_dir": str(
             REPO_ROOT / "results"
             / protocol.get("results_namespace", "tcga_benchmark") / experiment
@@ -1064,6 +1205,12 @@ def _method_config(
             "n_ctx_inst": 4,
             "ctx_init_bag": "",
             "ctx_init_inst": "",
+            # TOP's instance branch is prototype-based: 26 task-agnostic tissue
+            # phenotypes, not the bag class names. Declared under the cohort's
+            # `prompts` block as `top_instance` / `top_bag`.
+            "instance_prompt_path": str(_absolute_repo_path(
+                cohort_cfg.get("prompts", {}).get(
+                    "top_instance", "text_prompts/top/instance_prototypes.json"))),
             "csc": True,
             "p_drop_out": 0.2,
             "p_bag_drop_out": 0.2,
@@ -1071,8 +1218,11 @@ def _method_config(
             "pooling_strategy": "learnablePrompt_multi",
             "data_folder_s": _feature_root(bindings["bag"]["config"], cohort),
             "feature_path_column": _feature_column(bindings["bag"]["source"]),
-            "prompt_source": "top_learnable_bag_and_instance_context",
+            "prompt_source": "top_instance_prototypes_and_bag_context",
         })
+        top_bag = cohort_cfg.get("prompts", {}).get("top_bag")
+        if top_bag:
+            cfg["bag_prompt_path"] = str(_absolute_repo_path(top_bag))
     elif method == "slip":
         tissue_path = Path(_prompt_asset(
             cohort_cfg, "slip", "slip_tissue_json")).resolve()
@@ -1436,6 +1586,39 @@ def _validate_cod_prompt(cfg: dict[str, Any]) -> None:
             f"not match {declared_space!r}")
 
 
+def _validate_top_prompts(cfg: dict[str, Any]) -> None:
+    """Check TOP's prototype bank and, when declared, its bag prompts.
+
+    TOP scores each instance prototype against the bag class prompts, so the
+    prototype bank sizes the instance branch while the class list sizes the bag
+    branch. They are independent, and a bank that silently collapses to the
+    class count reproduces the defect this validation exists to prevent.
+    """
+    path = _require_asset(cfg.get("instance_prompt_path"),
+                          "TOP instance prototype bank")
+    with path.open(encoding="utf-8") as handle:
+        payload = json.load(handle)
+    prototypes = payload["prototypes"] if isinstance(payload, dict) else payload
+    if len(prototypes) < 2:
+        raise ValueError(f"{path}: TOP needs at least two instance prototypes")
+    missing = [item for item in prototypes if "prompt" not in item]
+    if missing:
+        raise ValueError(f"{path}: every prototype needs a 'prompt' field")
+
+    bag_path = cfg.get("bag_prompt_path")
+    if not bag_path:
+        return
+    resolved = _require_asset(bag_path, "TOP bag prompt file")
+    with resolved.open(encoding="utf-8") as handle:
+        prompts = json.load(handle)["prompts"]
+    labels = list(cfg["label_dict"])
+    absent = [label for label in labels if label not in prompts]
+    if absent:
+        raise ValueError(
+            f"{resolved}: TOP bag prompts missing {absent}; "
+            f"file provides {sorted(prompts)}")
+
+
 def _validate_slip_prompt(cfg: dict[str, Any]) -> None:
     path = _require_asset(
         cfg.get("tissue_classnames_path"), "SLIP tissue prompt JSON")
@@ -1671,6 +1854,7 @@ def validate_generated_config_assets(cfg: dict[str, Any]) -> None:
     elif method == "top":
         if cfg.get("clip_arch") != "RN50":
             raise ValueError("TOP configs require clip_arch RN50")
+        _validate_top_prompts(cfg)
     elif method == "slip":
         _validate_slip_prompt(cfg)
     elif method == "wsi_five":
@@ -1694,6 +1878,7 @@ def generate_configs(protocol: dict[str, Any], output_dir: Path) -> None:
     from methods import get_method
 
     matrix_rows = []
+    skipped_configs: list[dict[str, Any]] = []
     for experiment, experiment_cfg in protocol["experiments"].items():
         method = experiment_cfg["method"]
         bindings = _resolve_feature_bindings(protocol, experiment, experiment_cfg)
@@ -1723,11 +1908,39 @@ def generate_configs(protocol: dict[str, Any], output_dir: Path) -> None:
                     for fold in range(int(protocol["folds"]))
                     for partition in ("train", "val", "test")
                 )
-                cfg = _method_config(
-                    experiment, experiment_cfg, method, protocol,
-                    cohort, cohort_cfg, shot, output_dir)
-                get_method(method).get_backbone_contract().validate_config(cfg)
-                validate_generated_config_assets(cfg)
+                # A cohort declared `metadata_availability: future` has no
+                # slides and, usually, no prompt assets compiled yet. Building
+                # or validating its config is expected to fail, and that must
+                # not abort generation for every other cohort and experiment in
+                # the protocol.
+                pending = (not metadata_ready
+                           and cohort_cfg.get("metadata_availability") == "future")
+                try:
+                    cfg = _method_config(
+                        experiment, experiment_cfg, method, protocol,
+                        cohort, cohort_cfg, shot, output_dir)
+                    get_method(method).get_backbone_contract().validate_config(cfg)
+                    config_valid = True
+                    if pending:
+                        # Assets cannot be checked against a cohort that has no
+                        # slides, so the row is generated but never marked valid.
+                        config_valid = False
+                    else:
+                        validate_generated_config_assets(cfg)
+                except (ValueError, KeyError, FileNotFoundError) as error:
+                    # One experiment lacking an asset for one cohort -- MUSE has
+                    # no published RCC descriptions, for instance -- must not
+                    # abort the rest of the matrix. Report it, leave the row out,
+                    # and carry on; the launcher then has nothing to submit for
+                    # that combination rather than a config that cannot run.
+                    reason = ("awaiting metadata and prompt assets" if pending
+                              else f"{type(error).__name__}: {str(error)[:110]}")
+                    print(f"  ! {experiment}/{cohort}/{shot}shot skipped: {reason}")
+                    skipped_configs.append({
+                        "experiment": experiment, "method": method,
+                        "cohort": cohort, "shots": shot, "reason": reason,
+                    })
+                    continue
                 missing_auxiliary = 0
                 if method == "cod_mil":
                     map_root = Path(cfg["cross_mag_map_dir"])
@@ -1794,7 +2007,7 @@ def generate_configs(protocol: dict[str, Any], output_dir: Path) -> None:
                         or cfg.get("default_report")
                         or cfg.get("prompt_init")
                     ),
-                    "config_valid": True,
+                    "config_valid": config_valid,
                     "bag_resolution": (
                         bindings["bag"]["config"]["resolution"]
                         if "bag" in bindings else None),
@@ -1816,6 +2029,13 @@ def generate_configs(protocol: dict[str, Any], output_dir: Path) -> None:
                     "command": f"python train.py --method {method} --config {path}",
                 })
     pd.DataFrame(matrix_rows).to_csv(output_dir / "run_matrix.csv", index=False)
+    # Record what could not be generated, so a cohort missing one method's
+    # assets is visible rather than merely absent from the matrix.
+    if skipped_configs:
+        pd.DataFrame(skipped_configs).to_csv(
+            output_dir / "skipped_configs.csv", index=False)
+        print(f"  {len(skipped_configs)} configs skipped; see "
+              f"{output_dir / 'skipped_configs.csv'}")
 
 
 def _assert_disjoint(frames: dict[str, pd.DataFrame], cohort: str, fold: int) -> None:
@@ -1849,7 +2069,12 @@ def audit_generated_configs(
                     f"{path}: {field}={cfg[field]!r} does not match run "
                     f"matrix value {expected!r}")
         get_method(cfg["method"]).get_backbone_contract().validate_config(cfg)
-        validate_generated_config_assets(cfg)
+        # Rows generated for a cohort still awaiting metadata carry
+        # config_valid=False and reference prompt assets that do not exist yet.
+        # Their structure is still audited below; only the asset check is
+        # deferred until the cohort's data lands.
+        if bool(run.get("config_valid", True)):
+            validate_generated_config_assets(cfg)
 
         for role, source in cfg["feature_sources"].items():
             source_cfg = protocol["feature_sources"].get(source)
@@ -2088,7 +2313,10 @@ def parse_args() -> argparse.Namespace:
         "command",
         choices=("inventory", "prepare", "configs", "validate", "aggregate", "all"),
     )
-    parser.add_argument("--protocol", type=Path, default=DEFAULT_PROTOCOL)
+    parser.add_argument(
+        "--protocol", type=Path, required=True,
+        help="path to a cohort's protocol.yaml, e.g. "
+             "benchmarks/tcga_brca/protocol.yaml")
     parser.add_argument("--output-dir", type=Path, default=None)
     return parser.parse_args()
 
