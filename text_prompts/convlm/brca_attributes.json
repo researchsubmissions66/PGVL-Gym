@@ -1,0 +1,14 @@
+{
+  "invasive ductal carcinoma": [
+    "A high-resolution breast tumor slide showing invasive ductal carcinoma with cohesive atypical epithelial cells, irregular tubule or gland formation, pleomorphic nuclei, prominent nucleoli, mitotic activity, and a fibrotic stromal response.",
+    "A low-resolution breast tumor slide showing invasive ductal carcinoma with cohesive irregular glands, ducts, solid nests, or cords infiltrating desmoplastic stroma, heterogeneous tumor borders, and variable necrosis.",
+    "cohesive pleomorphic epithelial cells with variable tubule formation",
+    "irregular infiltrative glands, cords, nests, or solid sheets in desmoplastic breast stroma"
+  ],
+  "invasive lobular carcinoma": [
+    "A high-resolution breast tumor slide showing invasive lobular carcinoma with small discohesive cells infiltrating in single-file or Indian-file patterns, minimal tubule formation, bland round nuclei, occasional signet-ring cells, and loss of cellular cohesion.",
+    "A low-resolution breast tumor slide showing invasive lobular carcinoma with diffuse poorly circumscribed infiltration, preserved background architecture, targetoid growth around ducts, and linear cords spreading through relatively sparse stroma.",
+    "diffuse single-file and targetoid infiltration with preserved breast architecture",
+    "small discohesive cells with intracytoplasmic lumina and absent tubule formation"
+  ]
+}

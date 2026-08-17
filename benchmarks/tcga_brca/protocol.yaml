@@ -89,7 +89,6 @@ cohorts:
     slip_tissue_json: text_prompts/slip/tcga_brca_tissues.json
     sldpc_prompt_yaml: text_prompts/sldpc/tcga_brca.yaml
     wsi_report_csv: methods/wsi_five/gpt_preprocess/TCGA_Reports.csv
-    convlm_attribute_embeddings: text_prompts/convlm/tcga_brca_quiltnet_attributes.pt
     prompts:
       top_instance: text_prompts/top/instance_prototypes.json
 experiments:

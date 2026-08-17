@@ -73,6 +73,7 @@ cohorts:
       slip: text_prompts/slip/tcga_rcc_tissues.json
       sldpc: text_prompts/sldpc/tcga_rcc.yaml
       cod_mil: text_prompts/cod_mil/rcc_chain_of_diagnosis.json
+      maple: text_prompts/maple/RCC_attributes.json
     cod_prompt_features: text_prompts/cod_mil/rcc_text_prompt_features_clip_rn50.pt
 experiments:
   pathpt:

@@ -1,0 +1,10 @@
+{
+  "normal lymph node": [
+    "benign lymphoid tissue with preserved architecture",
+    "normal lymph node"
+  ],
+  "metastatic lymph node": [
+    "lymph node involved by metastatic carcinoma",
+    "metastatic lymph node"
+  ]
+}

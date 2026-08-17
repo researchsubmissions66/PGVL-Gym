@@ -18,9 +18,9 @@ Across 13 methods and 9 registered encoders there are 117 combinations:
 
 | Outcome | Count | Meaning |
 | --- | ---: | --- |
-| `native` | 37 | The method's own code supports this encoder. Paper-faithful. |
-| `adapt` | 27 | Capabilities are satisfied; only the feature width differs, so a declared projection can bridge it. |
-| `blocked` | 53 | Cannot run without changing what the method is. |
+| `native` | 43 | The method's own code supports this encoder. Paper-faithful. |
+| `adapt` | 29 | Capabilities are satisfied; only the feature width differs, so a declared projection can bridge it. |
+| `blocked` | 45 | Cannot run without changing what the method is. |
 
 Every encoder listed is a dual-tower vision-language model. Vision-only
 pathology foundation models — UNI, GigaPath, Virchow, Phikon, CTransPath,
@@ -38,18 +38,19 @@ maple            adapt    adapt    adapt    adapt   native    adapt    adapt   n
 mscpt                -        -        -   native   native        -        -   native        -
 pathpt           adapt    adapt    adapt   native    adapt   native   native   native        -
 top                  -   native        -        -        -        -        -        -        -
-slip            native   native   native    adapt    adapt        -        -   native        -
+slip            native   native   native    adapt    adapt    adapt    adapt   native        -
 wsi_five             -        -        -        -        -        -        -        -        -
-muse            native   native   native   native   native        -        -   native   native
+muse            native   native   native   native   native   native   native   native   native
 convlm               -        -        -        -        -        -        -        -        -
-sldpc           native   native   native   native   native        -        -   native   native
-composite       native   native   native   native   native        -        -   native        -
+sldpc           native   native   native   native   native   native   native   native   native
+composite       native   native   native   native   native   native   native   native        -
 ```
 
 ## Why the blocked cells are blocked
 
-The 53 blocked combinations fall into five causes. Only one of them is a
-limitation of this benchmark rather than of the methods or encoders themselves.
+The 45 blocked combinations fall into four remaining causes; a fifth has since
+been resolved. Only that fifth was ever a limitation of this benchmark rather
+than of the methods or encoders themselves.
 
 ### 1. The method owns its vision tower (18 cells)
 
@@ -91,22 +92,43 @@ per slide, so patch-bag and dual-scale methods — `vila_mil`, `maple`, `pathpt`
 registry models correctly. `sldpc` and `muse` accept TITAN because they consume
 slide embeddings.
 
-### 5. KEEP and MUSK declare no text tower (8 cells)
+### 5. KEEP and MUSK declared no text tower — resolved
 
-`keep` and `musk` carry the capability bundle `{soft_prompt, paired_tile_text}`
-and therefore fail the `text_encode` requirement of `muse`, `sldpc`, `composite`
-and `slip`.
+`keep` and `musk` carried the capability bundle `{soft_prompt, paired_tile_text}`
+and so failed the `text_encode` requirement of `muse`, `sldpc`, `composite` and
+`slip`. The bundle they shared was named `_NATIVE_PATHPT_TILE`, which describes
+what PathPT needs of them rather than what they can do.
 
-This is the one cause that may be a limitation of the registry rather than the
-models: both are dual-tower VLMs, and both loaders return a working tokenizer.
-The bundle they share is named `_NATIVE_PATHPT_TILE`, which describes what PathPT
-needs from them rather than what they can do.
+Both are in fact dual-tower models, and both now declare `TEXT_ENCODE`. Verified
+through `bundle.encode_text()` — the call the dependent methods make — rather
+than by inspecting attributes:
 
-**Resolution: verify, then implement.** Declaring `TEXT_ENCODE` without the
-bundle actually exposing `encode_text` would convert a clean upfront rejection
-into a late runtime failure, which is strictly worse. The capability should be
-added only once the operation works end to end; doing so would move 8 cells from
-`blocked` to `native`.
+| | width | matches `shared_dim` | finite | cos(IDC,ILC) | cos(IDC,normal) | discriminative |
+| --- | ---: | --- | --- | ---: | ---: | --- |
+| KEEP | 768 | yes | yes | 0.6553 | 0.4972 | yes |
+| MUSK | 1024 | yes | yes | 0.8946 | 0.7947 | yes |
+
+MUSK's width is the load-bearing number. Its text tokens are 768 wide and its
+shared space is 1024; only `with_head=True` applies `language_head` and projects
+between them. A 768-wide result would have meant the towers did not share a
+space and every similarity was computed across mismatched geometries — a silent
+numerical error rather than a failure.
+
+Reaching that point took four fixes, each hidden behind the previous one:
+
+1. the specs did not declare `TEXT_ENCODE`;
+2. `_NativeText` could not call KEEP's `encode_text(text_inputs)`, which takes
+   the token mapping as one positional argument, and could not drive MUSK at
+   all, whose API is a unified `forward(...) -> (vision_cls, language_cls)`;
+3. the MUSK loader looked for `tokenizer.spm` only inside the installed package,
+   which does not ship it, though the published snapshot does;
+4. `sentencepiece`, required by MUSK's tokenizer, was missing from the
+   `pathpt-musk` extra.
+
+Every intermediate state would have passed `validate_config` and failed at
+runtime. That is the reason a capability is only declared once the operation has
+been exercised end to end: a declaration that validates and then breaks is worse
+than an honest refusal.
 
 ## Native versus adapted results
 
