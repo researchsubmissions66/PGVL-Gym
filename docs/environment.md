@@ -49,6 +49,88 @@ python scripts/list_backbone_compatibility.py
     driver. The host driver must support that runtime. Check it with
     `nvidia-smi` before launching a GPU job.
 
+## Install on a shared cluster
+
+On a multi-user cluster the environment usually cannot live in `$HOME`: a full
+PyTorch and CUDA stack is 15-25 GB, which most home quotas will not hold. Build
+it under a project filesystem with `--prefix` instead of `--name`:
+
+```bash
+export CONDA_PKGS_DIRS=/path/to/project/conda_pkgs   # keep the package cache off $HOME too
+conda env create --file environment.yml --prefix /path/to/project/envs/pgvl-gym
+```
+
+A prefix environment is activated by path, and needs no `~/.condarc` change:
+
+```bash
+conda activate /path/to/project/envs/pgvl-gym
+```
+
+Point the job wrapper at it once and every submitted run picks it up:
+
+```bash
+export PGVL_CONDA_ENV=/path/to/project/envs/pgvl-gym
+```
+
+`scripts/pgvl_job.sh` activates `$PGVL_CONDA_ENV` on the compute node and exits
+with status 78 if activation fails, so a broken environment is reported as an
+environment problem rather than being mistaken for a modelling failure.
+
+!!! warning "A cluster PyTorch module is not enough"
+
+    A site-provided module such as `pytorch-conda` supplies torch, numpy,
+    pandas and scikit-learn, but not `h5py`, `ftfy`, `torch_geometric`, or the
+    gated encoder packages. Benchmark generation and several methods fail
+    against it. Build the project environment described above.
+
+### Offline compute nodes
+
+Compute nodes on most clusters have no outbound network, while login nodes do.
+Download every weight from a login node, then point jobs at that cache and make
+a cache miss fail immediately instead of hanging on a connection attempt:
+
+```bash
+export HF_HOME=/path/to/project/.cache_huggingface
+export HF_HUB_OFFLINE=1
+export TRANSFORMERS_OFFLINE=1
+```
+
+`scripts/pgvl_job.sh` sets all three, defaulting `HF_HOME` to the shared project
+cache. Without them, `transformers` looks in `~/.cache/huggingface`, misses, and
+every job that loads an encoder dies with
+
+```
+OSError: We couldn't connect to 'https://huggingface.co' to load the files,
+and couldn't find them in the cached files.
+```
+
+!!! note "First import from a parallel filesystem is slow"
+
+    An environment on Lustre or GPFS pages in thousands of shared objects on its
+    first use from a given node, so a cold `import torch` can take minutes and
+    look like a hung job. The cost is per node, not per job, and disappears once
+    the file cache is warm. If it becomes a problem, stage the environment to
+    node-local storage in the job script.
+
+### Verified versions
+
+The environment resolved from `environment.yml` on Python 3.10:
+
+| Package | Version |
+| --- | --- |
+| torch | 2.5.1 |
+| numpy | 1.26.4 |
+| pandas | 2.3.3 |
+| h5py | 3.16.0 |
+| scikit-learn | 1.7.2 |
+| transformers | 4.57.6 |
+| timm | 1.0.28 |
+| torch-geometric | 2.8.0.post1 |
+
+`conda` stages a NumPy 2.x build while solving; the pip stage then downgrades it
+to satisfy the `numpy<2` pin in `pyproject.toml`. That downgrade is expected, and
+`python -m pip check` should still report no conflicts afterwards.
+
 ## Install only selected method families
 
 For development on one method, create a smaller isolated environment and add

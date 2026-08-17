@@ -31,6 +31,21 @@ Then inspect the matching row in `run_matrix.csv`, `config_audit.csv`, and
 | Aggregate table is empty | No referenced result directory contains `metrics.json` | Train ready rows first and confirm each config's `results_dir` |
 | Fewer aggregate folds than expected | Some folds failed, were skipped, or used a different directory | Inspect `metrics.json` and do not compare incomplete means as final results |
 
+## Environment failures
+
+These surface as job failures but are never modelling problems. `scripts/pgvl_job.sh`
+exits with status **78** for all of them, and a run that skipped for a missing
+asset exits **3** and records `skipped.json`; neither should be read as a result.
+
+| Symptom | Likely cause | What to check |
+| --- | --- | --- |
+| `We couldn't connect to 'https://huggingface.co' … couldn't find them in the cached files` | Compute node is offline and `HF_HOME` points at an empty cache | Export `HF_HOME` to the shared project cache and `HF_HUB_OFFLINE=1`; download weights from a login node first |
+| `ModuleNotFoundError` for `h5py`, `ftfy`, `torch_geometric`, `conch` | Running against a site PyTorch module instead of the project environment | Set `PGVL_CONDA_ENV` to the environment built from `environment.yml` |
+| `PermissionError: [Errno 13] … '/path'` | Config still carries the committed `/path/to/...` placeholders | Regenerate configs from a protocol whose paths match local storage |
+| `KeyError: "Unknown method 'pathpt_keep'"` | A method name was taken from a config directory name | Submit through `./launch_pgvl.sh`, which reads the matrix's `method` column |
+| Job appears hung before any output | First import of an environment on Lustre or GPFS from a cold node | Wait; the cost is per node, not per job. Stage the environment to node-local storage if it recurs |
+| `cannot activate conda env` (exit 78) | `PGVL_CONDA_ENV` is wrong or the environment was never built | `conda activate` the same path by hand to see the underlying error |
+
 ## Prompt and class-order problems
 
 Prompts must use the same label order as the cohort. If logits appear swapped

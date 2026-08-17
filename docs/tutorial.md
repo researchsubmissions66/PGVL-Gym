@@ -51,7 +51,7 @@ python scripts/tcga_benchmark.py validate
 
 Validation checks the cohort labels, prompt assets, generated configs, encoder
 contracts, feature roles, dimensions, and sampled stored tensors. The command
-updates `benchmarks/tcga/validation_report.json`.
+updates `benchmarks/tcga_brca/validation_report.json`.
 
 !!! tip "Validity is not readiness"
 
@@ -66,7 +66,7 @@ Print the PathPT/NSCLC/4-shot matrix row:
 python - <<'PY'
 import pandas as pd
 
-matrix = pd.read_csv("benchmarks/tcga/run_matrix.csv")
+matrix = pd.read_csv("benchmarks/tcga_brca/run_matrix.csv")
 row = matrix[
     (matrix["experiment"] == "pathpt")
     & (matrix["cohort"] == "nsclc")
@@ -83,7 +83,7 @@ missing asset.
 The selected config is:
 
 ```text
-benchmarks/tcga/configs/pathpt/nsclc_4shot.yaml
+benchmarks/tcga_nsclc/configs/pathpt/nsclc_4shot.yaml
 ```
 
 Important fields to inspect are:
@@ -108,7 +108,7 @@ to a same-width embedding produced by another model.
 
 ```bash
 python -u scripts/smoke_test.py \
-  --config benchmarks/tcga/configs/pathpt/nsclc_4shot.yaml \
+  --config benchmarks/tcga_nsclc/configs/pathpt/nsclc_4shot.yaml \
   --device cuda:0 \
   --timeout 300 \
   --result-json /tmp/pgvl_pathpt_smoke.json
@@ -127,7 +127,7 @@ For a quick training-loop check, copy the generated config to a temporary
 learning config:
 
 ```bash
-cp benchmarks/tcga/configs/pathpt/nsclc_4shot.yaml \
+cp benchmarks/tcga_nsclc/configs/pathpt/nsclc_4shot.yaml \
   /tmp/pathpt_nsclc_tutorial.yaml
 ```
 
@@ -161,7 +161,7 @@ Use the unmodified generated config for the reportable run:
 ```bash
 python train.py \
   --method pathpt \
-  --config benchmarks/tcga/configs/pathpt/nsclc_4shot.yaml \
+  --config benchmarks/tcga_nsclc/configs/pathpt/nsclc_4shot.yaml \
   --device cuda:0
 ```
 
@@ -209,8 +209,8 @@ python scripts/tcga_benchmark.py aggregate
 This scans result locations referenced by `run_matrix.csv` and writes:
 
 ```text
-benchmarks/tcga/fold_results.csv
-benchmarks/tcga/aggregate_results.csv
+benchmarks/tcga_brca/fold_results.csv
+benchmarks/tcga_brca/aggregate_results.csv
 ```
 
 Filter the aggregate table to this tutorial run:
@@ -219,7 +219,7 @@ Filter the aggregate table to this tutorial run:
 python - <<'PY'
 import pandas as pd
 
-results = pd.read_csv("benchmarks/tcga/aggregate_results.csv")
+results = pd.read_csv("benchmarks/tcga_brca/aggregate_results.csv")
 rows = results[
     (results["experiment"] == "pathpt")
     & (results["cohort"] == "nsclc")

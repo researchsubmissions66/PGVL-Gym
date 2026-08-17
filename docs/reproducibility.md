@@ -36,7 +36,7 @@ python --version
 python -m pip freeze
 conda env export --name pgvl-gym --from-history
 nvidia-smi
-sha256sum benchmarks/tcga/protocol.yaml
+sha256sum benchmarks/tcga_brca/protocol.yaml
 ```
 
 Also record the exact local checkpoint revision or model-cache snapshot. A
