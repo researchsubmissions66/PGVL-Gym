@@ -26,7 +26,8 @@ import yaml
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT))
-DEFAULT_MATRIX = REPO_ROOT / "benchmarks" / "additional_tasks" / "run_matrix.csv"
+# One run matrix per cohort benchmark; --matrix selects which one to smoke test.
+DEFAULT_MATRIX = REPO_ROOT / "benchmarks" / "tcga_brca" / "run_matrix.csv"
 
 
 def _label() -> torch.Tensor:
