@@ -16,7 +16,7 @@
 
 ---
 
-## Overview
+## 🔭 Overview
 
 **PGVL-Gym** is a registry-based benchmark that runs recent few-shot and
 zero-shot whole-slide-image (WSI) vision-language methods through one explicit
@@ -28,7 +28,7 @@ Systematic protocols cover TCGA NSCLC, BRCA and RCC plus
 [UBC-OCEAN](benchmarks/ubc_ocean/README.md) and
 [CAMELYON16](benchmarks/camelyon16/README.md).
 
-## Benchmark layout
+## 📁 Benchmark layout
 
 Each cohort owns one benchmark directory under `benchmarks/`, holding its
 `protocol.yaml` and everything generated from it (manifests, splits, configs,
@@ -43,7 +43,7 @@ data is not ready cannot hold back the ones that are:
 | `benchmarks/ubc_ocean`  | five-class ovarian carcinoma subtyping |
 | `benchmarks/camelyon16` | lymph-node metastasis detection |
 
-## Configure local paths
+## ⚙️ Configure local paths
 
 The committed protocols and generated examples use anonymous placeholders such
 as `/path/to/PGVL-Gym`, `/path/to/features`, `/path/to/metadata`, and
@@ -58,7 +58,7 @@ python scripts/tcga_benchmark.py all --protocol benchmarks/<cohort>/protocol.yam
 
 Do not infer a cohort from whatever feature files happen to exist.
 
-## Launching a campaign
+## 🚀 Launching a campaign
 
 `./launch_pgvl.sh` walks every benchmark's `run_matrix.csv` and submits only the
 runs that are ready and not already complete or queued. A run that cannot
@@ -73,7 +73,7 @@ re-run at any time.
 ./launch_pgvl.sh --cohort brca --shots 4 --limit 3   # canary batch
 ```
 
-## Supported Methods
+## 🛠️ Supported Methods
 
 | Method     | Paper venue          | Validated/default encoder boundary |
 | ---------- | -------------------- | ---------------------------------- |
@@ -90,7 +90,7 @@ re-run at any time.
 | ConVLM     | —                    | method-owned ViT + QuiltNet attributes |
 | SLDPC      | —                    | TITAN default; paired slide-text API |
 
-## Layout
+## 🗂️ Layout
 
 ```
 unified_wsi_vlm/
@@ -129,7 +129,7 @@ unified_wsi_vlm/
 └── configs/                 # one YAML per method (and per backbone for PathPT)
 ```
 
-## What's shared vs. unique
+## ⚖️ What's shared vs. unique
 
 The codebase explicitly keeps the **common parts together** and
 **isolates the unique parts**:
@@ -158,7 +158,7 @@ folder, and are wired in through a thin `adapter.py` that implements
 a uniform `BaseMethod` interface (`build_model`, `train_step`,
 `eval_step`, optionally `build_optimizer` / `build_scheduler`).
 
-## Backbone interfaces and safe swaps
+## 🔌 Backbone interfaces and safe swaps
 
 Backbone compatibility is now explicit rather than inferred from a tensor
 width or model name. `BackboneSpec` describes an encoder's dimensions,
@@ -179,7 +179,7 @@ python scripts/list_backbone_compatibility.py
 python scripts/list_backbone_compatibility.py --method sldpc --json
 ```
 
-### How far the matrix reaches
+### 📊 How far the matrix reaches
 
 Across 13 methods and 9 registered encoders there are 117 combinations:
 **43 native**, **29 adaptable** (capabilities met, only the feature width
@@ -215,7 +215,7 @@ patch width to the selected black-box text encoder's output width. See
 [Backbone interfaces and swap boundaries](docs/BACKBONE_INTERFACES.md)
 for the complete method matrix and extension examples.
 
-## Training
+## 🏋️ Training
 
 ```bash
 # Configs are organised as configs/<method>/<dataset>[_<backbone>].yaml
@@ -253,7 +253,7 @@ manifest. Set `feature_path_column_s`, `feature_path_column_l`, and optionally
 `feature_key`; no intermediate `.pt` conversion or duplicated feature tree is
 required.
 
-## Dummy-feature smoke tests
+## 💨 Dummy-feature smoke tests
 
 Build every experiment variant from its generated configuration and run a
 finite-logit forward pass without requiring dataset features:
@@ -275,7 +275,7 @@ The report is written beside the selected matrix as
 `smoke_report_<cohort>.json` and records the failure stage, traceback, logits
 shape, runtime, trainable parameter count, and peak CUDA allocation.
 
-## Documentation website
+## 📚 Documentation website
 
 The documentation site combines curated guides with API reference generated
 directly from the stable Python docstrings:
@@ -292,7 +292,7 @@ public-API docstring audit run automatically in
 `.github/workflows/docs.yml`; pushes to `main` or `master` publish the built
 site through GitHub Pages.
 
-## Evaluation
+## 🧪 Evaluation
 
 ```bash
 python eval.py --method pathpt \
@@ -300,7 +300,7 @@ python eval.py --method pathpt \
                --ckpt_dir results/pathpt_ubc_keep_10shot
 ```
 
-## Hyperparameter Recipes
+## 📜 Hyperparameter Recipes
 
 Each `configs/*.yaml` mirrors the **exact hyperparameters from the
 original paper's released training script**.  Notable differences:
@@ -321,7 +321,7 @@ original paper's released training script**.  Notable differences:
 
 *MSCPT epochs vary by backbone: CLIP=100, PLIP=50, CONCH=50.*
 
-## Why PathPT's recipe is locked across backbones
+## 🔒 Why PathPT's recipe is locked across backbones
 
 PathPT's main contribution is a **fair benchmark of foundation
 models** for rare-cancer subtyping. Holding optimizer, LR, epochs,
@@ -331,7 +331,7 @@ adapter (`methods/pathpt/adapter.py`) overrides
 `build_optimizer` and `build_scheduler` to enforce the locked recipe
 no matter which YAML you pass.
 
-## Adding a new method
+## ➕ Adding a new method
 
 1. Create `methods/<my_method>/` with `__init__.py`.
 2. Drop your model file(s) inside.
@@ -345,7 +345,7 @@ no matter which YAML you pass.
 6. Write `configs/<my_method>_<dataset>.yaml`.
 7. Run `python train.py --method <my_method> --config <yaml>`.
 
-## Installation
+## 💻 Installation
 
 ```bash
 git clone https://github.com/researchsubmissions66/PGVL-Gym.git
@@ -368,7 +368,7 @@ CONCH and MUSK code and weights are gated upstream and remain explicit opt-in
 installs. See the complete [environment guide](docs/environment.md) for the
 per-method profiles, gated model setup, GPU checks, updates, and removal.
 
-### On a shared cluster
+### 🖥️ On a shared cluster
 
 A full PyTorch and CUDA stack is 15-25 GB, which most home quotas will not
 hold, so build the environment under a project filesystem and activate it by
@@ -394,7 +394,7 @@ it lacks `h5py`, `ftfy`, `torch_geometric` and the gated encoder packages. See
 for the full setup, including the first-import cost of an environment on a
 parallel filesystem.
 
-## Preprocessing pipeline
+## 🔄 Preprocessing pipeline
 
 ```bash
 # 1. Tile WSIs into patches (CLAM)
@@ -411,7 +411,7 @@ python extract_features.py \
     --model_name conch          # or plip / clip / keep / musk
 ```
 
-## Importing upstream prompt and report assets
+## 📥 Importing upstream prompt and report assets
 
 The source repos distribute some of the text priors and reports separately
 from this consolidated tree.  Import the published assets with:
@@ -429,7 +429,7 @@ can encode a generated chain at runtime, and ConVLM can encode generated
 attributes with its configured QuiltNet tower. Data-derived assets such as
 CoD-MIL cross-magnification maps must still be generated from patch coordinates.
 
-## Method-specific data contracts
+## 🤝 Method-specific data contracts
 
 Paper-faithful MUSE uses a single bag of 512-dimensional CONCH patch features
 and encodes the published per-class GPT descriptions with CONCH. Experimental
@@ -473,24 +473,28 @@ python scripts/generate_cross_magnification_maps.py \
 Patch and stride values must use the level-0 coordinate system stored in the
 H5 files; add `--low-step-size` when the low-resolution patches overlap.
 
-## Acknowledgments
+## 🙏 Acknowledgments
 
 This codebase consolidates code from the following twelve repositories.
 All copyright remains with the original authors.
 
-* [dddavid4real/FOCUS](https://github.com/dddavid4real/focus)
-* [Jiangbo-Shi/ViLa-MIL](https://github.com/Jiangbo-Shi/ViLa-MIL)
-* [Jiangbo-Shi/CoD-MIL](https://github.com/Jiangbo-Shi/CoD-MIL)
-* [JJ-ZHOU-Code/MAPLE](https://github.com/JJ-ZHOU-Code/MAPLE)
-* [Hanminghao/MSCPT](https://github.com/Hanminghao/MSCPT)
-* [MAGIC-AI4Med/PathPT](https://github.com/MAGIC-AI4Med/PathPT)
-* [miccaiif/TOP](https://github.com/miccaiif/TOP)
-* [LTS5/SLIP](https://github.com/LTS5/SLIP)
-* [ls1rius/WSI_FiVE](https://github.com/ls1rius/WSI_FiVE)
-* [JiahaoXu-god/CVPR2026_MUSE](https://github.com/JiahaoXu-god/CVPR2026_MUSE)
-* [BasitAlawode/ConVLM](https://github.com/BasitAlawode/ConVLM)
-* [linlu2022/SLDPC](https://github.com/linlu2022/SLDPC)
+| Repository | Method/Role | License |
+| --- | --- | --- |
+| [dddavid4real/FOCUS](https://github.com/dddavid4real/focus) | FOCUS | Apache License 2.0 |
+| [Jiangbo-Shi/ViLa-MIL](https://github.com/Jiangbo-Shi/ViLa-MIL) | ViLa-MIL | Not specified |
+| [Jiangbo-Shi/CoD-MIL](https://github.com/Jiangbo-Shi/CoD-MIL) | CoD-MIL | Not specified |
+| [JJ-ZHOU-Code/MAPLE](https://github.com/JJ-ZHOU-Code/MAPLE) | MAPLE | Not specified |
+| [Hanminghao/MSCPT](https://github.com/Hanminghao/MSCPT) | MSCPT | Not specified |
+| [MAGIC-AI4Med/PathPT](https://github.com/MAGIC-AI4Med/PathPT) | PathPT | MIT License |
+| [miccaiif/TOP](https://github.com/miccaiif/TOP) | TOP | Not specified |
+| [LTS5/SLIP](https://github.com/LTS5/SLIP) | SLIP | Not specified |
+| [ls1rius/WSI_FiVE](https://github.com/ls1rius/WSI_FiVE) | WSI-FiVE | Not specified |
+| [JiahaoXu-god/CVPR2026_MUSE](https://github.com/JiahaoXu-god/CVPR2026_MUSE) | MUSE | Not specified |
+| [BasitAlawode/ConVLM](https://github.com/BasitAlawode/ConVLM) | ConVLM | MIT License |
+| [linlu2022/SLDPC](https://github.com/linlu2022/SLDPC) | SLDPC | Apache License 2.0 |
 
-The shared scaffolding is derived from
-[mahmoodlab/CLAM](https://github.com/mahmoodlab/CLAM) and
-[KaiyangZhou/CoOp](https://github.com/KaiyangZhou/CoOp).
+The shared scaffolding is derived from:
+| Repository | Method/Role | License |
+| --- | --- | --- |
+| [mahmoodlab/CLAM](https://github.com/mahmoodlab/CLAM) | CLAM Scaffold | GNU General Public License v3.0 |
+| [KaiyangZhou/CoOp](https://github.com/KaiyangZhou/CoOp) | CoOp Blocks | MIT License |
