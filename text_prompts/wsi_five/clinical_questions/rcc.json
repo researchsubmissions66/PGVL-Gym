@@ -1,0 +1,12 @@
+{
+  "_provenance": "generated",
+  "_note": "Authored for this benchmark. WSI-FiVE publishes one question set and it is lung-specific: 'spread through air spaces' (STAS), 'pleural invasion' and 'excluding the current lung organ' have no kidney meaning. These six mirror the released set's role -- grading plus the local-extension findings that drive staging -- using concepts TCGA-RCC reports actually record (measured coverage in parentheses). A WSI-FiVE result on RCC is therefore not prompt-faithful.",
+  "questions": [
+    "What is the nuclear grade of the tumour? (WHO/ISUP or Fuhrman grade 1-4, or Unknown.)",
+    "Is there any sarcomatoid or rhabdoid differentiation in the tumour?",
+    "Is there any indication of vascular or lymphovascular invasion, including renal vein involvement?",
+    "Is there any invasion of perinephric or renal sinus fat by the tumour?",
+    "Is the tumour confined within the renal capsule, or does it extend beyond it into adjacent structures?",
+    "Are the surgical margins of the resection clear of tumour? (note that: R0 means negative; R1 R2 both mean positive; Rx means Unknown."
+  ]
+}

@@ -39,7 +39,22 @@ ASSET_KEYS = (
     "data_folder_s",
     "data_folder_l",
     "slide_features",
+    "instance_prompt_path",
 )
+
+# Encoder blocks each name their own checkpoint, and those are separate assets
+# from ``backbone_weights``: SLDPC declares an offline slide encoder and a
+# runtime prompt encoder independently, and either can be absent on its own.
+# Only ``weights`` is checked here -- sibling keys such as ``path_template``
+# hold a ``{slide_id}`` pattern rather than a path, and are resolved per slide.
+ASSET_BLOCK_KEYS = (
+    "encoder",
+    "patch_encoder",
+    "slide_encoder",
+    "prompt_encoder",
+    "attribute_encoder",
+)
+ASSET_BLOCK_FIELDS = ("weights",)
 
 # Keys holding a collection of asset paths. The shape varies by method: a plain
 # list of paths, a list of {path, partition} records, or -- for MUSE -- a
@@ -223,6 +238,17 @@ def preflight(cfg: dict[str, Any], *,
         for path in _asset_paths(cfg.get(key)):
             if not _exists(path):
                 report.problems.append(f"{key} entry does not exist: {path}")
+
+    for block in ASSET_BLOCK_KEYS:
+        section = cfg.get(block)
+        if not isinstance(section, dict):
+            continue
+        for field in ASSET_BLOCK_FIELDS:
+            value = section.get(field)
+            # A value carrying a brace is a per-slide pattern, not a path.
+            if value and "{" not in str(value) and not _exists(value):
+                report.problems.append(
+                    f"{block}.{field} does not exist: {value}")
 
     split_dir = cfg.get("split_dir")
     if not split_dir:

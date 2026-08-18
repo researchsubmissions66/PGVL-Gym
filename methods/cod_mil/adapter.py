@@ -26,6 +26,31 @@ class CoDMILMethod(BaseMethod):
         required_capabilities=frozenset(),
         rationale="CoD-MIL consumes aligned 1024-wide patch and precomputed prompt tensors; it has no runtime encoder.")
 
+    _GENERIC_BACKGROUND = Path(
+        "text_prompts/cod_mil/background_tissue_generic.json")
+
+    def _background_prompts(self) -> list[str]:
+        """Return the normal-tissue bank the auxiliary contrastive branch needs.
+
+        Cohort-specific normal structures come first, mirroring the released
+        bank's ordering (organ anatomy, then organ-independent phenotypes).
+        """
+        prompts: list[str] = []
+        for key in ("normal_structures_json", None):
+            source = self.cfg.get(key) if key else self._GENERIC_BACKGROUND
+            if not source:
+                continue
+            path = Path(source)
+            if not path.is_absolute():
+                path = Path(__file__).resolve().parents[2] / path
+            if not path.is_file():
+                continue
+            with path.open(encoding="utf-8") as handle:
+                payload = json.load(handle)
+            values = payload.get("prompts") if isinstance(payload, dict) else payload
+            prompts.extend(str(item) for item in values if str(item).strip())
+        return prompts
+
     def build_model(self) -> nn.Module:
         from .model import CoT
         config = SimpleNamespace(
@@ -48,16 +73,25 @@ class CoDMILMethod(BaseMethod):
             chain_path = Path(self.cfg["text_prompt_path"])
             with chain_path.open(encoding="utf-8") as handle:
                 chain = json.load(handle)
+            # Underscore keys carry provenance, not classes.
+            chain = {k: v for k, v in chain.items() if not str(k).startswith("_")}
             classnames = list(self.cfg["classnames"])
             low = [chain[name]["broad"][0] for name in classnames]
             high = [chain[name]["specific"][0] for name in classnames]
-            background = [
-                f"non-diagnostic background tissue adjacent to {name}"
-                for name in classnames
-            ]
-            prompts = (
-                low + high + background
-                + ["non-neoplastic background tissue"])
+            # CoD-MIL's auxiliary branch pushes non-diagnostic patches toward a
+            # bank of *normal tissue phenotypes*: the released kidney bank is
+            # 3 low + 3 high + 21 background. Templated strings naming the
+            # tumour ("background adjacent to <class>") are not a substitute --
+            # they carry the diagnosis the branch is meant to contrast against.
+            # The 15 organ-independent rows are reused verbatim; a cohort may
+            # add its own normal structures via `normal_structures_json`.
+            background = self._background_prompts()
+            if not background:
+                raise ValueError(
+                    "CoD-MIL needs a normal-tissue background bank. Expected "
+                    "text_prompts/cod_mil/background_tissue_generic.json or a "
+                    "'normal_structures_json' entry in the config.")
+            prompts = low + high + background
             bundle = self.load_encoder(
                 weights_path=self.cfg.get("backbone_weights"))
             bundle.freeze()

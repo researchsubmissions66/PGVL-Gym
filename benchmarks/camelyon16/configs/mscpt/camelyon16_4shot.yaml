@@ -60,3 +60,4 @@ feature_path_column_l: feature__conch_v1_20x
 gpt_dir: /u/dchanda/PGVL-Gym/benchmarks/camelyon16/data/camelyon16/prompts/gpt
 description_prompt_path: /u/dchanda/PGVL-Gym/benchmarks/camelyon16/data/camelyon16/prompts/gpt/description/camelyon16.json
 prompt_source: mscpt_multiscale_description_json
+encoder_provenance: native

@@ -55,6 +55,11 @@ cohorts:
     - path: /work/hdd/bhwm/metadata/RAW_DATA_Cleaned/CAMELYON16/CAM16_data_test.csv
       partition: official_test
     slide_id_column: source_filename
+    # The release names slides with a .tif extension and the cleaned tables keep
+    # it, but feature files are written per slide stem. Without this the slide id
+    # would stay "normal_001.tif" and every feature lookup would miss.
+    slide_suffixes:
+    - .tif
     case_id_column: patient_id
     label_column: cancer_type
     label_transform: lower
@@ -71,7 +76,6 @@ cohorts:
     focus_prompt_csv: text_prompts/focus/CAMELYON16_two_scale_text_prompt.csv
     slip_tissue_json: text_prompts/slip/camelyon16_tissues.json
     sldpc_prompt_yaml: text_prompts/sldpc/camelyon16.yaml
-    metadata_availability: future
 experiments:
   pathpt:
     method: pathpt

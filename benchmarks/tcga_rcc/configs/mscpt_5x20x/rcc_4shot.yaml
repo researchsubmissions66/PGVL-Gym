@@ -62,3 +62,4 @@ feature_path_column_l: feature__conch_v1_20x
 gpt_dir: /u/dchanda/PGVL-Gym/train_data/gpt
 description_prompt_path: /u/dchanda/PGVL-Gym/train_data/gpt/description/RCC.json
 prompt_source: mscpt_multiscale_description_json
+encoder_provenance: native

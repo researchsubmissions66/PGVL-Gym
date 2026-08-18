@@ -54,14 +54,33 @@ than of the methods or encoders themselves.
 
 ### 1. The method owns its vision tower (18 cells)
 
-`wsi_five` and `convlm` are pinned to `wsi-five-vit` and `convlm-vit`. These are
-not interchangeable encoders sitting behind an interface; the tower is part of
-the published architecture. WSI-FiVE pairs a MedCLIP/X-CLIP vision tower with a
-ClinicalBERT report tower, and ConVLM classifies raw tiles against a QuiltNet
-attribute bank. Substituting the encoder does not produce "WSI-FiVE with a
+`wsi_five` and `convlm` are pinned to `wsi-five-vit` and `convlm-vit`.
+
+For **ConVLM** this holds: attribute injection and token pruning happen inside
+its own ViT blocks, so substituting the encoder does not produce "ConVLM with a
 different backbone" — it produces a different method.
 
-**Resolution: none.** These are correctly `fixed`.
+For **`wsi_five` the justification is wrong**, and the pin is retained for a
+different reason. WSI-FiVE has no vision tower at all. With its shipped default
+`IS_IMG_PTH: True` the upstream model sets `self.visual = nn.Identity()`,
+hardcodes `embed_dim = 512`, never parses the CLIP state dict, and reads
+precomputed patch features from disk. The paper is explicit: *"we employed
+ResNet following [15] as image encoder to extract image features, while
+pre-trained BioClinicalBERT from [30] as text encoder"* — reference [15] is
+DSMIL. No MedCLIP weights are loaded on any code path: `MedCLIPTextModel`, the
+only MedCLIP class instantiated, loads `Bio_ClinicalBERT` from Hugging Face, and
+every checkpoint-loading path in `MedCLIPModel.py` belongs to a vision class
+that is never constructed. X-CLIP contributes `PatchFusionTransformer`, an
+aggregation module, not an encoder.
+
+What is genuinely method-owned is the **text** side: a BioClinicalBERT tower
+fine-tuned with LoRA, learnable prompt vectors, and a patch-fusion transformer
+that cross-attends patch features to encoded clinical questions.
+
+**Resolution: `wsi_five` is a patch-bag consumer**, not an encoder-owning
+method, and its nine cells are blocked by the current contract rather than by
+the architecture. See [Design decisions](design-decisions.md) for the full
+analysis and the reimplementation gap.
 
 ### 2. The method hardcodes one encoder's geometry (16 cells)
 

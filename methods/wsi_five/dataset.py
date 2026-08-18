@@ -37,7 +37,11 @@ class WSI_FiVE_Dataset(Dataset):
             id_col = next((column for column in (
                 "slide_id", "case_id", "patient_id", "patient_filename")
                            if column in rdf.columns), None)
-            txt_col = next((column for column in ("report", "text")
+            # `answer` first: WSI-FiVE's own supervision text is the six
+            # semicolon-separated responses to its clinical questions, which is
+            # what the release's GPT sheets carry. A raw multi-page `text`
+            # report is a fallback, not an equivalent.
+            txt_col = next((column for column in ("answer", "report", "text")
                             if column in rdf.columns), None)
             if id_col is None or txt_col is None:
                 raise ValueError(
@@ -63,9 +67,16 @@ class WSI_FiVE_Dataset(Dataset):
         else:
             feature_path = os.path.join(self.feature_root, f"{slide_id}.pt")
         feats = _load_feature_tensor(feature_path, self.feature_key)
+        # The fusion transformer positions patches by their index within the
+        # slide and masks padding per slide, so the sampled indices and the
+        # slide's full patch count are part of the input, not bookkeeping.
+        patch_pub_cnt = int(feats.shape[0])
         if feats.shape[0] > self.max_patches:
-            idx_perm = torch.randperm(feats.shape[0])[: self.max_patches]
-            feats = feats[idx_perm]
+            keep = torch.randperm(feats.shape[0])[: self.max_patches].sort().values
+            feats = feats[keep]
+            patch_inds = keep
+        else:
+            patch_inds = torch.arange(feats.shape[0])
 
         # TCGA report assets are patient-level (TCGA-XX-XXXX), whereas patch
         # bags normally use a longer slide identifier.  Prefer the exact match.
@@ -85,27 +96,37 @@ class WSI_FiVE_Dataset(Dataset):
         else:
             text_output = text
 
+        patch_info = {
+            "patch_inds": patch_inds.float(),
+            "patch_pub_cnt": torch.tensor(float(max(patch_pub_cnt, 1))),
+            "sample_range": int(feats.shape[0]),
+        }
         if self.include_metadata:
-            return feats, text_output, {
+            return feats, text_output, patch_info, {
                 "slide_id": slide_id, "case_id": case_id,
             }, label
-        return feats, text_output, label
+        return feats, text_output, patch_info, label
 
 
 def _collate_one(batch):
     if len(batch) != 1:
         raise ValueError("WSI-FiVE uses batch_size=1 for variable-length slides")
     item = batch[0]
-    if len(item) == 4:
-        feats, report, metadata, label = item
-        collated_metadata = {
-            "slide_id": [metadata["slide_id"]],
-            "case_id": [metadata["case_id"]],
-        }
-        return (feats.unsqueeze(0), [report], collated_metadata,
-                torch.tensor([label]))
-    feats, report, label = item
-    return feats.unsqueeze(0), [report], torch.tensor([label])
+    metadata = None
+    if len(item) == 5:
+        feats, report, patch_info, metadata, label = item
+    else:
+        feats, report, patch_info, label = item
+    collated_info = {
+        "patch_inds": patch_info["patch_inds"].unsqueeze(0),
+        "patch_pub_cnt": patch_info["patch_pub_cnt"].reshape(1),
+        "sample_range": [patch_info["sample_range"]],
+    }
+    if metadata is not None:
+        return (feats.unsqueeze(0), [report], collated_info,
+                {"slide_id": [metadata["slide_id"]],
+                 "case_id": [metadata["case_id"]]}, torch.tensor([label]))
+    return feats.unsqueeze(0), [report], collated_info, torch.tensor([label])
 
 
 def build_wsi_five_loader(cfg, split: str = "train", shuffle: bool = True):

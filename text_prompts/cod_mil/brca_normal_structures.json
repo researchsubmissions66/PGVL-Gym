@@ -1,0 +1,12 @@
+{
+  "_provenance": "generated",
+  "_note": "Normal breast histologic structures for CoD-MIL's second diagnostic chain (normal-tissue exclusion). CoD-MIL publishes a normal-tissue bank only for kidney (rows 7-12 of prompt/text_prompt_kidney_v2.csv are organ-specific; rows 13-27 are organ-independent and are reused verbatim from background_tissue_generic.json). These breast equivalents are authored for this benchmark in the released bank's voice and are NOT upstream assets: a CoD-MIL result on BRCA is therefore not prompt-faithful and must be reported as such.",
+  "prompts": [
+    "This is an image of terminal duct lobular units which appear as clustered small acini grouped around a central intralobular duct, each lined by a inner cuboidal epithelial layer and an outer myoepithelial layer, set in loose specialised intralobular stroma.",
+    "This is an image of large lactiferous ducts which appear as branching tubular profiles lined by a two-cell-layer epithelium, often with a folded or undulating luminal contour and a surrounding cuff of denser periductal collagen.",
+    "This is an image of the myoepithelial layer which appears as a continuous outer rim of flattened to cuboidal cells with clear or eosinophilic cytoplasm lying between the luminal epithelium and the basement membrane of ducts and acini.",
+    "This is an image of interlobular fibrous stroma which appears as broad bands of densely packed, paucicellular collagen separating lobular units, containing scattered fibroblasts and few inflammatory cells.",
+    "This is an image of breast adipose tissue which appears as sheets of large clear univacuolated adipocytes with compressed peripheral nuclei and delicate intervening fibrovascular septa.",
+    "This is an image of normal breast vasculature and lymphatics which appear as thin-walled channels lined by a single layer of flattened endothelium, some containing red blood cells and others optically empty."
+  ]
+}

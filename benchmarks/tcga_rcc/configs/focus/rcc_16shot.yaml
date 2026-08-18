@@ -61,3 +61,4 @@ feature_path_column_l: feature__conch_v1_20x
 text_prompt_path: /u/dchanda/PGVL-Gym/text_prompts/focus/TCGA_RCC_two_scale_text_prompt.csv
 prompt_source: focus_two_scale_csv
 conch_ckpt: /work/hdd/bhwm/.cache_huggingface/hub/models--MahmoodLab--conch/blobs/40a9644b9ba0e83a74576e0a5e5f7313599fa9c9cdaf3c20f8a3e271b0e9ae7c
+encoder_provenance: native

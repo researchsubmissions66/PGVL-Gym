@@ -1,4 +1,6 @@
 {
+  "_provenance": "generated",
+  "_note": "As above: CoD-MIL's released chain covers kidney only. This lung chain is authored for this benchmark.",
   "lung adenocarcinoma": {
     "broad": [
       "At low magnification, lung adenocarcinoma commonly shows peripheral gland-forming or lepidic tumor growth with heterogeneous acinar, papillary, micropapillary, or solid regions."

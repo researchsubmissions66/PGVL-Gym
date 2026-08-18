@@ -1,10 +1,23 @@
-[
-  [
-    "irregular infiltrative glands, cords, nests, or solid sheets in desmoplastic breast stroma",
-    "cohesive pleomorphic epithelial cells with variable tubule formation"
-  ],
-  [
-    "diffuse single-file and targetoid infiltration with preserved breast architecture",
-    "small discohesive cells with intracytoplasmic lumina and absent tubule formation"
+{
+  "_provenance": "generated",
+  "_note": "SLIP publishes tissue vocabularies only for its own datasets (TCGA lung, DHMC, PatchGastricADC22). This vocabulary is authored for this benchmark in the released format ('Name: description'), reusing the organ-independent phenotypes from text_prompts/slip/TCGA_tissues.json and replacing the lung-specific ones. A SLIP result on this cohort is not prompt-faithful.",
+  "tissues": [
+    "Terminal duct lobular unit: Clustered small acini around an intralobular duct, lined by luminal and myoepithelial layers.",
+    "Myoepithelial layer: Continuous outer rim of flattened cells beneath the basement membrane of ducts and acini.",
+    "Ductal carcinoma in situ: Malignant epithelium filling ducts while confined by an intact basement membrane.",
+    "Tubule formation: Neoplastic cells arranged as recognisable glandular lumina.",
+    "Single-file infiltration: Tumour cells infiltrating in linear chains between collagen fibres.",
+    "Desmoplastic stroma: Dense fibroproliferative stroma provoked by invasive carcinoma.",
+    "Adipose tissue: Sheets of clear univacuolated adipocytes with compressed peripheral nuclei.",
+    "Tumor nests: Clusters of cancerous cells forming distinct groups separated by stroma.",
+    "Solid tumor: A solid sheet of cancer cells with little intervening architecture.",
+    "Stroma: Supporting connective tissue between tumour and normal structures.",
+    "Necrosis: Areas of dead cells with loss of nuclear detail and granular debris.",
+    "Inflammatory infiltrate: Immune cells scattered through tissue in response to injury or tumour.",
+    "Vascular invasion: Tumour cells within the lumen of a blood or lymphatic vessel.",
+    "Fibrosis: Dense collagen deposition replacing normal tissue architecture.",
+    "Pleomorphism: Marked variation in nuclear size, shape and staining between tumour cells.",
+    "Lymphocytic infiltration: Dense aggregates of small mature lymphocytes.",
+    "Hyalinization: Homogeneous glassy eosinophilic material replacing stroma."
   ]
-]
+}

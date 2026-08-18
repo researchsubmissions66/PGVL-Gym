@@ -50,6 +50,40 @@ from common.utils.core_utils import EarlyStopping, Accuracy_Logger
 # can tell a skipped configuration apart from a broken one.
 EXIT_SKIPPED = 3
 
+# Individual batches are allowed to fail -- one unreadable slide should not end a
+# five-fold run -- but a number computed from a fraction of the declared split is
+# worse than no number at all, because it still looks comparable to a complete
+# one. Past this fraction the run is no longer measuring the split the protocol
+# declared, so it fails instead of reporting. Override per run with
+# `max_batch_failure_rate`.
+MAX_BATCH_FAILURE_RATE = 0.1
+
+
+def _check_batch_failures(phase: str, fold: int, succeeded: int, failed: int,
+                          last_error: BaseException | None,
+                          threshold: float) -> None:
+    """Fail loudly when too much of a split never reached the model.
+
+    Raises:
+        RuntimeError: If no batch succeeded, or the failed fraction exceeds
+            ``threshold``.
+    """
+    total = succeeded + failed
+    if total == 0:
+        raise RuntimeError(f"fold{fold} {phase}: the loader produced no batches")
+    if succeeded == 0:
+        raise RuntimeError(
+            f"fold{fold} {phase}: every batch failed. Check the method/backbone "
+            f"feature contract. Last error: {last_error}")
+    rate = failed / total
+    if rate > threshold:
+        raise RuntimeError(
+            f"fold{fold} {phase}: {failed} of {total} batches failed "
+            f"({rate:.0%} > {threshold:.0%} allowed), so the result would not be "
+            f"computed on the declared split. Last error: {last_error}")
+    if failed:
+        print(f"  ! {phase}: {failed} of {total} batches failed ({rate:.1%})")
+
 
 # -----------------------------------------------------------------------------
 def parse_args():
@@ -238,6 +272,12 @@ def train_one_fold(fold: int, cfg, method, writer):
     print(f"\n--- Fold {fold} ----------------------------------------------")
     set_seed(cfg.get("seed", 1) + fold)
 
+    failure_threshold = float(
+        cfg.get("max_batch_failure_rate", MAX_BATCH_FAILURE_RATE))
+    # Worst epoch per phase, so a shortfall is recorded in metrics.json rather
+    # than only printed into a log nobody reads.
+    failure_counts = {"train": 0, "val": 0, "test": 0}
+
     train_loader, val_loader, test_loader = build_loaders(method.name, cfg, fold)
 
     model = method.build_model()
@@ -290,7 +330,7 @@ def train_one_fold(fold: int, cfg, method, writer):
 
     for epoch in range(cfg.get("epochs", 200)):
         model.train()
-        run_loss, n_batches = 0.0, 0
+        run_loss, n_batches, n_failed = 0.0, 0, 0
         last_train_error = None
         train_log = Accuracy_Logger(n_classes=cfg["n_classes"])
         for batch in train_loader:
@@ -298,6 +338,7 @@ def train_one_fold(fold: int, cfg, method, writer):
                 out = method.train_step(batch, model, optimizer, loss_fn)
             except Exception as e:
                 last_train_error = e
+                n_failed += 1
                 print(f"  ! train_step failed for one batch: {e}")
                 continue
             run_loss += out["loss"]
@@ -305,15 +346,14 @@ def train_one_fold(fold: int, cfg, method, writer):
             preds = out["logits"].argmax(dim=1)
             train_log.log_batch(preds.cpu().numpy(),
                                 out["label"].cpu().numpy())
-        if n_batches == 0:
-            raise RuntimeError(
-                "Every training batch failed. Check the method/backbone "
-                f"feature contract. Last error: {last_train_error}")
+        _check_batch_failures("train", fold, n_batches, n_failed,
+                              last_train_error, failure_threshold)
+        failure_counts["train"] = max(failure_counts["train"], n_failed)
         train_loss = run_loss / n_batches
         writer.add_scalar(f"fold{fold}/train_loss", train_loss, epoch)
 
         model.eval()
-        val_loss, n_v = 0.0, 0
+        val_loss, n_v, n_v_failed = 0.0, 0, 0
         last_val_error = None
         val_log = Accuracy_Logger(n_classes=cfg["n_classes"])
         for batch in val_loader:
@@ -321,6 +361,7 @@ def train_one_fold(fold: int, cfg, method, writer):
                 out = method.eval_step(batch, model, loss_fn)
             except Exception as e:
                 last_val_error = e
+                n_v_failed += 1
                 print(f"  ! eval_step failed: {e}")
                 continue
             val_loss += out["loss"]
@@ -328,10 +369,9 @@ def train_one_fold(fold: int, cfg, method, writer):
             preds = out["logits"].argmax(dim=1)
             val_log.log_batch(preds.cpu().numpy(),
                               out["label"].cpu().numpy())
-        if n_v == 0:
-            raise RuntimeError(
-                "Every validation batch failed. Check the method/backbone "
-                f"feature contract. Last error: {last_val_error}")
+        _check_batch_failures("val", fold, n_v, n_v_failed,
+                              last_val_error, failure_threshold)
+        failure_counts["val"] = max(failure_counts["val"], n_v_failed)
         val_loss /= n_v
         writer.add_scalar(f"fold{fold}/val_loss", val_loss, epoch)
 
@@ -363,7 +403,8 @@ def train_one_fold(fold: int, cfg, method, writer):
         print(
             f"  >>> fold{fold} holdout test evaluation skipped "
             "(evaluate_test=false)")
-        return {"test_acc": None, "best_val_loss": best_val_loss}
+        return {"test_acc": None, "best_val_loss": best_val_loss,
+                "batch_failures": dict(failure_counts)}
 
     if early is not None:
         ckpt = Path(cfg["results_dir"]) / f"fold{fold}_best.pt"
@@ -377,6 +418,7 @@ def train_one_fold(fold: int, cfg, method, writer):
     model.eval()
     test_log = Accuracy_Logger(n_classes=cfg["n_classes"])
     n_test = 0
+    n_test_failed = 0
     last_test_error = None
     test_logits = []
     test_labels = []
@@ -403,11 +445,13 @@ def train_one_fold(fold: int, cfg, method, writer):
             n_test += 1
         except Exception as e:
             last_test_error = e
+            n_test_failed += 1
             print(f"  ! test_step failed: {e}")
-    if n_test == 0:
-        raise RuntimeError(
-            "Every test batch failed. Check the method/backbone feature "
-            f"contract. Last error: {last_test_error}")
+    # The held-out split is the number that gets reported, so it is held to the
+    # same standard as training rather than merely being non-empty.
+    _check_batch_failures("test", fold, n_test, n_test_failed,
+                          last_test_error, failure_threshold)
+    failure_counts["test"] = n_test_failed
     logits = torch.cat(test_logits).numpy()
     labels = torch.cat(test_labels).numpy()
     probabilities = torch.softmax(torch.from_numpy(logits), dim=1).numpy()
@@ -442,6 +486,7 @@ def train_one_fold(fold: int, cfg, method, writer):
         "best_val_loss": best_val_loss,
         "slide_metrics": slide_metrics,
         "patient_metrics": patient_metrics,
+        "batch_failures": dict(failure_counts),
     }
 
 

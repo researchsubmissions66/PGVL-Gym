@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import csv
 import json
+import os
 from pathlib import Path
 import sys
 from typing import Any
@@ -944,7 +945,10 @@ _UPSTREAM_PROMPT_KEYS = {
 }
 
 # Methods that build their prompt from `classnames` rather than reading a file.
-_CLASSNAME_PROMPT_METHODS = frozenset({"pathpt", "wsi_five"})
+# Methods whose entire embedded text is built from `classnames`. WSI-FiVE
+# left this set once it began embedding a clinical question set and
+# per-slide report text; its provenance comes from that question set.
+_CLASSNAME_PROMPT_METHODS = frozenset({"pathpt"})
 
 
 def _prompt_provenance(cohort_cfg: dict[str, Any], method: str) -> str:
@@ -976,6 +980,69 @@ def _explicit_prompt_declared(cohort_cfg: dict[str, Any], method: str) -> bool:
     return isinstance(prompts, dict) and method in prompts
 
 
+def _augment_provenance(provenance: str, cohort_cfg: dict[str, Any],
+                        method: str) -> str:
+    """Downgrade a provenance claim when part of the bank was authored here.
+
+    CoD-MIL embeds a class chain *and* a normal-tissue bank. Upstream publishes
+    the latter for kidney only, so another cohort supplies its own -- and a run
+    whose contrast set was written for this benchmark is not the published
+    prompt condition, even though its class prompts are. Reporting plain
+    ``upstream`` there would overstate fidelity in the one field a reader would
+    check.
+    """
+    if method == "wsi_five":
+        source = cohort_cfg.get("wsi_five_questions_json")
+        if not source:
+            return provenance
+        try:
+            with _absolute_repo_path(source).open(encoding="utf-8") as handle:
+                declared = json.load(handle).get("_provenance")
+        except (OSError, ValueError, AttributeError):
+            return provenance
+        if declared == "generated":
+            return "generated_questions_with_free_text_reports"
+        return "upstream_questions_and_answers"
+    if provenance not in {"upstream", "explicit"}:
+        return provenance
+
+    # A declared path does not make its contents upstream. CoD-MIL publishes a
+    # chain for kidney only, so the BRCA and NSCLC chains are authored here and
+    # say so in the file. Read the asset rather than trusting the declaration.
+    if method == "cod_mil":
+        chain = cohort_cfg.get("cod_prompt_json")
+        if chain:
+            try:
+                with _absolute_repo_path(chain).open(encoding="utf-8") as handle:
+                    if json.load(handle).get("_provenance") == "generated":
+                        provenance = "generated"
+            except (OSError, ValueError, AttributeError):
+                pass
+
+    source = {
+        "cod_mil": "cod_normal_structures_json",
+        # WSI-FiVE cross-attends a fixed set of clinical questions. The released
+        # set is lung-specific ("spread through air spaces", "pleural invasion",
+        # "excluding the current lung organ"), so any other cohort supplies an
+        # authored one -- and a run whose questions were written here is not the
+        # published prompt condition even when its answers are.
+        "wsi_five": "wsi_five_questions_json",
+    }.get(method)
+    source = cohort_cfg.get(source) if source else None
+    if not source:
+        return provenance
+    try:
+        with _absolute_repo_path(source).open(encoding="utf-8") as handle:
+            payload = json.load(handle)
+    except (OSError, ValueError):
+        return provenance
+    if isinstance(payload, dict) and payload.get("_provenance") == "generated":
+        suffix = ("chain_with_generated_normal_tissue" if method == "cod_mil"
+                  else "reports_with_generated_questions")
+        return f"{provenance}_{suffix}"
+    return provenance
+
+
 def _method_config(
     experiment: str, experiment_cfg: dict[str, Any], method: str,
     protocol: dict[str, Any], cohort: str, cohort_cfg: dict[str, Any],
@@ -993,7 +1060,8 @@ def _method_config(
         "method": method,
         "experiment": experiment,
         "epochs": int(experiment_cfg["epochs"]),
-        "prompt_provenance": _prompt_provenance(cohort_cfg, method),
+        "prompt_provenance": _augment_provenance(
+            _prompt_provenance(cohort_cfg, method), cohort_cfg, method),
         "results_dir": str(
             REPO_ROOT / "results"
             / protocol.get("results_namespace", "tcga_benchmark") / experiment
@@ -1181,6 +1249,12 @@ def _method_config(
             "text_prompt_features": (
                 str(_absolute_repo_path(cohort_cfg["cod_prompt_features"]))
                 if cohort_cfg.get("cod_prompt_features") else None),
+            # Organ-specific normal structures for the second diagnostic chain.
+            # Absent, the runtime bank falls back to the organ-independent rows
+            # alone, which is a weaker contrast set than the released one.
+            "normal_structures_json": (
+                str(_absolute_repo_path(cohort_cfg["cod_normal_structures_json"]))
+                if cohort_cfg.get("cod_normal_structures_json") else None),
             "prompt_encoding": (
                 "precomputed" if cohort_cfg.get("cod_prompt_features")
                 else "runtime_cached"),
@@ -1228,6 +1302,9 @@ def _method_config(
             cohort_cfg, "slip", "slip_tissue_json")).resolve()
         with tissue_path.open(encoding="utf-8") as handle:
             tissue_classnames = json.load(handle)
+        # A marked asset wraps the vocabulary; an upstream one is a bare list.
+        if isinstance(tissue_classnames, dict):
+            tissue_classnames = tissue_classnames["tissues"]
         cfg.update({
             "lr": 2e-3,
             "weight_decay": 0.0,
@@ -1264,10 +1341,16 @@ def _method_config(
             "require_report": not bool(cohort_cfg.get(
                 "_generated_prompt_assets", {}).get(
                     "wsi_five_default_report")),
-            "clinicalbert_weights": (
+            "clinicalbert_weights": os.environ.get(
+                "CLINICALBERT_CKPT",
                 "/path/to/model-cache/huggingface/hub/"
                 "models--emilyalsentzer--Bio_ClinicalBERT/snapshots/"
                 "d5892b39a4adaed74b92212a44081509db72f87b"),
+            # The released question set is lung-specific. A cohort outside lung
+            # must declare its own, and that set is generated, not the authors'.
+            "clinical_questions": (
+                str(_absolute_repo_path(cohort_cfg["wsi_five_questions_json"]))
+                if cohort_cfg.get("wsi_five_questions_json") else None),
             "prompt_source": (
                 "wsi_five_clinicalbert_reports_and_classnames"
                 if cohort_cfg.get("wsi_report_csv")
@@ -1533,10 +1616,19 @@ def _validate_muse_feature_config(cfg: dict[str, Any]) -> None:
             "MUSE embed_dim must match the prompt encoder shared dimension")
 
 
+# CoD-MIL's released kidney bank carries 21 normal-tissue prompts (6 organ
+# structures + 15 organ-independent phenotypes). The organ-independent set is
+# the floor any cohort can meet, so it is the minimum a bank must supply.
+MIN_BACKGROUND_PROMPTS = 15
+
+
 def _validate_cod_prompt(cfg: dict[str, Any]) -> None:
     path = _require_asset(cfg.get("text_prompt_path"), "CoD-MIL chain JSON")
     with path.open(encoding="utf-8") as handle:
         payload = json.load(handle)
+    # Keys beginning with an underscore are metadata (provenance, notes), not
+    # classes. Comparing them against classnames would reject a marked asset.
+    payload = {k: v for k, v in payload.items() if not str(k).startswith("_")}
     if list(payload) != list(cfg["classnames"]):
         raise ValueError(
             f"{path}: CoD-MIL class order must be {cfg['classnames']}")
@@ -1571,10 +1663,19 @@ def _validate_cod_prompt(cfg: dict[str, Any]) -> None:
         prompt_payload = prompt_payload.get("embeddings", prompt_payload.get("features"))
     if not torch.is_tensor(prompt_payload) or prompt_payload.ndim != 2:
         raise ValueError(f"{tensor_path}: expected a rank-2 prompt tensor")
-    if prompt_payload.shape[0] < 2 * int(cfg["n_classes"]) + 1:
+    # The released kidney bank is 3 low + 3 high + 21 normal-tissue rows, and
+    # the model slices [2C:-1] for its auxiliary contrastive branch. One spare
+    # row satisfies the arithmetic while leaving that branch with a single
+    # negative, which is not the published objective -- so require a bank, not
+    # a row. MIN_BACKGROUND_PROMPTS is the organ-independent set alone.
+    minimum = 2 * int(cfg["n_classes"]) + MIN_BACKGROUND_PROMPTS
+    if prompt_payload.shape[0] < minimum:
+        background = prompt_payload.shape[0] - 2 * int(cfg["n_classes"])
         raise ValueError(
-            f"{tensor_path}: CoD-MIL requires at least "
-            f"{2 * int(cfg['n_classes']) + 1} prompt rows")
+            f"{tensor_path}: CoD-MIL needs {2 * int(cfg['n_classes'])} class "
+            f"prompts plus at least {MIN_BACKGROUND_PROMPTS} normal-tissue "
+            f"prompts for its contrastive branch; this bank has "
+            f"{prompt_payload.shape[0]} rows ({background} background).")
     if prompt_payload.shape[1] != int(cfg["feature_dim"]):
         raise ValueError(
             f"{tensor_path}: prompt width {prompt_payload.shape[1]} does not "
@@ -1624,13 +1725,23 @@ def _validate_slip_prompt(cfg: dict[str, Any]) -> None:
         cfg.get("tissue_classnames_path"), "SLIP tissue prompt JSON")
     with path.open(encoding="utf-8") as handle:
         payload = json.load(handle)
-    if payload != cfg.get("tissue_classnames"):
+    # SLIP routes patches through a vocabulary of *tissue phenotypes*, not one
+    # bank per class: `slidecoop.py` builds tissue weights from these and takes
+    # a top-k similarity over them. Upstream ships 17 phenotypes for its TCGA
+    # lung task against 2 classes, so tying the count to `n_classes` would
+    # reject the authors' own asset and force a per-class substitute that
+    # collapses the routing.
+    tissues = payload.get("tissues") if isinstance(payload, dict) else payload
+    if not isinstance(tissues, list) or not tissues:
+        raise ValueError(f"{path}: SLIP needs a list of tissue phenotypes")
+    if tissues != cfg.get("tissue_classnames"):
         raise ValueError("SLIP tissue_classnames must exactly match its prompt JSON")
-    if not isinstance(payload, list) or len(payload) != cfg["n_classes"]:
+    if len(tissues) < int(cfg["n_classes"]):
         raise ValueError(
-            f"{path}: SLIP needs one tissue prompt bank per class")
-    for index, prompts in enumerate(payload):
-        _nonempty_strings(prompts, f"{path}:class {index}")
+            f"{path}: SLIP tissue vocabulary ({len(tissues)}) is smaller than "
+            f"the class count ({cfg['n_classes']}); routing would be degenerate")
+    for index, prompt in enumerate(tissues):
+        _nonempty_strings(prompt, f"{path}:tissue {index}")
 
 
 def _validate_sldpc_prompt(cfg: dict[str, Any]) -> None:
@@ -1739,6 +1850,11 @@ def _validate_convlm_assets(cfg: dict[str, Any]) -> None:
             cfg.get("attribute_prompt_path"), "ConVLM attribute prompt JSON")
         with path.open(encoding="utf-8") as handle:
             payload = json.load(handle)
+        # Keys beginning with an underscore are metadata (provenance, notes),
+        # not classes; comparing them against classnames would reject a marked
+        # asset.
+        payload = {k: v for k, v in payload.items()
+                   if not str(k).startswith("_")}
         if list(payload) != list(cfg["classnames"]):
             raise ValueError(
                 f"{path}: ConVLM prompt classes must be {cfg['classnames']}")
@@ -1873,11 +1989,66 @@ def validate_generated_config_assets(cfg: dict[str, Any]) -> None:
         raise KeyError(f"No asset validator for benchmark method {method}")
 
 
+def _encoder_provenance(method: str, cfg: dict[str, Any],
+                        feature_cfg: dict[str, Any]) -> str:
+    """Say whether this run measures the encoder or the encoder plus a bridge.
+
+    ``native`` means the method's published code supports this encoder directly.
+    ``adapted`` means a trainable projection stands between the offline patch
+    source and the prompt space, so the result measures the method *and* that
+    projection and must not share a results table with a native row.
+
+    Derived from the declared contract rather than set by hand, so it cannot
+    drift from what the run actually does.
+    """
+    from common.backbones import SwapPolicy
+    from methods import get_method
+
+    contract = get_method(method).get_backbone_contract()
+    # A patch source that is not the prompt backbone is bridged by the method's
+    # learned visual adapter (MUSE is the registered case).
+    if cfg["backbone"] != feature_cfg["backbone"]:
+        return "adapted"
+    if contract.swap_policy is SwapPolicy.CAPABILITY:
+        expected = contract.feature_dims.get(cfg["backbone"])
+        width = cfg.get("feature_dim")
+        if expected and width is not None and int(width) not in expected:
+            return "adapted"
+    return "native"
+
+
+def _prune_stale_configs(output_dir: Path, written: set[Path]) -> None:
+    """Delete generated configs the protocol no longer produces.
+
+    An experiment that stops generating -- because its prompts went missing, or
+    it was removed from the protocol -- leaves its previous YAML behind. That
+    file still looks valid and still names a results directory, so anything that
+    walks the config tree instead of ``run_matrix.csv`` will happily run an
+    experiment this protocol has already rejected. The protocol is the source of
+    truth, so whatever it did not just write is removed.
+    """
+    config_root = output_dir / "configs"
+    if not config_root.is_dir():
+        return
+    removed = [path for path in sorted(config_root.glob("*/*.yaml"))
+               if path.resolve() not in written]
+    for path in removed:
+        path.unlink()
+    # Drop the experiment directory too once it holds nothing.
+    for directory in sorted(config_root.iterdir()):
+        if directory.is_dir() and not any(directory.iterdir()):
+            directory.rmdir()
+    if removed:
+        print(f"  pruned {len(removed)} stale config(s) no longer generated: "
+              + ", ".join(sorted({path.parent.name for path in removed})))
+
+
 def generate_configs(protocol: dict[str, Any], output_dir: Path) -> None:
     build_generated_prompt_assets(protocol, output_dir)
     from methods import get_method
 
     matrix_rows = []
+    written_configs: set[Path] = set()
     skipped_configs: list[dict[str, Any]] = []
     for experiment, experiment_cfg in protocol["experiments"].items():
         method = experiment_cfg["method"]
@@ -1963,6 +2134,10 @@ def generate_configs(protocol: dict[str, Any], output_dir: Path) -> None:
                     cfg["encoder"].get("initialization") == "scratch"
                     or bool(weights_value and Path(weights_value).exists())
                 )
+                # Recorded in the config as well as the matrix, so a results
+                # file can be traced to its provenance without re-deriving it.
+                cfg["encoder_provenance"] = _encoder_provenance(
+                    method, cfg, feature_cfg)
                 path = (
                     output_dir / "configs" / experiment
                     / f"{cohort}_{shot}shot.yaml")
@@ -1984,6 +2159,7 @@ def generate_configs(protocol: dict[str, Any], output_dir: Path) -> None:
                         method).get_backbone_contract().feature_level.value,
                     "backbone": cfg["backbone"],
                     "feature_encoder": feature_cfg["backbone"],
+                    "encoder_provenance": cfg["encoder_provenance"],
                     "slide_encoder": (
                         feature_cfg["backbone"]
                         if _input_kind(feature_cfg) == "slide_embedding"
@@ -2028,6 +2204,8 @@ def generate_configs(protocol: dict[str, Any], output_dir: Path) -> None:
                     "config": str(path),
                     "command": f"python train.py --method {method} --config {path}",
                 })
+                written_configs.add(path.resolve())
+    _prune_stale_configs(output_dir, written_configs)
     pd.DataFrame(matrix_rows).to_csv(output_dir / "run_matrix.csv", index=False)
     # Record what could not be generated, so a cohort missing one method's
     # assets is visible rather than merely absent from the matrix.
@@ -2095,6 +2273,7 @@ def audit_generated_configs(
                 cfg.get("patch_encoder", {}).get("name")
                 or cfg.get("slide_encoder", {}).get("name")
                 or cfg["backbone"]),
+            "encoder_provenance": cfg.get("encoder_provenance"),
             "slide_encoder": (
                 cfg.get("slide_encoder", {}).get("name")
                 if "slide_embedding" in set(
@@ -2272,6 +2451,12 @@ def aggregate_results(output_dir: Path) -> pd.DataFrame:
                     "feature_signature": run["feature_signature"],
                     "resolution_signature": run["resolution_signature"],
                     "backbone": run["backbone"],
+                    # A native result and an adapted one are different claims,
+                    # and so are an upstream prompt and a generated one. They
+                    # must stay separable in the table people actually read, not
+                    # just in the matrix that produced it.
+                    "encoder_provenance": run.get("encoder_provenance"),
+                    "prompt_provenance": cfg.get("prompt_provenance"),
                     "cohort": run["cohort"],
                     "shots": int(run["shots"]),
                     "fold": fold,
@@ -2285,21 +2470,24 @@ def aggregate_results(output_dir: Path) -> pd.DataFrame:
         aggregate = pd.DataFrame(
             columns=[
                 "experiment", "method", "feature_signature",
-                "resolution_signature", "backbone", "cohort", "shots",
+                "resolution_signature", "backbone", "encoder_provenance",
+                "prompt_provenance", "cohort", "shots",
                 "metric", "mean", "std", "folds"]
         )
     else:
         id_columns = [
             "experiment", "method", "feature_signature",
-            "resolution_signature", "backbone", "cohort", "shots", "fold"]
+            "resolution_signature", "backbone", "encoder_provenance",
+            "prompt_provenance", "cohort", "shots", "fold"]
         long = folds.melt(
             id_vars=id_columns, var_name="metric", value_name="value"
         ).dropna(subset=["value"])
         aggregate = (
             long.groupby([
                 "experiment", "method", "feature_signature",
-                "resolution_signature", "backbone", "cohort", "shots",
-                "metric"])["value"]
+                "resolution_signature", "backbone", "encoder_provenance",
+                "prompt_provenance", "cohort", "shots",
+                "metric"], dropna=False)["value"]
             .agg(mean="mean", std="std", folds="count")
             .reset_index()
         )

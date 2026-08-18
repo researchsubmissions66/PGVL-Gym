@@ -1,0 +1,219 @@
+{
+  "_note": "Origin of every prompt asset. Assets carrying an inline '_provenance' key are authoritative; this manifest covers the rest. Regenerate the report with scripts/audit_prompt_provenance.py.",
+  "assets": {
+    "maple/LUNG_attributes.json": {
+      "provenance": "upstream",
+      "source": "JJ-ZHOU-Code/MAPLE templete/maple/<task>/<task>_8.json"
+    },
+    "maple/RCC_attributes.json": {
+      "provenance": "upstream",
+      "source": "JJ-ZHOU-Code/MAPLE templete/maple/<task>/<task>_8.json"
+    },
+    "maple/BRCA_attributes.json": {
+      "provenance": "upstream",
+      "source": "JJ-ZHOU-Code/MAPLE templete/maple/<task>/<task>_8.json"
+    },
+    "maple/LUNG_composite_attributes.json": {
+      "provenance": "derived",
+      "source": "flatten_maple_attributes() over the upstream file",
+      "note": "Same wording, reorganised class->attributes for the composite prompt module."
+    },
+    "maple/RCC_composite_attributes.json": {
+      "provenance": "derived",
+      "source": "flatten_maple_attributes() over the upstream file",
+      "note": "Same wording, reorganised class->attributes for the composite prompt module."
+    },
+    "maple/BRCA_composite_attributes.json": {
+      "provenance": "derived",
+      "source": "flatten_maple_attributes() over the upstream file",
+      "note": "Same wording, reorganised class->attributes for the composite prompt module."
+    },
+    "slip/DHMC_tissues.json": {
+      "provenance": "upstream",
+      "source": "LTS5/SLIP datasets/prompt.py tissue_classnames",
+      "note": "TCGA_tissues.json is the lung vocabulary and is what tcga_nsclc uses."
+    },
+    "slip/PatchGastricADC22_tissues.json": {
+      "provenance": "upstream",
+      "source": "LTS5/SLIP datasets/prompt.py tissue_classnames",
+      "note": "TCGA_tissues.json is the lung vocabulary and is what tcga_nsclc uses."
+    },
+    "slip/TCGA_tissues.json": {
+      "provenance": "upstream",
+      "source": "LTS5/SLIP datasets/prompt.py tissue_classnames",
+      "note": "TCGA_tissues.json is the lung vocabulary and is what tcga_nsclc uses."
+    },
+    "muse/camelyon_all/generated_new_0.csv": {
+      "provenance": "upstream",
+      "source": "JiahaoXu-god/CVPR2026_MUSE text_prompt/<task>/"
+    },
+    "muse/camelyon_all/generated_new_1.csv": {
+      "provenance": "upstream",
+      "source": "JiahaoXu-god/CVPR2026_MUSE text_prompt/<task>/"
+    },
+    "muse/tcga_brca/generated_new_0.csv": {
+      "provenance": "upstream",
+      "source": "JiahaoXu-god/CVPR2026_MUSE text_prompt/<task>/"
+    },
+    "muse/tcga_brca/generated_new_1.csv": {
+      "provenance": "upstream",
+      "source": "JiahaoXu-god/CVPR2026_MUSE text_prompt/<task>/"
+    },
+    "muse/tcga_nsclc/generated_new_0.csv": {
+      "provenance": "upstream",
+      "source": "JiahaoXu-god/CVPR2026_MUSE text_prompt/<task>/"
+    },
+    "muse/tcga_nsclc/generated_new_1.csv": {
+      "provenance": "upstream",
+      "source": "JiahaoXu-god/CVPR2026_MUSE text_prompt/<task>/"
+    },
+    "sldpc/camelyon16.yaml": {
+      "provenance": "upstream",
+      "source": "linlu2022/SLDPC data/datasets/zero_shot_prompts/"
+    },
+    "sldpc/tcga_brca.yaml": {
+      "provenance": "upstream",
+      "source": "linlu2022/SLDPC data/datasets/zero_shot_prompts/"
+    },
+    "sldpc/tcga_nsclc.yaml": {
+      "provenance": "upstream",
+      "source": "linlu2022/SLDPC data/datasets/zero_shot_prompts/"
+    },
+    "sldpc/tcga_ot.yaml": {
+      "provenance": "upstream",
+      "source": "linlu2022/SLDPC data/datasets/zero_shot_prompts/"
+    },
+    "sldpc/tcga_rcc.yaml": {
+      "provenance": "upstream",
+      "source": "linlu2022/SLDPC data/datasets/zero_shot_prompts/"
+    },
+    "sldpc/ubc_ocean.yaml": {
+      "provenance": "upstream",
+      "source": "linlu2022/SLDPC data/datasets/zero_shot_prompts/"
+    },
+    "cod_mil/rcc_chain_of_diagnosis.csv": {
+      "provenance": "upstream",
+      "source": "Jiangbo-Shi/CoD-MIL prompt/text_prompt_kidney_v2.csv"
+    },
+    "cod_mil/rcc_text_prompt_features_clip_rn50.pt": {
+      "provenance": "upstream",
+      "source": "Jiangbo-Shi/CoD-MIL prompt/text_prompt_feature_kidney_v2_*.pt",
+      "note": "The clip_rn50 tensor has 30 rows against the CSV's 27; its first six rows encode text that was never published. Prefer the plip/quiltnet tensors."
+    },
+    "cod_mil/rcc_text_prompt_features_plip.pt": {
+      "provenance": "upstream",
+      "source": "Jiangbo-Shi/CoD-MIL prompt/text_prompt_feature_kidney_v2_*.pt",
+      "note": "The clip_rn50 tensor has 30 rows against the CSV's 27; its first six rows encode text that was never published. Prefer the plip/quiltnet tensors."
+    },
+    "cod_mil/rcc_text_prompt_features_quiltnet.pt": {
+      "provenance": "upstream",
+      "source": "Jiangbo-Shi/CoD-MIL prompt/text_prompt_feature_kidney_v2_*.pt",
+      "note": "The clip_rn50 tensor has 30 rows against the CSV's 27; its first six rows encode text that was never published. Prefer the plip/quiltnet tensors."
+    },
+    "mscpt/description/TCGA_BRCA_IDC_ILC.json": {
+      "provenance": "generated",
+      "source": "authored for this benchmark",
+      "note": "10 big_mag prompts against 30 in the other cohorts, and a different file structure -- MSCPT cohorts are not comparable on prompt count."
+    },
+    "top/instance_prototypes.json": {
+      "provenance": "upstream",
+      "source": "miccaiif/TOP NeurIPS supplementary",
+      "note": "The released code uses shorter phrasing than the supplementary and is what produced the paper's numbers; this is a different prompt condition."
+    },
+    "top/tcga_nsclc_bag_prompts.json": {
+      "provenance": "upstream",
+      "source": "miccaiif/TOP NeurIPS supplementary",
+      "note": "The released code uses shorter phrasing than the supplementary and is what produced the paper's numbers; this is a different prompt condition."
+    },
+    "convlm/brca_attributes.json": {
+      "provenance": "generated",
+      "source": "authored for this benchmark from FOCUS/SLIP descriptions",
+      "note": "Substitutes for ConVLM's unpublished Quilt-LLaVA bank. Deliberately unwired."
+    },
+    "convlm/camelyon16_attributes.json": {
+      "provenance": "generated",
+      "source": "authored for this benchmark from FOCUS/SLIP descriptions",
+      "note": "Substitutes for ConVLM's unpublished Quilt-LLaVA bank. Deliberately unwired."
+    },
+    "convlm/nsclc_attributes.json": {
+      "provenance": "generated",
+      "source": "authored for this benchmark from FOCUS/SLIP descriptions",
+      "note": "Substitutes for ConVLM's unpublished Quilt-LLaVA bank. Deliberately unwired."
+    },
+    "convlm/rcc_attributes.json": {
+      "provenance": "generated",
+      "source": "authored for this benchmark from FOCUS/SLIP descriptions",
+      "note": "Substitutes for ConVLM's unpublished Quilt-LLaVA bank. Deliberately unwired."
+    },
+    "convlm/ubc_ocean_attributes.json": {
+      "provenance": "generated",
+      "source": "authored for this benchmark from FOCUS/SLIP descriptions",
+      "note": "Substitutes for ConVLM's unpublished Quilt-LLaVA bank. Deliberately unwired."
+    },
+    "wsi_five/nsclc_report_answers.csv": {
+      "provenance": "upstream",
+      "source": "ls1rius/WSI_FiVE gpt_preprocess/LUAD|LUSC_report_answer_*.xlsx",
+      "note": "The authors' GPT answers to their six clinical questions, 912 cases."
+    },
+    "focus/CAMELYON16_two_scale_text_prompt.csv": {
+      "provenance": "upstream",
+      "source": "dddavid4real/FOCUS two-scale prompt CSVs",
+      "note": "NOT verified against the upstream repository this session -- recorded from the vendored tree. Confirm before relying on the claim."
+    },
+    "focus/TCGA_BRCA_two_scale_text_prompt.csv": {
+      "provenance": "upstream",
+      "source": "dddavid4real/FOCUS two-scale prompt CSVs",
+      "note": "NOT verified against the upstream repository this session -- recorded from the vendored tree. Confirm before relying on the claim."
+    },
+    "focus/TCGA_NSCLC_two_scale_text_prompt.csv": {
+      "provenance": "upstream",
+      "source": "dddavid4real/FOCUS two-scale prompt CSVs",
+      "note": "NOT verified against the upstream repository this session -- recorded from the vendored tree. Confirm before relying on the claim."
+    },
+    "focus/TCGA_RCC_two_scale_text_prompt.csv": {
+      "provenance": "upstream",
+      "source": "dddavid4real/FOCUS two-scale prompt CSVs",
+      "note": "NOT verified against the upstream repository this session -- recorded from the vendored tree. Confirm before relying on the claim."
+    },
+    "focus/TCGA_RCC_GEPA_two_scale_text_prompt.csv": {
+      "provenance": "upstream",
+      "source": "dddavid4real/FOCUS two-scale prompt CSVs",
+      "note": "NOT verified against the upstream repository this session -- recorded from the vendored tree. Confirm before relying on the claim."
+    },
+    "focus/UBC_OCEAN_two_scale_text_prompt.csv": {
+      "provenance": "upstream",
+      "source": "dddavid4real/FOCUS two-scale prompt CSVs",
+      "note": "NOT verified against the upstream repository this session -- recorded from the vendored tree. Confirm before relying on the claim."
+    },
+    "TCGA_Lung_two_scale_text_prompt.csv": {
+      "provenance": "upstream",
+      "source": "duplicate of the focus/ copies, reachable via the legacy configs/ tree",
+      "note": "Two files per method and cohort; consolidate onto focus/."
+    },
+    "UBC-OCEAN_two_scale_text_prompt.csv": {
+      "provenance": "upstream",
+      "source": "duplicate of the focus/ copies, reachable via the legacy configs/ tree",
+      "note": "Two files per method and cohort; consolidate onto focus/."
+    },
+    "cod_mil/brca_chain_of_diagnosis.json": {
+      "provenance": "inline",
+      "source": "see the file's own _provenance key"
+    },
+    "cod_mil/nsclc_chain_of_diagnosis.json": {
+      "provenance": "inline",
+      "source": "see the file's own _provenance key"
+    },
+    "cod_mil/rcc_chain_of_diagnosis.json": {
+      "provenance": "inline",
+      "source": "see the file's own _provenance key"
+    },
+    "cod_mil/background_tissue_generic.json": {
+      "provenance": "inline",
+      "source": "see the file's own _provenance key"
+    },
+    "cod_mil/brca_normal_structures.json": {
+      "provenance": "inline",
+      "source": "see the file's own _provenance key"
+    }
+  }
+}

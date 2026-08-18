@@ -57,6 +57,10 @@ wsi-five = [
 ]
 convlm = ["open-clip-torch>=2.24"]
 sldpc = ["einops-exts"]
+# Prompting a served language model needs only an HTTP client: vLLM pins torch
+# hard and this project pins torch for its methods, so vLLM belongs in its own
+# environment and is deliberately absent here. See docs/llm-assets.md.
+llm = ["requests>=2.31"]
 all = [
     "nystrom-attention",
     "open-clip-torch>=2.24",

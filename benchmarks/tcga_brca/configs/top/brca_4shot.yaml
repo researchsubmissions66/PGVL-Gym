@@ -58,3 +58,4 @@ pooling_strategy: learnablePrompt_multi
 data_folder_s: /work/hdd/bhwm/trident_features/master_benchmark/10x_224px_0px_overlap/features_clip_rn50
 feature_path_column: feature__clip_rn50_10x
 prompt_source: top_instance_prototypes_and_bag_context
+encoder_provenance: native

@@ -1,4 +1,6 @@
 {
+  "_provenance": "upstream",
+  "_note": "Derived by import_upstream_assets.py from CoD-MIL's released prompt/text_prompt_kidney_v2.csv; wording is the authors'.",
   "clear cell renal cell carcinoma": {
     "broad": [
       "This is an image of clear cell renal cell carcinoma at low resolution with visually descriptive characteristics of solid mass, well-circumscribed, borders, pale or yellowish color, and homogeneous texture."
