@@ -503,8 +503,13 @@ def test_wsi_five_matches_patient_filename_reports_to_tcga_case(tmp_path: Path):
         annotations, tmp_path, reports, {"A": 0}, max_patches=8)
     dataset.feature_path_column = "feature_path"
 
-    features, report, label = dataset[0]
+    features, report, patch_info, label = dataset[0]
     assert features.shape == (3, 512)
+    # The fusion transformer positions patches by their index within the
+    # slide and masks padding per slide, so these travel with the bag.
+    assert patch_info["sample_range"] == 3
+    assert int(patch_info["patch_pub_cnt"]) == 3
+    assert patch_info["patch_inds"].tolist() == [0.0, 1.0, 2.0]
     assert report == "diagnostic pathology report"
     assert label == 0
 
@@ -529,7 +534,7 @@ def test_wsi_five_uses_class_agnostic_context_when_reports_are_unavailable(
     dataset.feature_path_column = "feature_path"
     dataset.require_report = False
 
-    _, report, _ = dataset[0]
+    _, report, _, _ = dataset[0]
     assert report == context
 
 
@@ -573,8 +578,17 @@ def test_cod_mil_runtime_encodes_compiled_chain_once(tmp_path: Path):
     first = method._prepare_text_features()
     second = method._prepare_text_features()
 
-    assert first.shape == (7, 1024)
+    # 2*C class prompts followed by the normal-tissue bank the auxiliary
+    # contrastive branch contrasts against. The released kidney bank is
+    # 3 low + 3 high + 21 normal; here it is 2 + 2 + the 15 organ-independent
+    # rows reused verbatim from it.
+    n_classes = 2
+    assert first.shape == (n_classes * 2 + 15, 1024)
     assert first is second
     assert bundle.calls == 1
     assert bundle.prompts[:4] == [
         "alpha low", "beta low", "alpha high", "beta high"]
+    background = bundle.prompts[n_classes * 2:]
+    assert len(background) >= 15
+    # Real tissue phenotypes, not templates naming the tumour class.
+    assert all("alpha" not in p and "beta" not in p for p in background)

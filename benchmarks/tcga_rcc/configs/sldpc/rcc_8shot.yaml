@@ -79,3 +79,4 @@ early_stopping: false
 monitor_metric: F1
 prompt_reference_yaml: /u/dchanda/PGVL-Gym/text_prompts/sldpc/tcga_rcc.yaml
 prompt_source: sldpc_learnable_context_from_classnames
+encoder_provenance: native

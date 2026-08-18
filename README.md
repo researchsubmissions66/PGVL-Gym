@@ -153,7 +153,7 @@ The codebase explicitly keeps the **common parts together** and
 
 The unique parts (e.g. the MAPLE entity GCN, the FOCUS visual
 compression module, the PathPT per-backbone forward, the WSI-FiVE
-MedCLIP / X-CLIP vision tower) live under their own `methods/<name>/`
+report-conditioned patch fusion) live under their own `methods/<name>/`
 folder, and are wired in through a thin `adapter.py` that implements
 a uniform `BaseMethod` interface (`build_model`, `train_step`,
 `eval_step`, optionally `build_optimizer` / `build_scheduler`).

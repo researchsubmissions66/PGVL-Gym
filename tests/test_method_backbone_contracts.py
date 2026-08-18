@@ -70,7 +70,6 @@ def test_method_specific_aliases_resolve(method_name, cfg, expected):
     [
         ("top", {"clip_arch": "plip"}),
         ("convlm", {"backbone": "conch"}),
-        ("wsi_five", {"backbone": "clip-vitb"}),
     ],
 )
 def test_fixed_architectures_reject_incompatible_swaps(method_name, cfg):
@@ -87,6 +86,21 @@ def test_precomputed_cod_mil_rejects_unaligned_backbone():
 
     with pytest.raises(BackboneCompatibilityError, match="cannot use backbone"):
         contract.validate_config({"backbone": "conch", "feature_dim": 512})
+
+
+def test_wsi_five_is_precomputed_not_encoder_owning():
+    """WSI-FiVE reads a patch bag from disk; it owns no vision tower.
+
+    Upstream sets ``self.visual = nn.Identity()`` under its shipped
+    ``IS_IMG_PTH: True`` and the paper uses DSMIL features, so the contract is
+    ``PRECOMPUTED`` rather than ``FIXED``. Rejection of an unaligned backbone is
+    unchanged -- only the reason recorded for it.
+    """
+    contract = get_method("wsi_five").get_backbone_contract()
+    assert contract.swap_policy is SwapPolicy.PRECOMPUTED
+
+    with pytest.raises(BackboneCompatibilityError, match="cannot use backbone"):
+        contract.validate_config({"backbone": "clip-vitb"})
 
 
 @pytest.mark.parametrize(
@@ -140,20 +154,54 @@ def test_pathpt_aggregates_native_patch_probabilities_to_slide_logits():
     torch.testing.assert_close(logits.exp(), torch.tensor([[0.7, 0.3]]))
 
 
-def test_top_extracts_slide_logits_from_class_correlation_diagonal():
+def test_top_averages_prototype_probabilities_like_upstream():
+    """TOP pools prototypes as upstream does: mean *after* softmax.
+
+    ``train_TCGAFeat_MIL_CLIP.py`` takes ``bag_prediction.mean(0)``, so the
+    slide probability is the mean of the per-prototype probability rows, not a
+    reduction of the raw scores. The adapter returns the log of that mean, which
+    makes ``softmax(logits)`` recover upstream's probabilities exactly while
+    still being a valid input to cross-entropy.
+    """
     from methods.top.adapter import TOPMethod
 
     method = TOPMethod({"clip_arch": "RN50", "n_classes": 3}, device="cpu")
-    correlation = torch.tensor([
+    prototype_scores = torch.tensor([
         [3.0, 0.2, 0.1],
         [0.3, 4.0, 0.4],
         [0.5, 0.6, 5.0],
     ])
+    attention = torch.tensor([
+        [1.0, 0.2],
+        [0.3, 2.0],
+        [0.7, 0.4],
+    ])
 
-    logits, auxiliary = method._slide_logits((correlation, torch.ones(2)))
+    logits, auxiliary = method._slide_logits((prototype_scores, attention))
 
-    torch.testing.assert_close(logits, torch.tensor([[3.0, 4.0, 5.0]]))
-    assert auxiliary is not None and torch.isfinite(auxiliary)
+    expected = prototype_scores.softmax(dim=1).mean(dim=0, keepdim=True)
+    assert logits.shape == (1, 3)
+    torch.testing.assert_close(logits.softmax(dim=1), expected)
+    # The diagonal of the raw scores is what a naive reduction would return;
+    # upstream's averaging must not reproduce it.
+    assert not torch.allclose(logits, torch.tensor([[3.0, 4.0, 5.0]]))
+
+    normed = torch.softmax(attention, dim=0)
+    torch.testing.assert_close(
+        auxiliary, torch.triu(normed.T @ normed, diagonal=1).mean())
+    assert torch.isfinite(auxiliary)
+
+
+def test_top_auxiliary_is_absent_without_a_2d_attention_matrix():
+    """LossA needs the instance attention matrix; a vector carries no pairs."""
+    from methods.top.adapter import TOPMethod
+
+    method = TOPMethod({"clip_arch": "RN50", "n_classes": 2}, device="cpu")
+    logits, auxiliary = method._slide_logits(
+        (torch.tensor([[1.0, 2.0], [0.5, 1.5]]), torch.ones(2)))
+
+    assert logits.shape == (1, 2)
+    assert auxiliary is None
 
 
 def test_vila_rejects_multi_slide_variable_length_batches():

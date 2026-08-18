@@ -2,13 +2,48 @@
   "valid": true,
   "cohorts": {
     "camelyon16": {
-      "slides": 0,
-      "patients": 0,
-      "labels": {},
-      "status": "awaiting_metadata"
+      "slides": 399,
+      "patients": 399,
+      "labels": {
+        "normal": 239,
+        "tumor": 160
+      }
     }
   },
-  "missing_features": [],
+  "missing_features": [
+    {
+      "cohort": "camelyon16",
+      "feature_source": "conch_v1_5x",
+      "input_kind": "patch_bag",
+      "resolution": "5x",
+      "feature_column": "feature__conch_v1_5x",
+      "missing": 399
+    },
+    {
+      "cohort": "camelyon16",
+      "feature_source": "conch_v1_10x",
+      "input_kind": "patch_bag",
+      "resolution": "10x",
+      "feature_column": "feature__conch_v1_10x",
+      "missing": 399
+    },
+    {
+      "cohort": "camelyon16",
+      "feature_source": "conch_v1_20x",
+      "input_kind": "patch_bag",
+      "resolution": "20x",
+      "feature_column": "feature__conch_v1_20x",
+      "missing": 399
+    },
+    {
+      "cohort": "camelyon16",
+      "feature_source": "keep_20x",
+      "input_kind": "patch_bag",
+      "resolution": "20x",
+      "feature_column": "feature__keep_20x",
+      "missing": 399
+    }
+  ],
   "configs": {
     "total": 24,
     "valid": 24

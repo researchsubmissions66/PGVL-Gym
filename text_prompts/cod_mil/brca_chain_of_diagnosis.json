@@ -1,4 +1,6 @@
 {
+  "_provenance": "generated",
+  "_note": "CoD-MIL publishes a chain-of-diagnosis prompt bank for kidney only (prompt/text_prompt_kidney_v2.csv). This breast chain is authored for this benchmark and does not use the released template wording, so a CoD-MIL result on BRCA is not prompt-faithful.",
   "invasive ductal carcinoma": {
     "broad": [
       "At low magnification, invasive ductal carcinoma forms irregular infiltrative glands, cords, nests, or solid sheets in a desmoplastic breast stroma without a classic lobular growth pattern."

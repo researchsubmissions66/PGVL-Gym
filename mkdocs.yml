@@ -93,6 +93,8 @@ nav:
       - Benchmark protocols: benchmarks.md
       - Results and reporting: results.md
       - Reproducibility: reproducibility.md
+      - Design decisions: design-decisions.md
+      - Prompting language models: llm-assets.md
       - Troubleshooting: troubleshooting.md
       - Extending the framework: extending.md
   - Reference:

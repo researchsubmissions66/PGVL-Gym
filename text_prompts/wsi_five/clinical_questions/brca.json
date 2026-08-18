@@ -1,0 +1,12 @@
+{
+  "_provenance": "generated",
+  "_note": "Authored for this benchmark, for the same reason as the RCC set: the released question set is lung-specific. These six use concepts TCGA-BRCA reports record, and mirror the released set's grading plus local-extension structure. A WSI-FiVE result on BRCA is not prompt-faithful.",
+  "questions": [
+    "What is the histologic grade of the carcinoma? (Nottingham/SBR grade 1-3, or Unknown.)",
+    "Is there an in-situ carcinoma component accompanying the invasive tumour, and of what type?",
+    "Is there any indication of lymphovascular invasion by the carcinoma?",
+    "Is there any evidence of tumour involving regional lymph nodes?",
+    "Is there tumour necrosis present within the carcinoma?",
+    "Are the surgical margins of the excised tissue clear of disease? (note that: R0 means negative; R1 R2 both mean positive; Rx means Unknown."
+  ]
+}

@@ -40,7 +40,7 @@ feature_dim: 512
 method: focus
 experiment: focus
 epochs: 200
-prompt_provenance: user_defined_from_focus_camelyon_domain
+prompt_provenance: upstream
 results_dir: /u/dchanda/PGVL-Gym/results/camelyon16_benchmark/focus/camelyon16/4shot
 lr: 0.0001
 weight_decay: 1.0e-05
@@ -56,6 +56,7 @@ data_folder_s: /work/hdd/bhwm/CAMELYON16/10x_256px_0px_overlap/features_conch_v1
 data_folder_l: /work/hdd/bhwm/CAMELYON16/20x_256px_0px_overlap/features_conch_v1
 feature_path_column_s: feature__conch_v1_10x
 feature_path_column_l: feature__conch_v1_20x
-text_prompt_path: /u/dchanda/PGVL-Gym/benchmarks/camelyon16/data/camelyon16/prompts/focus_two_scale.csv
+text_prompt_path: /u/dchanda/PGVL-Gym/text_prompts/focus/CAMELYON16_two_scale_text_prompt.csv
 prompt_source: focus_two_scale_csv
 conch_ckpt: /work/hdd/bhwm/.cache_huggingface/hub/models--MahmoodLab--conch/blobs/40a9644b9ba0e83a74576e0a5e5f7313599fa9c9cdaf3c20f8a3e271b0e9ae7c
+encoder_provenance: native

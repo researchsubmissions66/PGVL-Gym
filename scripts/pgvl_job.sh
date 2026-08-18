@@ -49,6 +49,31 @@ export TOKENIZERS_PARALLELISM=false
 export PYTHONUNBUFFERED=1
 export PYTHONPATH="${REPO}${PYTHONPATH:+:${PYTHONPATH}}"
 
+# PLIP's default revision publishes only pytorch_model.bin, and transformers
+# refuses to torch.load a .bin below torch 2.6 (CVE-2025-32434). A directory
+# holding the same weights as model.safetensors loads through a path that never
+# calls torch.load. Exported only when it is actually populated, so an
+# unprepared site falls back to the HF cache instead of failing on a bad path.
+# See docs/environment.md, "PLIP below torch 2.6".
+PLIP_LOCAL="${PLIP_CKPT:-/work/hdd/bhwm/dchanda/model_cache/plip}"
+if [[ -f "${PLIP_LOCAL}/model.safetensors" ]]; then
+    export PLIP_CKPT="${PLIP_LOCAL}"
+else
+    echo "[pgvl] note: no PLIP safetensors at ${PLIP_LOCAL};" \
+         "PLIP/MAPLE/MSCPT-PLIP will fail on torch <2.6" >&2
+fi
+
+# Bio_ClinicalBERT ships only pytorch_model.bin, so WSI-FiVE's text tower hits
+# the same torch<2.6 refusal as PLIP. Its safetensors copy drops the tied MLM
+# head, which AutoModel discards anyway. Same guard: exported only when present.
+BERT_LOCAL="${CLINICALBERT_CKPT:-/work/hdd/bhwm/dchanda/model_cache/bio_clinicalbert}"
+if [[ -f "${BERT_LOCAL}/model.safetensors" ]]; then
+    export CLINICALBERT_CKPT="${BERT_LOCAL}"
+else
+    echo "[pgvl] note: no BioClinicalBERT safetensors at ${BERT_LOCAL};" \
+         "WSI-FiVE will fail on torch <2.6" >&2
+fi
+
 echo "[pgvl] host=$(hostname) job=${SLURM_JOB_ID:-local}"
 echo "[pgvl] method=${METHOD}"
 echo "[pgvl] config=${CONFIG}"

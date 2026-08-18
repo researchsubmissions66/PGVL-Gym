@@ -56,3 +56,4 @@ feature_path_column: feature__keep_20x
 patch_num: null
 loader_mode: h5
 prompt_source: pathpt_classname_template
+encoder_provenance: native

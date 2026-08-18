@@ -66,6 +66,20 @@ cohorts:
     label_column: label
     slide_id_column: slide_id
     case_id_column: case_id
+    # MUSE publishes no RCC-subtyping description bank -- its `kidney` folder is
+    # an IgA nephropathy grading task, a different disease. These banks are
+    # therefore compiled from the same GPT descriptions MSCPT uses, and report
+    # `prompt_provenance: generated`. A MUSE result on this cohort is not
+    # paper-faithful and must not be tabled beside BRCA/NSCLC MUSE, which read
+    # the authors' own CSVs.
+    muse_prompt_json: train_data/gpt/description/RCC.json
+    wsi_report_csv: methods/wsi_five/gpt_preprocess/TCGA_Reports.csv
+    # WSI-FiVE publishes one question set and it is lung-specific ('spread
+    # through air spaces', 'pleural invasion', 'excluding the current lung
+    # organ'). These kidney questions are authored here, and the reports are
+    # free text rather than answers to them, so a WSI-FiVE result on RCC is
+    # not prompt-faithful -- prompt_provenance records that.
+    wsi_five_questions_json: text_prompts/wsi_five/clinical_questions/rcc.json
     prompts:
       focus: text_prompts/focus/TCGA_RCC_two_scale_text_prompt.csv
       vila_mil: text_prompts/focus/TCGA_RCC_two_scale_text_prompt.csv

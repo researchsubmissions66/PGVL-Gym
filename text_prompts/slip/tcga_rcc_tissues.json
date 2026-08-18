@@ -1,14 +1,23 @@
-[
-  [
-    "nested or alveolar clear-cell tumor traversed by a delicate branching vascular network",
-    "cells with optically clear cytoplasm and round nuclei"
-  ],
-  [
-    "papillary renal tumor with fibrovascular cores and variable tubular architecture",
-    "cuboidal cells lining papillae with foamy macrophages or psammoma bodies"
-  ],
-  [
-    "solid nested renal tumor with pale eosinophilic cells and distinct borders",
-    "chromophobe cells with perinuclear halos, wrinkled nuclei, and binucleation"
+{
+  "_provenance": "generated",
+  "_note": "SLIP publishes tissue vocabularies only for its own datasets (TCGA lung, DHMC, PatchGastricADC22). This vocabulary is authored for this benchmark in the released format ('Name: description'), reusing the organ-independent phenotypes from text_prompts/slip/TCGA_tissues.json and replacing the lung-specific ones. A SLIP result on this cohort is not prompt-faithful.",
+  "tissues": [
+    "Renal corpuscle: Spherical glomerular capillary tuft enclosed by Bowman's capsule.",
+    "Convoluted tubules: Elongated tubular profiles lined by cuboidal or columnar epithelium.",
+    "Clear cell nests: Nested tumour cells with optically clear cytoplasm and distinct membranes.",
+    "Delicate branching vasculature: Fine arborising capillary network traversing the tumour.",
+    "Papillary architecture: Fibrovascular cores lined by tumour epithelium.",
+    "Perinephric fat: Mature adipose tissue surrounding the renal capsule.",
+    "Sarcomatoid change: Spindled, high-grade tumour cells losing epithelial architecture.",
+    "Tumor nests: Clusters of cancerous cells forming distinct groups separated by stroma.",
+    "Solid tumor: A solid sheet of cancer cells with little intervening architecture.",
+    "Stroma: Supporting connective tissue between tumour and normal structures.",
+    "Necrosis: Areas of dead cells with loss of nuclear detail and granular debris.",
+    "Inflammatory infiltrate: Immune cells scattered through tissue in response to injury or tumour.",
+    "Vascular invasion: Tumour cells within the lumen of a blood or lymphatic vessel.",
+    "Fibrosis: Dense collagen deposition replacing normal tissue architecture.",
+    "Pleomorphism: Marked variation in nuclear size, shape and staining between tumour cells.",
+    "Lymphocytic infiltration: Dense aggregates of small mature lymphocytes.",
+    "Hyalinization: Homogeneous glassy eosinophilic material replacing stroma."
   ]
-]
+}

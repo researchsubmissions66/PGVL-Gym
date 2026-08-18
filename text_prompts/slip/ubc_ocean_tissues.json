@@ -1,7 +1,23 @@
-[
-  ["ovarian clear cell carcinoma", "clear cell carcinoma of the ovary"],
-  ["ovarian endometrioid carcinoma", "endometrioid carcinoma of the ovary"],
-  ["ovarian high-grade serous carcinoma", "high-grade serous ovarian cancer"],
-  ["ovarian low-grade serous carcinoma", "low-grade serous ovarian cancer"],
-  ["ovarian mucinous carcinoma", "mucinous carcinoma of the ovary"]
-]
+{
+  "_provenance": "generated",
+  "_note": "SLIP publishes tissue vocabularies only for its own datasets (TCGA lung, DHMC, PatchGastricADC22). This vocabulary is authored for this benchmark in the released format ('Name: description'), reusing the organ-independent phenotypes from text_prompts/slip/TCGA_tissues.json and replacing the lung-specific ones. A SLIP result on this cohort is not prompt-faithful.",
+  "tissues": [
+    "Ovarian stroma: Compact spindled stromal cells forming the ovarian cortex.",
+    "Serous epithelium: Columnar epithelium with slit-like spaces and marked atypia.",
+    "Psammoma bodies: Concentrically laminated calcified spherules.",
+    "Clear cell change: Tumour cells with abundant clear cytoplasm and hobnail nuclei.",
+    "Mucinous epithelium: Tall columnar cells with abundant intracytoplasmic mucin.",
+    "Endometrioid glands: Back-to-back glands resembling endometrial epithelium.",
+    "Papillary architecture: Branching fibrovascular cores lined by tumour epithelium.",
+    "Tumor nests: Clusters of cancerous cells forming distinct groups separated by stroma.",
+    "Solid tumor: A solid sheet of cancer cells with little intervening architecture.",
+    "Stroma: Supporting connective tissue between tumour and normal structures.",
+    "Necrosis: Areas of dead cells with loss of nuclear detail and granular debris.",
+    "Inflammatory infiltrate: Immune cells scattered through tissue in response to injury or tumour.",
+    "Vascular invasion: Tumour cells within the lumen of a blood or lymphatic vessel.",
+    "Fibrosis: Dense collagen deposition replacing normal tissue architecture.",
+    "Pleomorphism: Marked variation in nuclear size, shape and staining between tumour cells.",
+    "Lymphocytic infiltration: Dense aggregates of small mature lymphocytes.",
+    "Hyalinization: Homogeneous glassy eosinophilic material replacing stroma."
+  ]
+}

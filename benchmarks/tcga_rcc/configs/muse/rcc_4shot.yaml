@@ -13,9 +13,9 @@ classnames:
 - papillary renal cell carcinoma
 - chromophobe renal cell carcinoma
 label_dict:
-  KIRC: 0
-  KIRP: 1
-  KICH: 2
+  CCRCC: 0
+  PRCC: 1
+  CHRCC: 2
 shots: 4
 k: 5
 k_start: 0
@@ -71,3 +71,4 @@ prompt_source: muse_description_csvs
 conch_ckpt: /work/hdd/bhwm/.cache_huggingface/hub/models--MahmoodLab--conch/blobs/40a9644b9ba0e83a74576e0a5e5f7313599fa9c9cdaf3c20f8a3e271b0e9ae7c
 data_folder_s: /work/hdd/bhwm/trident_features/master_benchmark/10x_256px_0px_overlap/features_conch_v1
 feature_path_column: feature__conch_v1_10x
+encoder_provenance: native

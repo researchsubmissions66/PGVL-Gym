@@ -1,0 +1,61 @@
+backbone: clip-rn50
+backbone_weights: /u/dchanda/.cache/clip/RN50.pt
+encoder:
+  name: clip-rn50
+  weights: /u/dchanda/.cache/clip/RN50.pt
+  feature_space_id: openai/clip-rn50@official
+  feature_dim: 1024
+  initialization: pretrained
+feature_space_id: openai/clip-rn50@official
+n_classes: 2
+classnames:
+- invasive ductal carcinoma
+- invasive lobular carcinoma
+label_dict:
+  IDC: 0
+  ILC: 1
+shots: 8
+k: 5
+k_start: 0
+k_end: 5
+seed: 1
+batch_size: 1
+num_workers: 4
+feature_key: features
+feature_sources:
+  low: clip_rn50_5x
+  high: clip_rn50_20x
+feature_resolutions:
+  low: 5x
+  high: 20x
+feature_input_kinds:
+  low: patch_bag
+  high: patch_bag
+include_metadata: true
+dataset_csv: /u/dchanda/PGVL-Gym/benchmarks/tcga_brca/data/brca/manifest.csv
+split_dir: /u/dchanda/PGVL-Gym/benchmarks/tcga_brca/splits/brca/8shot
+task: brca
+benchmark: tcga_brca_resolution_registry
+feature_dim: 1024
+method: vila_mil
+experiment: vila_mil
+epochs: 200
+prompt_provenance: explicit
+results_dir: /u/dchanda/PGVL-Gym/results/tcga_benchmark/vila_mil/brca/8shot
+lr: 0.0001
+weight_decay: 1.0e-05
+bag_loss: ce
+drop_out: true
+early_stopping: true
+es_patience: 20
+es_stop_epoch: 80
+prototype_number: 16
+mode: transformer
+loader_mode: transformer
+data_folder_s: /work/hdd/bhwm/trident_features/master_benchmark/5x_224px_0px_overlap/features_clip_rn50
+data_folder_l: /work/hdd/bhwm/trident_features/master_benchmark/20x_224px_0px_overlap/features_clip_rn50
+feature_path_column_s: feature__clip_rn50_5x
+feature_path_column_l: feature__clip_rn50_20x
+text_prompt_path: /u/dchanda/PGVL-Gym/text_prompts/focus/TCGA_BRCA_two_scale_text_prompt.csv
+prompt_source: vila_two_scale_csv
+encoder_provenance: native

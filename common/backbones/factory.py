@@ -580,8 +580,16 @@ def _load_builtin(name: str, weights_path: Optional[str], device: str
         return model, clip.tokenize, preprocess
     if name in {"plip", "hf-clip-vitb"}:
         from transformers import AutoTokenizer, CLIPModel
-        repo = weights_path or ("vinid/plip" if name == "plip"
-                                else "openai/clip-vit-base-patch16")
+        # transformers refuses to `torch.load` a .bin checkpoint below torch 2.6
+        # (CVE-2025-32434), and vinid/plip's default revision ships only
+        # pytorch_model.bin. Point these at a directory holding the same weights
+        # as model.safetensors -- transformers prefers safetensors and that path
+        # never calls torch.load -- rather than pinning a revision, because the
+        # safetensors-only revision carries no config or tokenizer files.
+        env_key = "PLIP_CKPT" if name == "plip" else "HF_CLIP_CKPT"
+        repo = (weights_path or os.environ.get(env_key)
+                or ("vinid/plip" if name == "plip"
+                    else "openai/clip-vit-base-patch16"))
         return (CLIPModel.from_pretrained(repo).to(device),
                 AutoTokenizer.from_pretrained(repo, use_fast=True), None)
     if name == "conch":

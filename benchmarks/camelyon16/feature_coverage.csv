@@ -1,5 +1,5 @@
 cohort,feature_source,input_kind,resolution,backbone,feature_column,feature_dim,available_slides,annotated_slides,coverage,metadata_ready
-camelyon16,conch_v1_10x,patch_bag,10x,conch,feature__conch_v1_10x,512,0,0,0.0,False
-camelyon16,conch_v1_20x,patch_bag,20x,conch,feature__conch_v1_20x,512,0,0,0.0,False
-camelyon16,conch_v1_5x,patch_bag,5x,conch,feature__conch_v1_5x,512,0,0,0.0,False
-camelyon16,keep_20x,patch_bag,20x,keep,feature__keep_20x,768,0,0,0.0,False
+camelyon16,conch_v1_10x,patch_bag,10x,conch,feature__conch_v1_10x,512,0,399,0.0,True
+camelyon16,conch_v1_20x,patch_bag,20x,conch,feature__conch_v1_20x,512,0,399,0.0,True
+camelyon16,conch_v1_5x,patch_bag,5x,conch,feature__conch_v1_5x,512,0,399,0.0,True
+camelyon16,keep_20x,patch_bag,20x,keep,feature__keep_20x,768,0,399,0.0,True

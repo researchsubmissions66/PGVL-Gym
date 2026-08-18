@@ -78,8 +78,12 @@ def import_cod_mil(source_root: Path, overwrite: bool, dry_run: bool) -> None:
     target = REPO_ROOT / "text_prompts" / "cod_mil"
     copy_file(prompt_dir / "text_prompt_kidney_v2.csv",
               target / "rcc_chain_of_diagnosis.csv", overwrite, dry_run)
+    # Named for the CLIP variant that produced the embeddings, not just "clip":
+    # the registry distinguishes clip-rn50 from clip-vitb, and the cohort
+    # protocols reference this exact filename. A bare "clip" name here would
+    # leave `cod_prompt_features` dangling after a clean re-import.
     copy_file(prompt_dir / "text_prompt_feature_kidney_v2_clip.pt",
-              target / "rcc_text_prompt_features_clip.pt", overwrite, dry_run)
+              target / "rcc_text_prompt_features_clip_rn50.pt", overwrite, dry_run)
     copy_file(prompt_dir / "text_prompt_feature_kidney_v2_plip.pt",
               target / "rcc_text_prompt_features_plip.pt", overwrite, dry_run)
     copy_file(prompt_dir / "text_prompt_feature_kidney_v2_quiltnet.pt",

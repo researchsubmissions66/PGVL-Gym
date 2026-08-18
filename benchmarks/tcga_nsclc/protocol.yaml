@@ -77,10 +77,18 @@ cohorts:
     mscpt_prompt_json: train_data/gpt/description/Lung.json
     maple_prompt_json: text_prompts/maple/LUNG_attributes.json
     cod_prompt_json: text_prompts/cod_mil/nsclc_chain_of_diagnosis.json
-    cod_prompt_features: text_prompts/cod_mil/nsclc_text_prompt_features_clip_rn50.pt
-    slip_tissue_json: text_prompts/slip/tcga_nsclc_tissues.json
+    # See the note in benchmarks/tcga_brca/protocol.yaml: CoD-MIL's published
+    # CLIP prompt embeddings exist only for RCC, so this cohort encodes the
+    # chain JSON at runtime instead of naming a .pt that was never released.
+    # SLIP's released TCGA vocabulary IS the lung one (alveolar tissue,
+    # bronchial epithelium, keratin pearls...), so this cohort uses the
+    # authors' own asset rather than an authored substitute.
+    slip_tissue_json: text_prompts/slip/TCGA_tissues.json
     sldpc_prompt_yaml: text_prompts/sldpc/tcga_nsclc.yaml
-    wsi_report_csv: methods/wsi_five/gpt_preprocess/TCGA_Reports.csv
+    wsi_report_csv: text_prompts/wsi_five/nsclc_report_answers.csv
+    # The authors' own question set and their GPT answers to it: the only
+    # cohort where WSI-FiVE is prompt-faithful.
+    wsi_five_questions_json: text_prompts/wsi_five/clinical_questions/nsclc.json
     prompts:
       top_instance: text_prompts/top/instance_prototypes.json
 experiments:

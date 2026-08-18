@@ -210,6 +210,40 @@ KEEP, PLIP, and TITAN load through their registered Hugging Face interfaces.
 They require the corresponding model access and cache, but not a second
 project environment.
 
+### PLIP below torch 2.6
+
+`transformers` refuses to `torch.load` a `.bin` checkpoint on torch below 2.6
+(CVE-2025-32434), and `vinid/plip`'s default revision publishes only
+`pytorch_model.bin`. Loading PLIP on such an environment fails before the model
+is built.
+
+Pinning the repository's safetensors-only revision does **not** fix this: that
+revision carries no `config.json` and no tokenizer files, so the load fails on
+the missing config instead — and offline compute nodes cannot fetch them.
+
+Assemble one complete directory instead, then point the loader at it:
+
+```bash
+PLIP_SNAPSHOTS="$HF_HOME/hub/models--vinid--plip/snapshots"
+mkdir -p /path/to/model-cache/plip
+cp -L "$PLIP_SNAPSHOTS"/<config-revision>/{config.json,preprocessor_config.json,\
+tokenizer.json,tokenizer_config.json,special_tokens_map.json} \
+      /path/to/model-cache/plip/
+cp -L "$PLIP_SNAPSHOTS"/<safetensors-revision>/model.safetensors \
+      /path/to/model-cache/plip/
+
+export PLIP_CKPT=/path/to/model-cache/plip
+```
+
+`transformers` prefers `model.safetensors` when it is present, and that path
+never calls `torch.load`. Verify the two revisions carry the same weights before
+combining them — compare every tensor, not just the file size.
+
+`PLIP_CKPT` is read by `common/backbones/factory.py` and is the lowest-priority
+source: an explicit `backbone_weights` in a run config still wins. The
+equivalent override for `hf-clip-vitb` is `HF_CLIP_CKPT`. Upgrading to torch
+2.6 or later removes the need for either.
+
 ## Documentation-only environment
 
 Documentation work does not need the benchmark stack:

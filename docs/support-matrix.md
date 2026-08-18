@@ -42,7 +42,7 @@ The standard protocols expand 13 method families into 20 comparable variants:
 | CoD-MIL | CLIP-RN50 5x/20x plus cross-scale map |
 | TOP | CLIP-RN50 10x |
 | SLIP | CLIP-RN50 10x |
-| WSI-FiVE | MedCLIP-style 20x sequence plus report/context |
+| WSI-FiVE | 512-d patch bag plus per-slide report text (BioClinicalBERT tower) |
 | SLDPC | TITAN 20x slide embeddings and prompt tower |
 | ConVLM | 20x raw tile directory |
 | Composite | CLIP-RN50 10x classname baseline |

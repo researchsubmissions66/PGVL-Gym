@@ -1,0 +1,12 @@
+{
+  "_provenance": "upstream",
+  "_note": "Verbatim PROMPT_LIST from WSI-FiVE's released _configs/wsi/*.yaml. These are the questions the published model cross-attends to, and the answers in text_prompts/wsi_five/nsclc_report_answers.csv respond to them in this order.",
+  "questions": [
+    "What is the differentiation of the lesion? (maybe: Well-differentiated; Moderately differentiated; Poorly differentiated; Moderately to poorly differentiated; Mixed differentiation. or others.)",
+    "Is there any indication of spread through air spaces around the lesion?",
+    "Is there any indication of vascular invasion by the lesion?",
+    "Is there any indication of pleural invasion by the lesion?",
+    "Is there any evidence of the lesion invading adjacent tissues or organs (excluding the current lung organ)?",
+    "Are the margins of the excised tissue clear of disease? (note that: R0 means negative; R1 R2 are both mean positive; Rx means Unknown."
+  ]
+}
