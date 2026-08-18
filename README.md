@@ -480,21 +480,21 @@ All copyright remains with the original authors.
 
 | Repository | Method/Role | License |
 | --- | --- | --- |
-| [dddavid4real/FOCUS](https://github.com/dddavid4real/focus) | FOCUS | Apache License 2.0 |
-| [Jiangbo-Shi/ViLa-MIL](https://github.com/Jiangbo-Shi/ViLa-MIL) | ViLa-MIL | Not specified |
-| [Jiangbo-Shi/CoD-MIL](https://github.com/Jiangbo-Shi/CoD-MIL) | CoD-MIL | Not specified |
-| [JJ-ZHOU-Code/MAPLE](https://github.com/JJ-ZHOU-Code/MAPLE) | MAPLE | Not specified |
-| [Hanminghao/MSCPT](https://github.com/Hanminghao/MSCPT) | MSCPT | Not specified |
-| [MAGIC-AI4Med/PathPT](https://github.com/MAGIC-AI4Med/PathPT) | PathPT | MIT License |
-| [miccaiif/TOP](https://github.com/miccaiif/TOP) | TOP | Not specified |
-| [LTS5/SLIP](https://github.com/LTS5/SLIP) | SLIP | Not specified |
-| [ls1rius/WSI_FiVE](https://github.com/ls1rius/WSI_FiVE) | WSI-FiVE | Not specified |
-| [JiahaoXu-god/CVPR2026_MUSE](https://github.com/JiahaoXu-god/CVPR2026_MUSE) | MUSE | Not specified |
-| [BasitAlawode/ConVLM](https://github.com/BasitAlawode/ConVLM) | ConVLM | MIT License |
-| [linlu2022/SLDPC](https://github.com/linlu2022/SLDPC) | SLDPC | Apache License 2.0 |
+| [dddavid4real/FOCUS](https://github.com/dddavid4real/focus) | FOCUS | 🔒 [Apache-2.0](https://opensource.org/licenses/Apache-2.0) |
+| [Jiangbo-Shi/ViLa-MIL](https://github.com/Jiangbo-Shi/ViLa-MIL) | ViLa-MIL | 🔒 [CC-BY-NC-ND-4.0](https://creativecommons.org/licenses/by-nc-nd/4.0/) (Assumed) |
+| [Jiangbo-Shi/CoD-MIL](https://github.com/Jiangbo-Shi/CoD-MIL) | CoD-MIL | 🔒 [CC-BY-NC-ND-4.0](https://creativecommons.org/licenses/by-nc-nd/4.0/) (Assumed) |
+| [JJ-ZHOU-Code/MAPLE](https://github.com/JJ-ZHOU-Code/MAPLE) | MAPLE | 🔒 [CC-BY-NC-ND-4.0](https://creativecommons.org/licenses/by-nc-nd/4.0/) (Assumed) |
+| [Hanminghao/MSCPT](https://github.com/Hanminghao/MSCPT) | MSCPT | 🔒 [CC-BY-NC-ND-4.0](https://creativecommons.org/licenses/by-nc-nd/4.0/) (Assumed) |
+| [MAGIC-AI4Med/PathPT](https://github.com/MAGIC-AI4Med/PathPT) | PathPT | 🔒 [MIT](https://opensource.org/licenses/MIT) |
+| [miccaiif/TOP](https://github.com/miccaiif/TOP) | TOP | 🔒 [CC-BY-NC-ND-4.0](https://creativecommons.org/licenses/by-nc-nd/4.0/) (Assumed) |
+| [LTS5/SLIP](https://github.com/LTS5/SLIP) | SLIP | 🔒 [CC-BY-NC-ND-4.0](https://creativecommons.org/licenses/by-nc-nd/4.0/) (Assumed) |
+| [ls1rius/WSI_FiVE](https://github.com/ls1rius/WSI_FiVE) | WSI-FiVE | 🔒 [CC-BY-NC-ND-4.0](https://creativecommons.org/licenses/by-nc-nd/4.0/) (Assumed) |
+| [JiahaoXu-god/CVPR2026_MUSE](https://github.com/JiahaoXu-god/CVPR2026_MUSE) | MUSE | 🔒 [CC-BY-NC-ND-4.0](https://creativecommons.org/licenses/by-nc-nd/4.0/) (Assumed) |
+| [BasitAlawode/ConVLM](https://github.com/BasitAlawode/ConVLM) | ConVLM | 🔒 [MIT](https://opensource.org/licenses/MIT) |
+| [linlu2022/SLDPC](https://github.com/linlu2022/SLDPC) | SLDPC | 🔒 [Apache-2.0](https://opensource.org/licenses/Apache-2.0) |
 
 The shared scaffolding is derived from:
 | Repository | Method/Role | License |
 | --- | --- | --- |
-| [mahmoodlab/CLAM](https://github.com/mahmoodlab/CLAM) | CLAM Scaffold | GNU General Public License v3.0 |
-| [KaiyangZhou/CoOp](https://github.com/KaiyangZhou/CoOp) | CoOp Blocks | MIT License |
+| [mahmoodlab/CLAM](https://github.com/mahmoodlab/CLAM) | CLAM Scaffold | 🔒 [GPL-3.0](https://opensource.org/licenses/GPL-3.0) |
+| [KaiyangZhou/CoOp](https://github.com/KaiyangZhou/CoOp) | CoOp Blocks | 🔒 [MIT](https://opensource.org/licenses/MIT) |
