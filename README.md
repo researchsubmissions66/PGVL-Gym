@@ -475,9 +475,6 @@ H5 files; add `--low-step-size` when the low-resolution patches overlap.
 
 ## 🙏 Acknowledgments
 
-This codebase consolidates code from the following twelve repositories.
-All copyright remains with the original authors.
-
 | Repository | Method/Role | License |
 | --- | --- | --- |
 | [dddavid4real/FOCUS](https://github.com/dddavid4real/focus) | FOCUS | 🔒 [Apache-2.0](https://opensource.org/licenses/Apache-2.0) |
@@ -493,7 +490,6 @@ All copyright remains with the original authors.
 | [BasitAlawode/ConVLM](https://github.com/BasitAlawode/ConVLM) | ConVLM | 🔒 [MIT](https://opensource.org/licenses/MIT) |
 | [linlu2022/SLDPC](https://github.com/linlu2022/SLDPC) | SLDPC | 🔒 [Apache-2.0](https://opensource.org/licenses/Apache-2.0) |
 
-The shared scaffolding is derived from:
 | Repository | Method/Role | License |
 | --- | --- | --- |
 | [mahmoodlab/CLAM](https://github.com/mahmoodlab/CLAM) | CLAM Scaffold | 🔒 [GPL-3.0](https://opensource.org/licenses/GPL-3.0) |
