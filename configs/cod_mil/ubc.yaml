@@ -4,6 +4,8 @@
 method: "cod_mil"
 backbone: "clip-rn50"
 feature_dim: 1024
+feature_space_id: "openai/clip-rn50@official"
+text_feature_space_id: "openai/clip-rn50@official"
 n_classes: 5
 classnames: ["HGSC", "LGSC", "EC", "CC", "MC"]
 label_dict: {"HGSC": 0, "LGSC": 1, "EC": 2, "CC": 3, "MC": 4}
@@ -26,9 +28,11 @@ data_folder_s:  "path/to/UBC-OCEAN/feats_5x"
 data_folder_l:  "path/to/UBC-OCEAN/feats_20x"
 split_dir:      "splits/task_UBC-OCEAN_subtyping"
 # Upstream CoD-MIL has no UBC-OCEAN task, and its public prompt directory
-# releases kidney/RCC assets only. Supply independently constructed, matching
-# CLIP-RN50 embeddings and maps before running this extension config.
+# releases kidney/RCC assets only. Encode this generated chain and the shared
+# normal-tissue bank once with the matching RN50 text tower.
 text_prompt_path: "text_prompts/cod_mil/ubc_chain_of_diagnosis.json"
 text_prompt_features: null
+prompt_encoding: "runtime_cached"
+backbone_weights: "${PGVL_USER_ROOT}/.cache/clip/RN50.pt"
 cross_mag_map_dir: "maps/UBC_OCEAN_10x_to_20x"
 results_dir:    "results/cod_mil_ubc"

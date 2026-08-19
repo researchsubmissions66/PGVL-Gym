@@ -97,6 +97,12 @@ _SPECS: Dict[str, BackboneSpec] = {
         capabilities=_TEXT_TILE, tile_dim=512, vision_token_dim=768,
         text_token_dim=768, shared_dim=512, context_length=256,
         image_size=224, aliases=("BiomedCLIP",)),
+    "quiltnet": BackboneSpec(
+        name="quiltnet", family="open_clip", revision=None,
+        feature_space_id="hf:wisdomik/QuiltNet-B-32", capabilities=_TEXT_TILE,
+        tile_dim=512, vision_token_dim=768, text_token_dim=512, shared_dim=512,
+        context_length=77, image_size=224,
+        aliases=("QuiltNet", "QuiltNet-B-32", "wisdomik/QuiltNet-B-32")),
     "titan": BackboneSpec(
         name="titan", family="titan", revision=None,
         feature_space_id="hf:MahmoodLab/TITAN",
@@ -648,6 +654,15 @@ def _load_builtin(name: str, weights_path: Optional[str], device: str
         model = AutoModel.from_pretrained(repo, trust_remote_code=True).to(device)
         tokenizer = AutoTokenizer.from_pretrained(repo, trust_remote_code=True)
         return model, tokenizer, None
+    if name == "quiltnet":
+        import open_clip
+
+        # ConVLM encodes its attribute text with QuiltNet, so this is a text
+        # tower in its own right, not only a tile encoder.
+        repo = weights_path or "hf-hub:wisdomik/QuiltNet-B-32"
+        model, _, preprocess = open_clip.create_model_and_transforms(repo)
+        return model.to(device), open_clip.get_tokenizer(repo), preprocess
+
     if name == "biomedclip":
         try:
             import open_clip
@@ -691,10 +706,17 @@ def build_encoder(name: str, weights_path: Optional[str] = None,
                 f"Builder registered as '{spec.name}' returned '{bundle.spec.name}'.")
         return bundle
     if canonical == "titan":
+        model_id = kwargs.pop(
+            "model_id", weights_path or "MahmoodLab/TITAN")
+        revision = kwargs.pop("revision", None)
+        local_files_only = kwargs.pop("local_files_only", False)
+        if kwargs:
+            unknown = ", ".join(sorted(kwargs))
+            raise TypeError(
+                f"Unexpected loader options for '{canonical}': {unknown}")
         return _load_titan(
-            kwargs.pop("model_id", weights_path or "MahmoodLab/TITAN"), device,
-            revision=kwargs.pop("revision", None),
-            local_files_only=kwargs.pop("local_files_only", False))
+            model_id, device, revision=revision,
+            local_files_only=local_files_only)
     if kwargs:
         unknown = ", ".join(sorted(kwargs))
         raise TypeError(f"Unexpected loader options for '{canonical}': {unknown}")

@@ -11,7 +11,7 @@ from types import SimpleNamespace
 import torch
 import torch.nn as nn
 
-from methods.base import BaseMethod
+from methods.base import BaseMethod, probabilities_to_logits
 from common.backbones import (
     BackboneCapability as Cap, FeatureLevel, MethodBackboneContract, SwapPolicy)
 
@@ -49,20 +49,43 @@ class MAPLEMethod(BaseMethod):
 
     def build_model(self) -> nn.Module:
         from .maple_model.model import MAPLE
+        from common.prompts.maple import load_maple_prompt_bank
+        bank = load_maple_prompt_bank(
+            self.cfg["text_prompt_path"],
+            classnames=self.cfg["classnames"],
+        )
+        declared = self.cfg.get("prompt_provenance")
+        if (declared and bank.provenance != "unknown"
+                and declared != bank.provenance):
+            raise ValueError(
+                "MAPLE prompt_provenance contradicts the active bank: "
+                f"declared {declared!r}, expected {bank.provenance!r}")
         args = _build_args(self.cfg)
         encoder = self.load_encoder(weights_path=self.cfg.get("backbone_weights"))
         model = MAPLE(args, clip_model=encoder.raw_model,
                       tokenizer=encoder.raw_tokenizer)
         return model.to(self.device)
 
+    @staticmethod
+    def _slide_bag(value: torch.Tensor) -> torch.Tensor:
+        """Remove only the loader's singleton slide-batch dimension."""
+        if value.ndim == 3 and value.shape[0] == 1:
+            return value.squeeze(0)
+        if value.ndim != 2:
+            raise ValueError(
+                "MAPLE requires batch_size=1 variable-length bags; got "
+                f"{list(value.shape)}")
+        return value
+
     def train_step(self, batch, model, optimizer, loss_fn):
         x_s, x_l, label = batch[0], batch[1], batch[-1]
-        x_s = x_s.to(self.device)
-        x_l = x_l.to(self.device)
+        x_s = self._slide_bag(x_s.to(self.device))
+        x_l = self._slide_bag(x_l.to(self.device))
         label = label.to(self.device)
         optimizer.zero_grad()
         out = model(x_s, None, x_l, None, label)
-        logits = out[0] if isinstance(out, tuple) else out
+        logits = (probabilities_to_logits(out[0])
+                  if isinstance(out, tuple) else out)
         loss = (out[2] if isinstance(out, tuple) and len(out) > 2
                 and torch.is_tensor(out[2]) else loss_fn(logits, label))
         loss.backward()
@@ -72,11 +95,12 @@ class MAPLEMethod(BaseMethod):
     @torch.no_grad()
     def eval_step(self, batch, model, loss_fn=None):
         x_s, x_l, label = batch[0], batch[1], batch[-1]
-        x_s = x_s.to(self.device)
-        x_l = x_l.to(self.device)
+        x_s = self._slide_bag(x_s.to(self.device))
+        x_l = self._slide_bag(x_l.to(self.device))
         label = label.to(self.device)
         out = model(x_s, None, x_l, None, label)
-        logits = out[0] if isinstance(out, tuple) else out
+        logits = (probabilities_to_logits(out[0])
+                  if isinstance(out, tuple) else out)
         loss = (out[2].item() if isinstance(out, tuple) and len(out) > 2
                 and torch.is_tensor(out[2]) else
                 (loss_fn(logits, label).item() if loss_fn is not None else 0.0))

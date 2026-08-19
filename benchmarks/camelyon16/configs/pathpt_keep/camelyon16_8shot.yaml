@@ -1,8 +1,8 @@
 backbone: keep
-backbone_weights: /work/hdd/bhwm/.cache_huggingface/hub/models--Astaxanthin--KEEP/snapshots/28a25d95cc6ba27a7e6fab3f144e13dbafd8b21e
+backbone_weights: ${PGVL_STORAGE_ROOT}/.cache_huggingface/hub/models--Astaxanthin--KEEP/snapshots/28a25d95cc6ba27a7e6fab3f144e13dbafd8b21e
 encoder:
   name: keep
-  weights: /work/hdd/bhwm/.cache_huggingface/hub/models--Astaxanthin--KEEP/snapshots/28a25d95cc6ba27a7e6fab3f144e13dbafd8b21e
+  weights: ${PGVL_STORAGE_ROOT}/.cache_huggingface/hub/models--Astaxanthin--KEEP/snapshots/28a25d95cc6ba27a7e6fab3f144e13dbafd8b21e
   feature_space_id: hf:Astaxanthin/KEEP
   feature_dim: 768
   initialization: pretrained
@@ -29,16 +29,20 @@ feature_resolutions:
 feature_input_kinds:
   bag: patch_bag
 include_metadata: true
-dataset_csv: /u/dchanda/PGVL-Gym/benchmarks/camelyon16/data/camelyon16/manifest.csv
-split_dir: /u/dchanda/PGVL-Gym/benchmarks/camelyon16/splits/camelyon16/8shot
+dataset_csv: ${PGVL_REPO_ROOT}/benchmarks/camelyon16/data/camelyon16/manifest.csv
+split_dir: ${PGVL_REPO_ROOT}/benchmarks/camelyon16/splits/camelyon16/8shot
 task: camelyon16
 benchmark: camelyon16_resolution_registry
 feature_dim: 768
 method: pathpt
 experiment: pathpt_keep
 epochs: 20
-prompt_provenance: classname_template
-results_dir: /u/dchanda/PGVL-Gym/results/camelyon16_benchmark/pathpt_keep/camelyon16/8shot
+training_mode: upstream_patch_ssl
+prompt_provenance: upstream
+implementation_provenance: vendored_native_objective_binary_adaptation
+upstream_fidelity: partial
+fidelity_note: Native PathPT patch objective with a disclosed binary slide-classification adaptation.
+results_dir: ${PGVL_REPO_ROOT}/results/camelyon16_benchmark/pathpt_keep/camelyon16/8shot
 lr: 0.0001
 n_ctx: 32
 prompt_init: template
@@ -51,9 +55,20 @@ loss_weight:
 - 1.0
 - 0.5
 - 0.1
-feature_root: /work/hdd/bhwm/CAMELYON16/20x_256px_0px_overlap/features_keep
+balance: true
+enable_pseudo: true
+prompt_select: true
+logits_thd: 0.0
+prompt_classifier_count: 200
+prompt_select_count: 100
+prompt_top_patches: 100
+eval_patch_batch_size: 50000
+early_stopping: false
+feature_root: ${PGVL_STORAGE_ROOT}/CAMELYON16/20x_256px_0px_overlap/features_keep
 feature_path_column: feature__keep_20x
 patch_num: null
 loader_mode: h5
-prompt_source: pathpt_classname_template
+prompt_source: pathpt_upstream_22_template_bank
+pathpt_prompt_bank_source: MAGIC-AI4Med/PathPT utils.py:camelyon_names
+pathpt_synthetic_normal: false
 encoder_provenance: native

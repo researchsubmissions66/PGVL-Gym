@@ -15,12 +15,27 @@
 # so this script must always reach its final `exit`.
 set -uo pipefail
 
-METHOD="${1:?usage: pgvl_job.sh <method> <config> [device]}"
-CONFIG="${2:?usage: pgvl_job.sh <method> <config> [device]}"
+METHOD="${1:?usage: pgvl_job.sh <method> <config> [device] [--rerun]}"
+CONFIG="${2:?usage: pgvl_job.sh <method> <config> [device] [--rerun]}"
 DEVICE="${3:-cuda:0}"
+RERUN="${4:-}"
+if [[ -n "${RERUN}" && "${RERUN}" != "--rerun" ]]; then
+    echo "[pgvl] FATAL: fourth argument must be --rerun, got '${RERUN}'" >&2
+    exit 78
+fi
 
 REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+if [[ -f "${REPO}/.env" ]]; then
+    set -a
+    source "${REPO}/.env"
+    set +a
+fi
 cd "$REPO" || exit 78
+
+if [[ -z "${PGVL_STORAGE_ROOT:-}" ]]; then
+    echo "[pgvl] FATAL: PGVL_STORAGE_ROOT is unset; configure .env first" >&2
+    exit 78
+fi
 
 # --- environment ------------------------------------------------------------
 module load pytorch-conda 2>/dev/null || true
@@ -42,7 +57,7 @@ fi
 # Every weight this benchmark needs is already in the shared project cache.
 # Compute nodes have no outbound network, so point Hugging Face at it and make
 # a cache miss fail immediately instead of hanging on a connection attempt.
-export HF_HOME="${HF_HOME:-/work/hdd/bhwm/.cache_huggingface}"
+export HF_HOME="${HF_HOME:-${PGVL_STORAGE_ROOT}/.cache_huggingface}"
 export HF_HUB_OFFLINE="${HF_HUB_OFFLINE:-1}"
 export TRANSFORMERS_OFFLINE="${TRANSFORMERS_OFFLINE:-1}"
 export TOKENIZERS_PARALLELISM=false
@@ -55,7 +70,7 @@ export PYTHONPATH="${REPO}${PYTHONPATH:+:${PYTHONPATH}}"
 # calls torch.load. Exported only when it is actually populated, so an
 # unprepared site falls back to the HF cache instead of failing on a bad path.
 # See docs/environment.md, "PLIP below torch 2.6".
-PLIP_LOCAL="${PLIP_CKPT:-/work/hdd/bhwm/dchanda/model_cache/plip}"
+PLIP_LOCAL="${PLIP_CKPT:-${PGVL_STORAGE_ROOT}/dchanda/model_cache/plip}"
 if [[ -f "${PLIP_LOCAL}/model.safetensors" ]]; then
     export PLIP_CKPT="${PLIP_LOCAL}"
 else
@@ -66,7 +81,7 @@ fi
 # Bio_ClinicalBERT ships only pytorch_model.bin, so WSI-FiVE's text tower hits
 # the same torch<2.6 refusal as PLIP. Its safetensors copy drops the tied MLM
 # head, which AutoModel discards anyway. Same guard: exported only when present.
-BERT_LOCAL="${CLINICALBERT_CKPT:-/work/hdd/bhwm/dchanda/model_cache/bio_clinicalbert}"
+BERT_LOCAL="${CLINICALBERT_CKPT:-${PGVL_STORAGE_ROOT}/dchanda/model_cache/bio_clinicalbert}"
 if [[ -f "${BERT_LOCAL}/model.safetensors" ]]; then
     export CLINICALBERT_CKPT="${BERT_LOCAL}"
 else
@@ -96,7 +111,13 @@ print(f"[pgvl] torch {torch.__version__} cuda_available={torch.cuda.is_available
 PY
 
 # --- run --------------------------------------------------------------------
-python train.py --method "${METHOD}" --config "${CONFIG}" --device "${DEVICE}"
+train_args=(
+    train.py --method "${METHOD}" --config "${CONFIG}" --device "${DEVICE}"
+)
+if [[ "${RERUN}" == "--rerun" ]]; then
+    train_args+=(--rerun)
+fi
+python "${train_args[@]}"
 status=$?
 echo "[pgvl] train.py exited with status ${status}"
 exit ${status}

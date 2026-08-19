@@ -16,7 +16,7 @@ import torch
 import torch.nn as nn
 import pandas as pd
 
-from methods.base import BaseMethod
+from methods.base import BaseMethod, probabilities_to_logits
 from common.backbones import (
     BackboneCapability as Cap, FeatureLevel, MethodBackboneContract, SwapPolicy)
 
@@ -25,13 +25,37 @@ def _build_config(cfg):
     text_prompt = None
     if cfg.get("text_prompt_path"):
         frame = pd.read_csv(cfg["text_prompt_path"])
-        if {"low_res_prompt", "high_res_prompt"}.issubset(frame.columns):
-            # Native learner indexes [all low classes, all high classes].
-            text_prompt = (frame["low_res_prompt"].astype(str).tolist() +
-                           frame["high_res_prompt"].astype(str).tolist())
-        else:
-            text_prompt = [str(item) for item in frame.values.reshape(-1)
-                           if pd.notna(item)]
+        required = {"class_name", "low_res_prompt", "high_res_prompt"}
+        missing = sorted(required - set(frame.columns))
+        if missing:
+            raise ValueError(
+                "FOCUS prompt CSV is missing columns: " + ", ".join(missing))
+        if len(frame) != int(cfg["n_classes"]):
+            raise ValueError(
+                f"FOCUS prompt CSV has {len(frame)} rows for "
+                f"n_classes={cfg['n_classes']}")
+        if frame["class_name"].astype(str).duplicated().any():
+            raise ValueError("FOCUS prompt CSV repeats class_name values")
+        for column in ("class_name", "low_res_prompt", "high_res_prompt"):
+            if frame[column].isna().any() or (
+                    frame[column].astype(str).str.strip() == "").any():
+                raise ValueError(
+                    f"FOCUS prompt CSV has blank values in {column}")
+        actual_order = frame["class_name"].astype(str).str.strip().tolist()
+        expected_orders = []
+        if isinstance(cfg.get("label_dict"), dict):
+            expected_orders.append([
+                str(label) for label, _index in sorted(
+                    cfg["label_dict"].items(), key=lambda item: item[1])])
+        if isinstance(cfg.get("classnames"), list):
+            expected_orders.append([str(value) for value in cfg["classnames"]])
+        if expected_orders and actual_order not in expected_orders:
+            raise ValueError(
+                "FOCUS prompt CSV class_name order does not match "
+                "label_dict/classnames class-index order")
+        # Native learner indexes [all low classes, all high classes].
+        text_prompt = (frame["low_res_prompt"].astype(str).tolist() +
+                       frame["high_res_prompt"].astype(str).tolist())
     return SimpleNamespace(
         input_size=cfg.get("feature_dim", 1024),
         hidden_size=cfg.get("hidden_size", 192),
@@ -57,14 +81,30 @@ def _set_trainable_scope(model: nn.Module, scope: str) -> None:
 
 
 class FOCUSMethod(BaseMethod):
-    """Adapt FOCUS dual-scale bags and CONCH soft prompts to the unified loop."""
+    """Adapt FOCUS's single high-resolution bag and CONCH soft prompts."""
     name = "focus"
     backbone_contract = MethodBackboneContract(
-        method=name, feature_level=FeatureLevel.DUAL_SCALE_PATCH_BAG,
+        method=name, feature_level=FeatureLevel.PATCH_BAG,
         swap_policy=SwapPolicy.ALLOWLIST, default_backbone="conch",
         supported_backbones=("conch",),
         required_capabilities=frozenset({Cap.SOFT_PROMPT}),
-        rationale="FOCUS injects prompts into a CONCH-style text tower; its native input adapter may accept other patch widths.")
+        rationale="FOCUS injects prompts into a CONCH-style text tower and its forward path consumes only the high-resolution patch bag.")
+
+    @staticmethod
+    def _features_and_label(batch):
+        """Accept the fixed single-bag loader and legacy paired-bag batches."""
+        label = batch[-1]
+        if (len(batch) >= 3 and torch.is_tensor(batch[1])):
+            features = batch[1]
+        else:
+            features = batch[0]
+        if features.ndim == 3 and features.shape[0] == 1:
+            features = features.squeeze(0)
+        if features.ndim != 2:
+            raise ValueError(
+                "FOCUS requires batch_size=1 variable-length bags; got "
+                f"{list(features.shape)}")
+        return features, label
 
     def build_model(self) -> nn.Module:
         from .model import FOCUS
@@ -96,14 +136,14 @@ class FOCUSMethod(BaseMethod):
         return model.to(self.device)
 
     def train_step(self, batch, model, optimizer, loss_fn):
-        x_s, x_l, label = batch[0], batch[1], batch[-1]
-        x_s = x_s.to(self.device)
+        x_l, label = self._features_and_label(batch)
         x_l = x_l.to(self.device)
         label = label.to(self.device)
 
         optimizer.zero_grad()
-        out = model(x_s, x_l, label)
-        logits = out[0] if isinstance(out, tuple) else out
+        out = model(x_l, x_l, label)
+        logits = (probabilities_to_logits(out[0])
+                  if isinstance(out, tuple) else out)
         loss = (out[2] if isinstance(out, tuple) and len(out) > 2
                 and torch.is_tensor(out[2]) else loss_fn(logits, label))
         loss.backward()
@@ -112,12 +152,12 @@ class FOCUSMethod(BaseMethod):
 
     @torch.no_grad()
     def eval_step(self, batch, model, loss_fn=None):
-        x_s, x_l, label = batch[0], batch[1], batch[-1]
-        x_s = x_s.to(self.device)
+        x_l, label = self._features_and_label(batch)
         x_l = x_l.to(self.device)
         label = label.to(self.device)
-        out = model(x_s, x_l, label)
-        logits = out[0] if isinstance(out, tuple) else out
+        out = model(x_l, x_l, label)
+        logits = (probabilities_to_logits(out[0])
+                  if isinstance(out, tuple) else out)
         loss = (out[2].item() if isinstance(out, tuple) and len(out) > 2
                 and torch.is_tensor(out[2]) else
                 (loss_fn(logits, label).item() if loss_fn is not None else 0.0))

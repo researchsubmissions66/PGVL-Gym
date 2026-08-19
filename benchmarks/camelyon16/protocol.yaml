@@ -15,44 +15,44 @@ feature_sources:
     availability: future
     resolution: 5x
     backbone: conch
-    encoder_weights: /work/hdd/bhwm/.cache_huggingface/hub/models--MahmoodLab--conch/snapshots/f9ca9f877171a28ade80228fb195ac5d79003357/pytorch_model.bin
+    encoder_weights: ${PGVL_STORAGE_ROOT}/.cache_huggingface/hub/models--MahmoodLab--conch/snapshots/f9ca9f877171a28ade80228fb195ac5d79003357/pytorch_model.bin
     feature_key: features
     feature_dim: 512
     feature_space_id: hf:MahmoodLab/conch
-    path_template: /work/hdd/bhwm/CAMELYON16/5x_256px_0px_overlap/features_conch_v1/{slide_id}.h5
+    path_template: ${PGVL_STORAGE_ROOT}/CAMELYON16/5x_256px_0px_overlap/features_conch_v1/{slide_id}.h5
   conch_v1_10x:
     availability: future
     resolution: 10x
     backbone: conch
-    encoder_weights: /work/hdd/bhwm/.cache_huggingface/hub/models--MahmoodLab--conch/snapshots/f9ca9f877171a28ade80228fb195ac5d79003357/pytorch_model.bin
+    encoder_weights: ${PGVL_STORAGE_ROOT}/.cache_huggingface/hub/models--MahmoodLab--conch/snapshots/f9ca9f877171a28ade80228fb195ac5d79003357/pytorch_model.bin
     feature_key: features
     feature_dim: 512
     feature_space_id: hf:MahmoodLab/conch
-    path_template: /work/hdd/bhwm/CAMELYON16/10x_256px_0px_overlap/features_conch_v1/{slide_id}.h5
+    path_template: ${PGVL_STORAGE_ROOT}/CAMELYON16/10x_256px_0px_overlap/features_conch_v1/{slide_id}.h5
   conch_v1_20x:
     availability: future
     resolution: 20x
     backbone: conch
-    encoder_weights: /work/hdd/bhwm/.cache_huggingface/hub/models--MahmoodLab--conch/snapshots/f9ca9f877171a28ade80228fb195ac5d79003357/pytorch_model.bin
+    encoder_weights: ${PGVL_STORAGE_ROOT}/.cache_huggingface/hub/models--MahmoodLab--conch/snapshots/f9ca9f877171a28ade80228fb195ac5d79003357/pytorch_model.bin
     feature_key: features
     feature_dim: 512
     feature_space_id: hf:MahmoodLab/conch
-    path_template: /work/hdd/bhwm/CAMELYON16/20x_256px_0px_overlap/features_conch_v1/{slide_id}.h5
+    path_template: ${PGVL_STORAGE_ROOT}/CAMELYON16/20x_256px_0px_overlap/features_conch_v1/{slide_id}.h5
   keep_20x:
     availability: future
     resolution: 20x
     backbone: keep
-    encoder_weights: /work/hdd/bhwm/.cache_huggingface/hub/models--Astaxanthin--KEEP/snapshots/28a25d95cc6ba27a7e6fab3f144e13dbafd8b21e
+    encoder_weights: ${PGVL_STORAGE_ROOT}/.cache_huggingface/hub/models--Astaxanthin--KEEP/snapshots/28a25d95cc6ba27a7e6fab3f144e13dbafd8b21e
     feature_key: features
     feature_dim: 768
     feature_space_id: hf:Astaxanthin/KEEP
-    path_template: /work/hdd/bhwm/CAMELYON16/20x_256px_0px_overlap/features_keep/{slide_id}.h5
+    path_template: ${PGVL_STORAGE_ROOT}/CAMELYON16/20x_256px_0px_overlap/features_keep/{slide_id}.h5
 cohorts:
   camelyon16:
     metadata_csvs:
-    - path: /work/hdd/bhwm/metadata/RAW_DATA_Cleaned/CAMELYON16/CAM16_data_train.csv
+    - path: ${PGVL_STORAGE_ROOT}/metadata/RAW_DATA_Cleaned/CAMELYON16/CAM16_data_train.csv
       partition: official_train
-    - path: /work/hdd/bhwm/metadata/RAW_DATA_Cleaned/CAMELYON16/CAM16_data_test.csv
+    - path: ${PGVL_STORAGE_ROOT}/metadata/RAW_DATA_Cleaned/CAMELYON16/CAM16_data_test.csv
       partition: official_test
     slide_id_column: source_filename
     # The release names slides with a .tif extension and the cleaned tables keep
@@ -76,14 +76,24 @@ cohorts:
     focus_prompt_csv: text_prompts/focus/CAMELYON16_two_scale_text_prompt.csv
     slip_tissue_json: text_prompts/slip/camelyon16_tissues.json
     sldpc_prompt_yaml: text_prompts/sldpc/camelyon16.yaml
+    # TOP is not enabled in this protocol's current experiment matrix, but its
+    # released code-faithful prompt pair is declared for any future TOP row.
+    prompts:
+      top_instance: text_prompts/top/instance_prototypes.json
+      top_bag: text_prompts/top/camelyon16_upstream_code_bag_prompts.json
+    # Upstream CAMELYON inserts a space before the first instance-level slot;
+    # the TCGA script concatenates it directly. Preserve that recipe detail.
+    top_instance_slot_separator: " "
 experiments:
   pathpt:
     method: pathpt
+    training_mode: upstream_patch_ssl
     features:
       bag: conch_v1_10x
     epochs: 20
   pathpt_keep:
     method: pathpt
+    training_mode: upstream_patch_ssl
     features:
       bag: keep_20x
     epochs: 20
@@ -93,7 +103,7 @@ experiments:
       bag: conch_v1_10x
     prompt_encoder: &id001
       name: conch
-      weights: /work/hdd/bhwm/.cache_huggingface/hub/models--MahmoodLab--conch/snapshots/f9ca9f877171a28ade80228fb195ac5d79003357/pytorch_model.bin
+      weights: ${PGVL_STORAGE_ROOT}/.cache_huggingface/hub/models--MahmoodLab--conch/snapshots/f9ca9f877171a28ade80228fb195ac5d79003357/pytorch_model.bin
       feature_space_id: hf:MahmoodLab/conch
     epochs: 200
   muse_keep:
@@ -105,13 +115,6 @@ experiments:
   focus:
     method: focus
     features:
-      low: conch_v1_10x
-      high: conch_v1_20x
-    epochs: 200
-  focus_5x20x:
-    method: focus
-    features:
-      low: conch_v1_5x
       high: conch_v1_20x
     epochs: 200
   mscpt:

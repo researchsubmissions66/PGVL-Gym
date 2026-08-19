@@ -222,7 +222,9 @@ class PPTKEEP(nn.Module):
             #     nn.Linear(self.vfeat_dim, len(classnames_lst))
             # )
             # self.mlp = MultiKernelConv1DTrans(in_channels=self.vfeat_dim, out_channels=768, cls_num = len(classnames_lst))
-            self.mlp = ConvTransAttentionAgg(dim=self.vfeat_dim, cls_num = len(classnames_lst)-1)
+            # Unified classnames omit the synthetic upstream ``Normal`` row.
+            self.mlp = ConvTransAttentionAgg(
+                dim=self.vfeat_dim, cls_num=len(classnames_lst))
         elif self.vision_grad:
             self.mlp = MultiKernelConv1DTrans(in_channels=self.vfeat_dim, out_channels=768)
 
@@ -231,7 +233,7 @@ class PPTKEEP(nn.Module):
         if self.vision_only:
             image_features = image_features.requires_grad_(True)
             # print(image_features.requires_grad)
-            image_logits = self.mlp(image_features.squeeze())
+            image_logits = self.mlp(image_features)
             # print(image_logits.requires_grad)
             
             return image_logits, None

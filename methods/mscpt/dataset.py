@@ -16,14 +16,16 @@ from common.datasets.dataset_generic import _load_feature_tensor
 
 
 class MSCPT_Dataset(Dataset):
-    def __init__(self, csv_path: str, feat_data_dir: str,
+    def __init__(self, csv_path: str | pd.DataFrame, feat_data_dir: str,
                  selected_5x_dir: str | None,
                  label_dict: dict, num_k: int = 100,
                  feature_path_column_s: str | None = None,
                  feature_path_column_l: str | None = None,
                  feature_key: str = "features",
-                 include_metadata: bool = False):
-        self.df = pd.read_csv(csv_path)
+                 include_metadata: bool = False,
+                 feature_dim: int | None = None):
+        self.df = (csv_path.copy() if isinstance(csv_path, pd.DataFrame)
+                   else pd.read_csv(csv_path))
         self.feat_dir = feat_data_dir
         self.sel_dir = selected_5x_dir
         self.label_dict = label_dict
@@ -32,6 +34,8 @@ class MSCPT_Dataset(Dataset):
         self.feature_path_column_l = feature_path_column_l
         self.feature_key = feature_key
         self.include_metadata = include_metadata
+        self.feature_dim = (
+            int(feature_dim) if feature_dim is not None else None)
 
     def __len__(self):
         return len(self.df)
@@ -57,6 +61,14 @@ class MSCPT_Dataset(Dataset):
         else:
             sel = feats[: self.num_k]
 
+        if self.feature_dim is not None:
+            for scale, features in (("low", feats), ("high", sel)):
+                if features.shape[1] != self.feature_dim:
+                    raise ValueError(
+                        f"MSCPT {scale}-resolution features for {slide_id!r} "
+                        f"have width {features.shape[1]}, expected "
+                        f"{self.feature_dim}")
+
         if self.include_metadata:
             metadata = {
                 "slide_id": slide_id,
@@ -66,19 +78,24 @@ class MSCPT_Dataset(Dataset):
         return feats, sel, label
 
 
-def build_mscpt_loader(cfg, split: str = "train", shuffle: bool = True):
+def build_mscpt_loader(cfg, split: str = "train", shuffle: bool = True,
+                       fold: int | None = None):
     from torch.utils.data import DataLoader
-    csv_path = os.path.join(cfg["split_dir"], f"{split}.csv")
+    from common.datasets.split_tables import load_phase_table
+
+    fold = cfg.get("_fold_index", 0) if fold is None else fold
+    phase_table = load_phase_table(cfg, split, fold)
     ds = MSCPT_Dataset(
-        csv_path=csv_path,
-        feat_data_dir=cfg["feat_data_dir"],
+        csv_path=phase_table,
+        feat_data_dir=cfg.get("feat_data_dir", ""),
         selected_5x_dir=cfg.get("selected_5x_dir"),
         label_dict=cfg["label_dict"],
         num_k=cfg.get("num_k", 100),
         feature_path_column_s=cfg.get("feature_path_column_s"),
         feature_path_column_l=cfg.get("feature_path_column_l"),
         feature_key=cfg.get("feature_key", "features"),
-        include_metadata=cfg.get("include_metadata", False))
+        include_metadata=cfg.get("include_metadata", False),
+        feature_dim=cfg.get("feature_dim"))
     return DataLoader(ds, batch_size=cfg.get("batch_size", 1),
                       shuffle=shuffle and split == "train",
                       num_workers=cfg.get("num_workers", 4))

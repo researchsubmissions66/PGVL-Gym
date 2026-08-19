@@ -1,47 +1,374 @@
 {
-  "_note": "Origin of every prompt asset. Assets carrying an inline '_provenance' key are authoritative; this manifest covers the rest. Regenerate the report with scripts/audit_prompt_provenance.py.",
+  "_note": "Origin of every prompt asset. Keys under assets are relative to text_prompts/; keys under repository_assets are relative to the repository root. Assets carrying an inline '_provenance' key are authoritative. Regenerate the report with scripts/audit_prompt_provenance.py.",
+  "method_summaries": {
+    "focus": {
+      "upstream_repository": "https://github.com/dddavid4real/FOCUS",
+      "copied_from_upstream": [],
+      "generated_or_rewritten": [
+        "focus/CAMELYON16_two_scale_text_prompt.csv",
+        "focus/TCGA_BRCA_two_scale_text_prompt.csv",
+        "focus/TCGA_NSCLC_two_scale_text_prompt.csv",
+        "focus/TCGA_RCC_two_scale_text_prompt.csv",
+        "focus/TCGA_RCC_GEPA_two_scale_text_prompt.csv",
+        "focus/UBC_OCEAN_two_scale_text_prompt.csv",
+        "TCGA_Lung_two_scale_text_prompt.csv",
+        "UBC-OCEAN_two_scale_text_prompt.csv"
+      ],
+      "upstream_files_available_but_not_copied": {
+        "focus/CAMELYON16_two_scale_text_prompt.csv": "text_prompt/CAMELYON_two_scale_text_prompt.csv",
+        "focus/TCGA_NSCLC_two_scale_text_prompt.csv": "text_prompt/TCGA_Lung_two_scale_text_prompt.csv",
+        "focus/UBC_OCEAN_two_scale_text_prompt.csv": "text_prompt/UBC-OCEAN_two_scale_text_prompt.csv"
+      },
+      "note": "No checked-in FOCUS CSV is a verbatim copy of an upstream prompt file. CAMELYON16, TCGA-NSCLC, and UBC-OCEAN use locally rewritten wording for tasks that do have upstream banks. TCGA-BRCA and TCGA-RCC use locally generated banks for tasks with no prompt CSV in the FOCUS release. The two root-level legacy CSVs are local classname templates, not copies of the richer focus/ files."
+    },
+    "mscpt": {
+      "upstream_repository": "https://github.com/Hanminghao/MSCPT",
+      "copied_from_upstream": [
+        "train_data/gpt/description/Lung.json",
+        "train_data/gpt/description/RCC.json",
+        "train_data/gpt/description/UBC-OCEAN.json"
+      ],
+      "generated_or_rewritten": [
+        "text_prompts/mscpt/description/TCGA_BRCA_IDC_ILC.json",
+        "benchmarks/camelyon16/data/camelyon16/prompts/gpt/description/camelyon16.json"
+      ],
+      "unused_upstream_task_bank": {
+        "train_data/gpt/description/BRCA.json": "Upstream High/Low breast-cancer recurrence/grade task; it is not an IDC/ILC subtype bank and is therefore not used for this benchmark's TCGA-BRCA cohort."
+      },
+      "note": "The benchmark uses verbatim upstream description banks for TCGA-NSCLC, TCGA-RCC, and UBC-OCEAN. TCGA-BRCA IDC/ILC and CAMELYON16 have no task-matched upstream MSCPT bank and use locally generated descriptions. The upstream Lung.json copy is deliberately preserved, but its LUSC block contains nine descriptions with adenocarcinoma-associated morphology; see repository_assets for the exact indices."
+    },
+    "maple": {
+      "upstream_repository": "https://github.com/JJ-ZHOU-Code/MAPLE",
+      "upstream_commit": "c38d5d5d55deba3a44e9384c0efeee98e1aec36b",
+      "copied_from_upstream": [
+        "text_prompts/maple/LUNG_attributes.json",
+        "text_prompts/maple/RCC_attributes.json",
+        "text_prompts/maple/BRCA_attributes.json"
+      ],
+      "generated_or_rewritten": [
+        "text_prompts/maple/UBC_attributes.json",
+        "prompt_spec-compiled CAMELYON16 and UBC-OCEAN benchmark banks"
+      ],
+      "derived_for_other_consumers": [
+        "text_prompts/maple/LUNG_composite_attributes.json",
+        "text_prompts/maple/RCC_composite_attributes.json",
+        "text_prompts/maple/BRCA_composite_attributes.json"
+      ],
+      "selected_prompt_banks": {
+        "TCGA-NSCLC": "exact upstream LUNG bank",
+        "TCGA-RCC": "exact upstream RCC bank",
+        "TCGA-BRCA": "exact upstream BRCA bank",
+        "CAMELYON16": "generated task extension",
+        "UBC-OCEAN": "generated MAPLE task extension using released MSCPT UBC descriptions; not an upstream MAPLE bank"
+      },
+      "upstream_runtime_issue": {
+        "status": "corrected_and_disclosed",
+        "source_lines": "models/maple/model.py:67-78 and 481-484",
+        "note": "PromptLearner emits class attributes entity-major, but the released view(n_cls, num_entities).permute assumes class-major input. This silently associates most entity/class logits with the wrong attribute descriptions. PGVL restores the emitted entity-major shape directly."
+      },
+      "note": "The three released JSON files are byte-exact copies pinned by SHA-256. Class-key order is part of the classifier contract because MAPLE forms logits in dictionary insertion order; the doctor and runtime now reject reordered global_info or entity attributes. MAPLE publishes no UBC-OCEAN or CAMELYON16 bank, so those conditions are never reported as upstream."
+    },
+    "pathpt": {
+      "upstream_repository": "https://github.com/MAGIC-AI4Med/PathPT",
+      "copied_from_upstream": [
+        "methods/pathpt/_utils.py:templates",
+        "methods/pathpt/_utils.py:brca_names",
+        "methods/pathpt/_utils.py:ubc_names",
+        "methods/pathpt/_utils.py:camelyon_names"
+      ],
+      "generated_or_rewritten": [
+        "methods/pathpt/prompts.py:NSCLC",
+        "methods/pathpt/prompts.py:RCC"
+      ],
+      "note": "Native PathPT uses the upstream 22 templates and synonym banks verbatim for BRCA, UBC-OCEAN, and CAMELYON. NSCLC and RCC are explicit generated task extensions because upstream PathPT defines neither bank. The CAMELYON Normal bank preserves the upstream missing-comma concatenation and discloses it rather than silently changing the prompt condition."
+    },
+    "top": {
+      "upstream_repository": "https://github.com/miccaiif/TOP",
+      "upstream_commit": "8356b0dd1786d35e6d6d617d2b253c949769ba39",
+      "copied_from_upstream": [
+        "text_prompts/top/instance_prototypes.json",
+        "text_prompts/top/tcga_nsclc_upstream_code_bag_prompts.json",
+        "text_prompts/top/camelyon16_upstream_code_bag_prompts.json",
+        "text_prompts/top/tcga_nsclc_bag_prompts.json"
+      ],
+      "selected_code_banks": {
+        "TCGA-NSCLC": [
+          "text_prompts/top/instance_prototypes.json",
+          "text_prompts/top/tcga_nsclc_upstream_code_bag_prompts.json"
+        ],
+        "CAMELYON16": [
+          "text_prompts/top/instance_prototypes.json",
+          "text_prompts/top/camelyon16_upstream_code_bag_prompts.json"
+        ]
+      },
+      "preserved_unwired_alternatives": [
+        "text_prompts/top/tcga_nsclc_bag_prompts.json"
+      ],
+      "task_extensions": {
+        "TCGA-BRCA": "The released task-agnostic instance prototypes are used, but TOP publishes no BRCA bag initializer; the bag learner starts from random context plus the configured IDC/ILC classnames.",
+        "TCGA-RCC": "No released TOP RCC bag initializer; the example config uses the upstream instance bank with random classname bag context.",
+        "UBC-OCEAN": "No released TOP ovarian bag initializer; the example config uses the upstream instance bank with random classname bag context."
+      },
+      "note": "The 26 instance prototypes are copied from knowledge_from_chatGPT in the released training code, not reconstructed from the six examples displayed in the supplement. Standard NSCLC and CAMELYON declarations use the exact active bagPrompt_ctx_init code literals, including ten learnable slots. The longer NSCLC descriptions from supplementary Figure 4 remain available only as an explicitly unwired alternative condition."
+    },
+    "slip": {
+      "upstream_repository": "https://github.com/LTS5/SLIP",
+      "upstream_commit": "9351c4480ec8d7a8216316a1861025b4f086ac78",
+      "copied_from_upstream": [
+        "text_prompts/slip/TCGA_prompt_bank.json",
+        "text_prompts/slip/DHMC_prompt_bank.json",
+        "text_prompts/slip/PatchGastricADC22_prompt_bank.json"
+      ],
+      "generated_or_rewritten": [
+        "text_prompts/slip/camelyon16_tissues.json",
+        "text_prompts/slip/tcga_brca_tissues.json",
+        "text_prompts/slip/tcga_rcc_tissues.json",
+        "text_prompts/slip/ubc_ocean_tissues.json"
+      ],
+      "selected_prompt_banks": {
+        "TCGA-NSCLC": "text_prompts/slip/TCGA_prompt_bank.json (complete upstream bank)",
+        "CAMELYON16": "text_prompts/slip/camelyon16_tissues.json (generated task extension)",
+        "TCGA-BRCA": "text_prompts/slip/tcga_brca_tissues.json (generated task extension)",
+        "TCGA-RCC": "text_prompts/slip/tcga_rcc_tissues.json (generated task extension)",
+        "UBC-OCEAN": "text_prompts/slip/ubc_ocean_tissues.json (generated task extension)"
+      },
+      "preserved_unwired_derived_assets": [
+        "text_prompts/slip/TCGA_tissues.json",
+        "text_prompts/slip/DHMC_tissues.json",
+        "text_prompts/slip/PatchGastricADC22_tissues.json"
+      ],
+      "note": "The released banks have three distinct roles: templates, slide_classnames, and nested tissue_classnames. Each nested tissue pair is encoded as two prompts and averaged upstream. Earlier PGVL assets joined each pair into one 'Name: description' sentence and omitted the other roles, so they preserved words but not embeddings. The selected TCGA-NSCLC bank now copies the complete upstream structure exactly. Generated cohort extensions are explicitly labeled and losslessly expanded to the same two-text runtime shape."
+    },
+    "cod_mil": {
+      "upstream_repository": "https://github.com/Jiangbo-Shi/CoD-MIL",
+      "copied_from_upstream": [
+        "text_prompts/cod_mil/rcc_chain_of_diagnosis.csv",
+        "text_prompts/cod_mil/rcc_text_prompt_features_clip_rn50.pt",
+        "text_prompts/cod_mil/rcc_text_prompt_features_plip.pt",
+        "text_prompts/cod_mil/rcc_text_prompt_features_quiltnet.pt"
+      ],
+      "derived": [
+        "text_prompts/cod_mil/rcc_text_prompt_features_clip_rn50_verified.pt"
+      ],
+      "note": "The 27-row RCC CSV and all three released tensors are preserved. The released CLIP-RN50 tensor is audit-only because its 30 positional rows do not match the CSV. The selected verified CLIP-RN50 tensor is a local, exact re-encoding of the unchanged upstream CSV. The encoder-agnostic builder can produce equivalently verified PLIP or QuiltNet banks for matching patch feature spaces."
+    },
+    "wsi_five": {
+      "upstream_repository": "https://github.com/ls1rius/WSI_FiVE",
+      "copied_from_upstream": [
+        "text_prompts/wsi_five/clinical_questions/nsclc.json",
+        "text_prompts/wsi_five/nsclc_report_answers.csv",
+        "text_prompts/wsi_five/nsclc_evaluation_prompts.json"
+      ],
+      "generated_or_rewritten": [
+        "text_prompts/wsi_five/clinical_questions/brca.json",
+        "text_prompts/wsi_five/clinical_questions/rcc.json",
+        "text_prompts/wsi_five/clinical_questions/ubc_ocean.json"
+      ],
+      "note": "NSCLC native mode uses the released six questions, authors' per-case answers, and verbatim LUAD/LUSC evaluation descriptions. Each training candidate bank is derived only from that fold's training cases. BRCA, RCC, and UBC-OCEAN question sets are local task extensions and cannot reproduce the released lung supervision condition; simplified modes use their questions with classname comparison and never consume report text."
+    }
+  },
+  "repository_assets": {
+    "methods/pathpt/_utils.py": {
+      "provenance": "upstream",
+      "copied_from_upstream": true,
+      "source": "https://github.com/MAGIC-AI4Med/PathPT/blob/main/utils.py",
+      "known_content_issue": {
+        "status": "upstream_preserved_and_disclosed",
+        "affected_bank": "camelyon_names.Normal",
+        "note": "A missing comma concatenates 'non-cancerous tissue' and 'normal breast tissue' into one prompt synonym."
+      }
+    },
+    "methods/pathpt/prompts.py": {
+      "provenance": "generated",
+      "copied_from_upstream": false,
+      "source": "PGVL-Gym task extension",
+      "note": "Defines only the locally authored NSCLC/RCC synonym sets and routing metadata; upstream banks and templates are imported from the separately registered vendored _utils.py."
+    },
+    "train_data/gpt/description/Lung.json": {
+      "provenance": "upstream",
+      "copied_from_upstream": true,
+      "source": "https://github.com/Hanminghao/MSCPT/blob/main/train_data/gpt/description/Lung.json",
+      "prompt_counts_per_class": {
+        "small_mag": 10,
+        "big_mag": 30
+      },
+      "known_content_issue": {
+        "status": "upstream_preserved_and_disclosed",
+        "affected_label": "LUSC",
+        "affected_prompt_count": 9,
+        "zero_based_indices": {
+          "small_mag": [
+            0,
+            2
+          ],
+          "big_mag": [
+            0,
+            1,
+            3,
+            8,
+            9,
+            28,
+            29
+          ]
+        },
+        "note": "These LUSC entries describe glandular/acinar architecture, mucin production, lepidic growth, signet-ring cells, bronchioloalveolar carcinoma, or micropapillary morphology associated with lung adenocarcinoma. They contribute to the LUSC text representation. The file remains unchanged so an upstream prompt run is not silently converted into a local condition."
+      }
+    },
+    "train_data/gpt/description/RCC.json": {
+      "provenance": "upstream",
+      "copied_from_upstream": true,
+      "source": "https://github.com/Hanminghao/MSCPT/blob/main/train_data/gpt/description/RCC.json",
+      "prompt_counts_per_class": {
+        "small_mag": 10,
+        "big_mag": 30
+      },
+      "note": "Task-matched RCC bank imported from MSCPT without local prompt rewriting."
+    },
+    "train_data/gpt/description/UBC-OCEAN.json": {
+      "provenance": "upstream",
+      "copied_from_upstream": true,
+      "source": "https://github.com/Hanminghao/MSCPT/blob/main/train_data/gpt/description/UBC-OCEAN.json",
+      "prompt_counts_per_class": {
+        "small_mag": 10,
+        "big_mag": 30
+      },
+      "note": "Task-matched UBC-OCEAN bank imported from MSCPT without local prompt rewriting."
+    },
+    "train_data/gpt/description/BRCA.json": {
+      "provenance": "upstream",
+      "copied_from_upstream": true,
+      "source": "https://github.com/Hanminghao/MSCPT/blob/main/train_data/gpt/description/BRCA.json",
+      "prompt_counts_per_class": {
+        "small_mag": 10,
+        "big_mag": 30
+      },
+      "note": "Copied upstream but unused here: its labels are High/Low for a recurrence/grade task, whereas PGVL-Gym evaluates IDC/ILC histologic subtype."
+    },
+    "benchmarks/camelyon16/data/camelyon16/prompts/gpt/description/camelyon16.json": {
+      "provenance": "generated",
+      "copied_from_upstream": false,
+      "source": "compiled from benchmarks/camelyon16/prompts/camelyon16.yaml",
+      "upstream_counterpart": null,
+      "prompt_counts_per_class": {
+        "small_mag": 10,
+        "big_mag": 10
+      },
+      "note": "MSCPT publishes no CAMELYON16 description bank. This is a local task extension and is not prompt-faithful to an upstream MSCPT experiment."
+    }
+  },
   "assets": {
     "maple/LUNG_attributes.json": {
       "provenance": "upstream",
-      "source": "JJ-ZHOU-Code/MAPLE templete/maple/<task>/<task>_8.json"
+      "copied_from_upstream": true,
+      "source": "https://github.com/JJ-ZHOU-Code/MAPLE/blob/c38d5d5d55deba3a44e9384c0efeee98e1aec36b/templete/maple/lung/lung_8.json",
+      "sha256": "e35fb110800949ac9e7067098ed9bb6ebcd5534fa79b27ac882ae86dd1eb435f"
     },
     "maple/RCC_attributes.json": {
       "provenance": "upstream",
-      "source": "JJ-ZHOU-Code/MAPLE templete/maple/<task>/<task>_8.json"
+      "copied_from_upstream": true,
+      "source": "https://github.com/JJ-ZHOU-Code/MAPLE/blob/c38d5d5d55deba3a44e9384c0efeee98e1aec36b/templete/maple/rcc/rcc_8.json",
+      "sha256": "b963535ef8143e4c957aa25ed34ab68299d74cfd770c0bdf5bd2badd5acca8cc"
     },
     "maple/BRCA_attributes.json": {
       "provenance": "upstream",
-      "source": "JJ-ZHOU-Code/MAPLE templete/maple/<task>/<task>_8.json"
+      "copied_from_upstream": true,
+      "source": "https://github.com/JJ-ZHOU-Code/MAPLE/blob/c38d5d5d55deba3a44e9384c0efeee98e1aec36b/templete/maple/brca/brca_8.json",
+      "sha256": "2edf3587a5e7e96f6cd06a06863ae66d82f0b40aeb969183a2901eb6415683d6"
+    },
+    "maple/UBC_attributes.json": {
+      "provenance": "generated",
+      "copied_from_upstream": false,
+      "source": "PGVL-Gym MAPLE-schema task extension using train_data/gpt/description/UBC-OCEAN.json",
+      "source_method": "MSCPT",
+      "sha256": "a26fc16f181d0ca0b5fc22f3028b60f9cc5acdb06ddfaf55dbb588c461c2a218",
+      "note": "MAPLE publishes no UBC-OCEAN prompt bank. The diagnostic wording comes from the released MSCPT UBC bank, but its selection and MAPLE schema are local, so MAPLE provenance is generated rather than upstream."
     },
     "maple/LUNG_composite_attributes.json": {
       "provenance": "derived",
+      "copied_from_upstream": false,
       "source": "flatten_maple_attributes() over the upstream file",
       "note": "Same wording, reorganised class->attributes for the composite prompt module."
     },
     "maple/RCC_composite_attributes.json": {
       "provenance": "derived",
+      "copied_from_upstream": false,
       "source": "flatten_maple_attributes() over the upstream file",
       "note": "Same wording, reorganised class->attributes for the composite prompt module."
     },
     "maple/BRCA_composite_attributes.json": {
       "provenance": "derived",
+      "copied_from_upstream": false,
       "source": "flatten_maple_attributes() over the upstream file",
       "note": "Same wording, reorganised class->attributes for the composite prompt module."
     },
     "slip/DHMC_tissues.json": {
-      "provenance": "upstream",
+      "provenance": "derived",
+      "copied_from_upstream": false,
       "source": "LTS5/SLIP datasets/prompt.py tissue_classnames",
-      "note": "TCGA_tissues.json is the lung vocabulary and is what tcga_nsclc uses."
+      "usage": "legacy_unwired",
+      "note": "Legacy conversion joined each upstream [name, description] pair into one string and omitted the template and slide-class roles; preserved for audit only."
     },
     "slip/PatchGastricADC22_tissues.json": {
-      "provenance": "upstream",
+      "provenance": "derived",
+      "copied_from_upstream": false,
       "source": "LTS5/SLIP datasets/prompt.py tissue_classnames",
-      "note": "TCGA_tissues.json is the lung vocabulary and is what tcga_nsclc uses."
+      "usage": "legacy_unwired",
+      "note": "Legacy conversion joined each upstream [name, description] pair into one string and omitted the template and slide-class roles; preserved for audit only."
     },
     "slip/TCGA_tissues.json": {
-      "provenance": "upstream",
+      "provenance": "derived",
+      "copied_from_upstream": false,
       "source": "LTS5/SLIP datasets/prompt.py tissue_classnames",
-      "note": "TCGA_tissues.json is the lung vocabulary and is what tcga_nsclc uses."
+      "usage": "legacy_unwired",
+      "note": "Legacy conversion joined each upstream [name, description] pair into one string and omitted the template and slide-class roles; preserved for audit only."
+    },
+    "slip/TCGA_prompt_bank.json": {
+      "provenance": "upstream",
+      "copied_from_upstream": true,
+      "source": "https://github.com/LTS5/SLIP/blob/9351c4480ec8d7a8216316a1861025b4f086ac78/datasets/prompt.py#L90-L122",
+      "usage": "standard_tcga_nsclc",
+      "role": "complete_slip_prompt_bank",
+      "prompt_bank_sha256": "acea8dc45d6cd37e124d06a155c9d84ed80d3b58dba0eda05fcf25db7edd9d62"
+    },
+    "slip/DHMC_prompt_bank.json": {
+      "provenance": "upstream",
+      "copied_from_upstream": true,
+      "source": "https://github.com/LTS5/SLIP/blob/9351c4480ec8d7a8216316a1861025b4f086ac78/datasets/prompt.py#L57-L88",
+      "usage": "available_upstream_dataset_bank",
+      "role": "complete_slip_prompt_bank",
+      "prompt_bank_sha256": "16a9bfb8e36c8bd158912e0a56544724a77b13d8010b3a653a33e7221923d58a"
+    },
+    "slip/PatchGastricADC22_prompt_bank.json": {
+      "provenance": "upstream",
+      "copied_from_upstream": true,
+      "source": "https://github.com/LTS5/SLIP/blob/9351c4480ec8d7a8216316a1861025b4f086ac78/datasets/prompt.py#L3-L55",
+      "usage": "available_upstream_dataset_bank",
+      "role": "complete_slip_prompt_bank",
+      "prompt_bank_sha256": "afb84abcf1d4c141c462f3b7043c998167c96637c80a5c148269cc3dfc3bec32"
+    },
+    "slip/camelyon16_tissues.json": {
+      "provenance": "generated",
+      "copied_from_upstream": false,
+      "source": "PGVL-Gym task extension",
+      "usage": "generated_task_extension"
+    },
+    "slip/tcga_brca_tissues.json": {
+      "provenance": "generated",
+      "copied_from_upstream": false,
+      "source": "PGVL-Gym task extension",
+      "usage": "generated_task_extension"
+    },
+    "slip/tcga_rcc_tissues.json": {
+      "provenance": "generated",
+      "copied_from_upstream": false,
+      "source": "PGVL-Gym task extension",
+      "usage": "generated_task_extension"
+    },
+    "slip/ubc_ocean_tissues.json": {
+      "provenance": "generated",
+      "copied_from_upstream": false,
+      "source": "PGVL-Gym task extension",
+      "usage": "generated_task_extension"
     },
     "muse/camelyon_all/generated_new_0.csv": {
       "provenance": "upstream",
@@ -93,37 +420,106 @@
     },
     "cod_mil/rcc_chain_of_diagnosis.csv": {
       "provenance": "upstream",
-      "source": "Jiangbo-Shi/CoD-MIL prompt/text_prompt_kidney_v2.csv"
+      "copied_from_upstream": true,
+      "source": "Jiangbo-Shi/CoD-MIL prompt/text_prompt_kidney_v2.csv",
+      "sha256": "7f53eccdfb555f7be59e2792852d77e5bd075f6a3388899734efe7be83022059",
+      "rows": 27,
+      "usage": "canonical_source_bank"
     },
     "cod_mil/rcc_text_prompt_features_clip_rn50.pt": {
       "provenance": "upstream",
+      "copied_from_upstream": true,
       "source": "Jiangbo-Shi/CoD-MIL prompt/text_prompt_feature_kidney_v2_*.pt",
-      "note": "The clip_rn50 tensor has 30 rows against the CSV's 27; its first six rows encode text that was never published. Prefer the plip/quiltnet tensors."
+      "sha256": "bfa7aa818e71cba740f8538041955b56f052d39a5867fc65f3a4ca82e776f824",
+      "usage": "audit_only",
+      "selected_by_protocol": false,
+      "known_content_issue": {
+        "status": "upstream_preserved_and_rejected",
+        "tensor_rows": 30,
+        "source_csv_rows": 27,
+        "alignment": "csv row i aligns with tensor row i+3; rows 3-9 are reworded and rows 10-29 match exactly",
+        "impact": "Positional slicing shifts both class branches and the normal-tissue bank."
+      }
+    },
+    "cod_mil/rcc_text_prompt_features_clip_rn50_verified.pt": {
+      "provenance": "derived",
+      "copied_from_upstream": false,
+      "source": "cod_mil/rcc_chain_of_diagnosis.csv",
+      "sha256": "f7d650e644ff8dd55daad0d22c55e76e0b8c73c4b7ffaf12a66d787d86738249",
+      "source_prompt_sha256": "7f53eccdfb555f7be59e2792852d77e5bd075f6a3388899734efe7be83022059",
+      "encoder": "clip-rn50",
+      "encoder_checkpoint_sha256": "afeb0e10f9e5a86da6080e35cf09123aca3b358a0c3e3b6c78a7b63bc04b6762",
+      "feature_space_id": "openai/clip-rn50@official",
+      "rows": 27,
+      "row_roles": {
+        "low": [0, 3],
+        "high": [3, 6],
+        "background": [6, 27]
+      },
+      "usage": "selected_rcc_clip_rn50_bank",
+      "note": "Derived by scripts/build_cod_mil_prompt_features.py from the exact upstream CSV rows with no insertion, rewrite, or truncation."
     },
     "cod_mil/rcc_text_prompt_features_plip.pt": {
       "provenance": "upstream",
+      "copied_from_upstream": true,
       "source": "Jiangbo-Shi/CoD-MIL prompt/text_prompt_feature_kidney_v2_*.pt",
-      "note": "The clip_rn50 tensor has 30 rows against the CSV's 27; its first six rows encode text that was never published. Prefer the plip/quiltnet tensors."
+      "rows": 27,
+      "usage": "upstream_reference; rebuild with metadata before selection",
+      "note": "Row-aligned with the published CSV. The hardened loader requires a metadata-bound derivative so order cannot be inferred from shape alone."
     },
     "cod_mil/rcc_text_prompt_features_quiltnet.pt": {
       "provenance": "upstream",
+      "copied_from_upstream": true,
       "source": "Jiangbo-Shi/CoD-MIL prompt/text_prompt_feature_kidney_v2_*.pt",
-      "note": "The clip_rn50 tensor has 30 rows against the CSV's 27; its first six rows encode text that was never published. Prefer the plip/quiltnet tensors."
+      "rows": 27,
+      "usage": "upstream_reference; rebuild with metadata before selection",
+      "note": "Row-aligned with the published CSV. The hardened loader requires a metadata-bound derivative so order cannot be inferred from shape alone."
     },
     "mscpt/description/TCGA_BRCA_IDC_ILC.json": {
       "provenance": "generated",
-      "source": "authored for this benchmark",
-      "note": "10 big_mag prompts against 30 in the other cohorts, and a different file structure -- MSCPT cohorts are not comparable on prompt count."
+      "copied_from_upstream": false,
+      "source": "authored for this benchmark from the checked-in MAPLE BRCA attribute bank",
+      "upstream_counterpart": null,
+      "related_upstream_file": "https://github.com/Hanminghao/MSCPT/blob/main/train_data/gpt/description/BRCA.json",
+      "prompt_counts_per_class": {
+        "small_mag": 10,
+        "big_mag": 10
+      },
+      "note": "MSCPT's BRCA.json is a High/Low recurrence/grade task, not this benchmark's IDC/ILC subtype task. This local task-matched bank is therefore generated, not copied. It has 10 big_mag prompts per class versus 30 in the task-matched upstream Lung, RCC, and UBC-OCEAN banks, so prompt-count comparisons across these cohorts are not controlled."
     },
     "top/instance_prototypes.json": {
       "provenance": "upstream",
-      "source": "miccaiif/TOP NeurIPS supplementary",
-      "note": "The released code uses shorter phrasing than the supplementary and is what produced the paper's numbers; this is a different prompt condition."
+      "copied_from_upstream": true,
+      "source": "https://github.com/miccaiif/TOP/blob/8356b0dd1786d35e6d6d617d2b253c949769ba39/train_TCGAFeat_MIL_CLIP.py#L147-L174",
+      "usage": "standard_upstream_recipe",
+      "role": "instance_level_prototypes",
+      "count": 26,
+      "ordered_prompt_sha256": "56ae6c7ec40cb2dace3bbe2897d73ec70d0f7c4564d5d69b19912543554b0cd2",
+      "note": "Verbatim ordered tissue labels and descriptions from the released knowledge_from_chatGPT dictionary, rendered with the released single-template construction."
     },
     "top/tcga_nsclc_bag_prompts.json": {
       "provenance": "upstream",
-      "source": "miccaiif/TOP NeurIPS supplementary",
-      "note": "The released code uses shorter phrasing than the supplementary and is what produced the paper's numbers; this is a different prompt condition."
+      "copied_from_upstream": true,
+      "source": "https://proceedings.neurips.cc/paper_files/paper/2023/file/d599b81036fd1a3b3949b7d444f31082-Supplemental-Conference.pdf#page=5",
+      "usage": "alternative_unwired",
+      "role": "bag_level_prompts",
+      "note": "Verbatim supplementary Figure 4 descriptions. They differ from the active bagPrompt_ctx_init literals in the released training script and are deliberately not selected by the standard NSCLC protocol."
+    },
+    "top/tcga_nsclc_upstream_code_bag_prompts.json": {
+      "provenance": "upstream",
+      "copied_from_upstream": true,
+      "source": "https://github.com/miccaiif/TOP/blob/8356b0dd1786d35e6d6d617d2b253c949769ba39/train_TCGAFeat_MIL_CLIP.py#L500-L506",
+      "usage": "standard_upstream_recipe",
+      "role": "bag_level_ctx_init",
+      "note": "Exact active NSCLC bagPrompt_ctx_init literals, including their ten learnable slots and label order."
+    },
+    "top/camelyon16_upstream_code_bag_prompts.json": {
+      "provenance": "upstream",
+      "copied_from_upstream": true,
+      "source": "https://github.com/miccaiif/TOP/blob/8356b0dd1786d35e6d6d617d2b253c949769ba39/train_CAMELYONFeat_MIL_CLIP.py#L518-L526",
+      "usage": "standard_upstream_recipe",
+      "role": "bag_level_ctx_init",
+      "note": "Exact active one-word CAMELYON bagPrompt_ctx_init literals. The richer adjacent descriptions are commented out in the release and are not substituted here."
     },
     "convlm/brca_attributes.json": {
       "provenance": "generated",
@@ -155,45 +551,67 @@
       "source": "ls1rius/WSI_FiVE gpt_preprocess/LUAD|LUSC_report_answer_*.xlsx",
       "note": "The authors' GPT answers to their six clinical questions, 912 cases."
     },
-    "focus/CAMELYON16_two_scale_text_prompt.csv": {
+    "wsi_five/nsclc_evaluation_prompts.json": {
       "provenance": "upstream",
-      "source": "dddavid4real/FOCUS two-scale prompt CSVs",
-      "note": "NOT verified against the upstream repository this session -- recorded from the vendored tree. Confirm before relying on the claim."
+      "copied_from_upstream": true,
+      "source": "ls1rius/WSI_FiVE data/TCGA-lung-patch_report/LUAD_LUSC_labels_train_reid.csv and LUAD_LUSC_labels_val_reid.csv",
+      "note": "Verbatim two-description LUAD/LUSC evaluation bank in class-index order."
+    },
+    "focus/CAMELYON16_two_scale_text_prompt.csv": {
+      "provenance": "generated",
+      "copied_from_upstream": false,
+      "source": "authored for this benchmark as a shorter rewrite of dddavid4real/FOCUS text_prompt/CAMELYON_two_scale_text_prompt.csv",
+      "upstream_counterpart": "https://github.com/dddavid4real/FOCUS/blob/main/text_prompt/CAMELYON_two_scale_text_prompt.csv",
+      "note": "The task and diagnostic concepts follow FOCUS, but the checked-in sentences are reworded and therefore are not prompt-faithful copies."
     },
     "focus/TCGA_BRCA_two_scale_text_prompt.csv": {
-      "provenance": "upstream",
-      "source": "dddavid4real/FOCUS two-scale prompt CSVs",
-      "note": "NOT verified against the upstream repository this session -- recorded from the vendored tree. Confirm before relying on the claim."
+      "provenance": "generated",
+      "copied_from_upstream": false,
+      "source": "authored for this benchmark",
+      "upstream_counterpart": null,
+      "note": "The FOCUS release has no TCGA-BRCA prompt CSV. This bank is local and a run using it is not prompt-faithful to a published FOCUS condition."
     },
     "focus/TCGA_NSCLC_two_scale_text_prompt.csv": {
-      "provenance": "upstream",
-      "source": "dddavid4real/FOCUS two-scale prompt CSVs",
-      "note": "NOT verified against the upstream repository this session -- recorded from the vendored tree. Confirm before relying on the claim."
+      "provenance": "generated",
+      "copied_from_upstream": false,
+      "source": "authored for this benchmark as an expanded rewrite of dddavid4real/FOCUS text_prompt/TCGA_Lung_two_scale_text_prompt.csv",
+      "upstream_counterpart": "https://github.com/dddavid4real/FOCUS/blob/main/text_prompt/TCGA_Lung_two_scale_text_prompt.csv",
+      "note": "An upstream bank exists for this task, but the checked-in sentences are substantially reworded and expanded rather than copied."
     },
     "focus/TCGA_RCC_two_scale_text_prompt.csv": {
-      "provenance": "upstream",
-      "source": "dddavid4real/FOCUS two-scale prompt CSVs",
-      "note": "NOT verified against the upstream repository this session -- recorded from the vendored tree. Confirm before relying on the claim."
+      "provenance": "generated",
+      "copied_from_upstream": false,
+      "source": "authored for this benchmark",
+      "upstream_counterpart": null,
+      "note": "The FOCUS release has no TCGA-RCC prompt CSV. This bank is local and a run using it is not prompt-faithful to a published FOCUS condition."
     },
     "focus/TCGA_RCC_GEPA_two_scale_text_prompt.csv": {
-      "provenance": "upstream",
-      "source": "dddavid4real/FOCUS two-scale prompt CSVs",
-      "note": "NOT verified against the upstream repository this session -- recorded from the vendored tree. Confirm before relying on the claim."
+      "provenance": "generated",
+      "copied_from_upstream": false,
+      "source": "authored for this benchmark as a GEPA-expanded RCC variant",
+      "upstream_counterpart": null,
+      "note": "The FOCUS release has no TCGA-RCC or GEPA prompt CSV. This bank is entirely local."
     },
     "focus/UBC_OCEAN_two_scale_text_prompt.csv": {
-      "provenance": "upstream",
-      "source": "dddavid4real/FOCUS two-scale prompt CSVs",
-      "note": "NOT verified against the upstream repository this session -- recorded from the vendored tree. Confirm before relying on the claim."
+      "provenance": "generated",
+      "copied_from_upstream": false,
+      "source": "authored for this benchmark as a condensed rewrite of dddavid4real/FOCUS text_prompt/UBC-OCEAN_two_scale_text_prompt.csv",
+      "upstream_counterpart": "https://github.com/dddavid4real/FOCUS/blob/main/text_prompt/UBC-OCEAN_two_scale_text_prompt.csv",
+      "note": "An upstream bank exists for this task, but the checked-in sentences are condensed and reworded rather than copied."
     },
     "TCGA_Lung_two_scale_text_prompt.csv": {
-      "provenance": "upstream",
-      "source": "duplicate of the focus/ copies, reachable via the legacy configs/ tree",
-      "note": "Two files per method and cohort; consolidate onto focus/."
+      "provenance": "generated",
+      "copied_from_upstream": false,
+      "source": "local legacy classname templates",
+      "upstream_counterpart": "https://github.com/dddavid4real/FOCUS/blob/main/text_prompt/TCGA_Lung_two_scale_text_prompt.csv",
+      "note": "This is neither the upstream FOCUS bank nor a duplicate of focus/TCGA_NSCLC_two_scale_text_prompt.csv. It contains only generic low/high-resolution classname templates."
     },
     "UBC-OCEAN_two_scale_text_prompt.csv": {
-      "provenance": "upstream",
-      "source": "duplicate of the focus/ copies, reachable via the legacy configs/ tree",
-      "note": "Two files per method and cohort; consolidate onto focus/."
+      "provenance": "generated",
+      "copied_from_upstream": false,
+      "source": "local legacy classname templates",
+      "upstream_counterpart": "https://github.com/dddavid4real/FOCUS/blob/main/text_prompt/UBC-OCEAN_two_scale_text_prompt.csv",
+      "note": "This is neither the upstream FOCUS bank nor a duplicate of focus/UBC_OCEAN_two_scale_text_prompt.csv. It contains only generic low/high-resolution classname templates."
     },
     "cod_mil/brca_chain_of_diagnosis.json": {
       "provenance": "inline",

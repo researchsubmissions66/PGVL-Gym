@@ -61,19 +61,43 @@ class _ConditionedBlock(nn.Module):
 
 
 class AttributeConVLM(nn.Module):
-    """ConVLM patch encoder returning an attribute-space visual embedding."""
-    def __init__(self, attr_dim: int, image_size: int = 448, patch_size: int = 16,
+    """ConVLM attribute-conditioned encoder over precomputed patch features.
+
+    Upstream extracts patch- and ROI-level features with UNI
+    (``ConVLM_visual_feature_extraction.py``) and trains on those; its config
+    exposes the embedding dimension precisely because the visual encoder is not
+    part of the trained model. This consumes the same input rather than
+    re-learning a vision tower from scratch, which would need pretraining the
+    release never performed and never published weights for.
+
+    The method's own mechanisms are kept: attributes are injected into the token
+    stream, tokens are pruned at three depths, and the output is aligned to the
+    attribute space for zero-shot comparison.
+    """
+
+    def __init__(self, attr_dim: int, feature_dim: int = 1024,
+                 max_patches: int = 4096,
                  width: int = 768, depth: int = 12, heads: int = 12,
                  mlp_ratio: float = 4.0, drop: float = 0.0,
                  prune_layers: tuple[int, ...] = (3, 6, 9),
                  keep_rate: float = 0.7):
         super().__init__()
-        if image_size % patch_size:
-            raise ValueError("image_size must be divisible by patch_size")
-        self.patch_embed = nn.Conv2d(3, width, patch_size, stride=patch_size)
-        self.grid_size = image_size // patch_size
+        if attr_dim <= 0 or feature_dim <= 0 or width <= 0:
+            raise ValueError("ConVLM dimensions must be positive")
+        if max_patches <= 0 or depth <= 0:
+            raise ValueError("ConVLM max_patches and depth must be positive")
+        if heads <= 0 or width % heads != 0:
+            raise ValueError("ConVLM width must be divisible by positive heads")
+        if not 0.0 <= drop < 1.0:
+            raise ValueError("ConVLM drop must be in [0, 1)")
+        if not 0.0 < keep_rate <= 1.0:
+            raise ValueError("ConVLM keep_rate must be in (0, 1]")
+        self.feature_dim = int(feature_dim)
+        # Upstream's configurable "embedding dimensions": the offline encoder's
+        # width enters here, it is not baked into the architecture.
+        self.patch_embed = nn.Linear(self.feature_dim, width)
         self.cls_token = nn.Parameter(torch.zeros(1, 1, width))
-        self.pos_embed = nn.Parameter(torch.zeros(1, self.grid_size ** 2 + 1, width))
+        self.pos_embed = nn.Parameter(torch.zeros(1, max_patches + 1, width))
         self.pos_drop = nn.Dropout(drop)
         blocks = []
         for index in range(depth):
@@ -94,23 +118,36 @@ class AttributeConVLM(nn.Module):
                 if module.bias is not None:
                     nn.init.zeros_(module.bias)
 
-    def _position_embedding(self, height: int, width: int) -> torch.Tensor:
-        if (height, width) == (self.grid_size, self.grid_size):
-            return self.pos_embed
-        patch_pos = self.pos_embed[:, 1:].transpose(1, 2).reshape(
-            1, -1, self.grid_size, self.grid_size)
-        patch_pos = F.interpolate(patch_pos, size=(height, width), mode="bicubic",
-                                  align_corners=False)
-        patch_pos = patch_pos.flatten(2).transpose(1, 2)
-        return torch.cat([self.pos_embed[:, :1], patch_pos], dim=1)
+    def _position_embedding(self, patches: int) -> torch.Tensor:
+        """Return class + patch positions for a bag of ``patches`` features."""
+        if patches > self.pos_embed.shape[1] - 1:
+            raise ValueError(
+                f"ConVLM received {patches} patches but max_patches is "
+                f"{self.pos_embed.shape[1] - 1}")
+        return torch.cat(
+            [self.pos_embed[:, :1], self.pos_embed[:, 1:patches + 1]], dim=1)
 
-    def forward(self, images: torch.Tensor,
+    def forward(self, features: torch.Tensor,
                 condition_attributes: torch.Tensor | None = None) -> dict[str, torch.Tensor | list[torch.Tensor]]:
-        x = self.patch_embed(images)
-        height, width = x.shape[-2:]
-        x = x.flatten(2).transpose(1, 2)
+        """Encode a bag of precomputed patch features.
+
+        Args:
+            features: ``[batch, patches, feature_dim]`` from the offline encoder.
+            condition_attributes: ``[batch, attr_dim]`` attribute vector of the
+                observed class during training; ``None`` at inference, where the
+                embedding is compared against every class attribute instead.
+        """
+        if features.ndim == 2:
+            features = features.unsqueeze(0)
+        if features.ndim != 3 or features.shape[-1] != self.feature_dim:
+            raise ValueError(
+                f"ConVLM expects [batch, patches, {self.feature_dim}], got "
+                f"{list(features.shape)}")
+        if features.shape[1] == 0:
+            raise ValueError("ConVLM requires at least one patch per slide")
+        x = self.patch_embed(features.float())
         x = torch.cat([self.cls_token.expand(x.shape[0], -1, -1), x], dim=1)
-        x = self.pos_drop(x + self._position_embedding(height, width))
+        x = self.pos_drop(x + self._position_embedding(features.shape[1]))
         aux_vis: list[torch.Tensor] = []
         aux_attr: list[torch.Tensor] = []
         for block in self.blocks:

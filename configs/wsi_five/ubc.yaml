@@ -1,9 +1,9 @@
 # WSI-FiVE / UBC
 # Source: configs/wsi/fix_pth.yaml from ls1rius/WSI_FiVE.
-# Different from the rest: uses GPT-summarised pathology reports.
+# Local classname baseline: WSI-FiVE publishes no UBC answer/evaluation bank.
 
 method: "wsi_five"
-backbone: "wsi-five-vit"  # FiVE's method-owned video/patch transformer
+backbone: "wsi-five-vit"  # FiVE consumes precomputed 512-d patch features
 n_classes: 5
 classnames: ["HGSC", "LGSC", "EC", "CC", "MC"]
 label_dict: {"HGSC": 0, "LGSC": 1, "EC": 2, "CC": 3, "MC": 4}
@@ -12,14 +12,16 @@ seed: 0
 epochs: 30
 lr: 8.0e-6
 weight_decay: 0.05
-batch_size: 4
+batch_size: 1
 num_frames: 2048
 T_mit: 8
 is_img_pth: true
+training_mode: "simplified_classnames"
+require_report: false
+clinical_questions: "text_prompts/wsi_five/clinical_questions/ubc_ocean.json"
 
 dataset:    "tcga"
 data_path:  "path/to/UBC-OCEAN"
-report_csv: "methods/wsi_five/gpt_preprocess/UBC_report.csv"
 
 dataset_csv: "splits/UBC-OCEAN/dataset.csv"
 data_folder_s: "path/to/UBC-OCEAN/features"

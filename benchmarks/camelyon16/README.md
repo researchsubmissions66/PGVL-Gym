@@ -22,8 +22,8 @@ data lands, rather than something to reconstruct later.
 1. **Annotations.** The protocol expects the two official partition tables:
 
    ```
-   /work/hdd/bhwm/metadata/RAW_DATA_Cleaned/CAMELYON16/CAM16_data_train.csv
-   /work/hdd/bhwm/metadata/RAW_DATA_Cleaned/CAMELYON16/CAM16_data_test.csv
+   ${PGVL_STORAGE_ROOT}/metadata/RAW_DATA_Cleaned/CAMELYON16/CAM16_data_train.csv
+   ${PGVL_STORAGE_ROOT}/metadata/RAW_DATA_Cleaned/CAMELYON16/CAM16_data_test.csv
    ```
 
    with `source_filename` as the slide id, `patient_id` as the case id, and
@@ -39,7 +39,7 @@ data lands, rather than something to reconstruct later.
 2. **Features**, extracted to the same layout as UBC-OCEAN:
 
    ```
-   /work/hdd/bhwm/CAMELYON16/<resolution>_<px>px_0px_overlap/features_<encoder>/<slide_id>.h5
+   ${PGVL_STORAGE_ROOT}/CAMELYON16/<resolution>_<px>px_0px_overlap/features_<encoder>/<slide_id>.h5
    ```
 
    CONCH at 5x/10x/20x and KEEP at 20x cover all eight registered experiments.

@@ -1,0 +1,12 @@
+{
+  "_provenance": "generated",
+  "_note": "Authored for this benchmark. WSI-FiVE publishes only a lung-specific question set, so these ovarian-tumour questions are a local task extension used to avoid silently applying lung questions to UBC-OCEAN. No native WSI-FiVE answer or evaluation bank exists for this cohort.",
+  "questions": [
+    "What histologic architecture and cell morphology are present in the ovarian tumour?",
+    "What is the tumour grade or degree of differentiation, if it can be assessed?",
+    "Are papillary, glandular, clear-cell, mucinous, or serous patterns present?",
+    "Is there stromal invasion, desmoplasia, necrosis, or another aggressive growth pattern?",
+    "Are psammoma bodies, endometriosis-associated changes, or other diagnostically useful background findings present?",
+    "Which ovarian carcinoma subtype is most consistent with the combined histologic findings?"
+  ]
+}

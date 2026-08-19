@@ -9,7 +9,7 @@ import torch
 import torch.nn as nn
 import pandas as pd
 
-from methods.base import BaseMethod
+from methods.base import BaseMethod, probabilities_to_logits
 from common.backbones import (
     BackboneCapability as Cap, FeatureLevel, MethodBackboneContract, SwapPolicy)
 
@@ -18,12 +18,37 @@ def _build_config(cfg):
     text_prompt = None
     if cfg.get("text_prompt_path"):
         frame = pd.read_csv(cfg["text_prompt_path"])
-        if {"low_res_prompt", "high_res_prompt"}.issubset(frame.columns):
-            text_prompt = (frame["low_res_prompt"].astype(str).tolist() +
-                           frame["high_res_prompt"].astype(str).tolist())
-        else:
-            text_prompt = [str(item) for item in frame.values.reshape(-1)
-                           if pd.notna(item)]
+        required = {"class_name", "low_res_prompt", "high_res_prompt"}
+        missing = sorted(required - set(frame.columns))
+        if missing:
+            raise ValueError(
+                "ViLa-MIL prompt CSV is missing columns: "
+                + ", ".join(missing))
+        if len(frame) != int(cfg["n_classes"]):
+            raise ValueError(
+                f"ViLa-MIL prompt CSV has {len(frame)} rows for "
+                f"n_classes={cfg['n_classes']}")
+        for column in required:
+            if frame[column].isna().any() or (
+                    frame[column].astype(str).str.strip() == "").any():
+                raise ValueError(
+                    f"ViLa-MIL prompt CSV has blank values in {column}")
+        actual_order = frame["class_name"].astype(str).str.strip().tolist()
+        if len(set(actual_order)) != len(actual_order):
+            raise ValueError("ViLa-MIL prompt CSV repeats class_name values")
+        expected_orders = []
+        if isinstance(cfg.get("label_dict"), dict):
+            expected_orders.append([
+                str(label) for label, _index in sorted(
+                    cfg["label_dict"].items(), key=lambda item: item[1])])
+        if isinstance(cfg.get("classnames"), list):
+            expected_orders.append([str(value) for value in cfg["classnames"]])
+        if expected_orders and actual_order not in expected_orders:
+            raise ValueError(
+                "ViLa-MIL prompt CSV class_name order does not match "
+                "label_dict/classnames class-index order")
+        text_prompt = (frame["low_res_prompt"].astype(str).tolist() +
+                       frame["high_res_prompt"].astype(str).tolist())
     return SimpleNamespace(
         input_size=cfg.get("feature_dim", 1024),
         hidden_size=cfg.get("hidden_size", 192),
@@ -75,7 +100,8 @@ class ViLaMILMethod(BaseMethod):
 
         optimizer.zero_grad()
         out = model(x_s, coord_s, x_l, coord_l, label)
-        logits = out[0] if isinstance(out, tuple) else out
+        logits = (probabilities_to_logits(out[0])
+                  if isinstance(out, tuple) else out)
         loss = (out[2] if isinstance(out, tuple) and len(out) > 2
                 and torch.is_tensor(out[2]) else loss_fn(logits, label))
         loss.backward()
@@ -91,7 +117,8 @@ class ViLaMILMethod(BaseMethod):
         coord_s = torch.zeros(x_s.shape[0], 2, device=self.device)
         coord_l = torch.zeros(x_l.shape[0], 2, device=self.device)
         out = model(x_s, coord_s, x_l, coord_l, label)
-        logits = out[0] if isinstance(out, tuple) else out
+        logits = (probabilities_to_logits(out[0])
+                  if isinstance(out, tuple) else out)
         loss = (out[2].item() if isinstance(out, tuple) and len(out) > 2
                 and torch.is_tensor(out[2]) else
                 (loss_fn(logits, label).item() if loss_fn is not None else 0.0))

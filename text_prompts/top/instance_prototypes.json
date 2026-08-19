@@ -1,10 +1,21 @@
 {
+  "_provenance": "upstream",
   "_metadata": {
-    "source": "miccaiif/TOP train_TCGAFeat_MIL_CLIP.py get_pathological_tissue_level_prompts(), knowledge_from_chatGPT",
-    "paper": "TOP, NeurIPS 2023; supplementary Figure 1 shows 6 of these 26",
+    "source_repository": "https://github.com/miccaiif/TOP",
+    "source_commit": "8356b0dd1786d35e6d6d617d2b253c949769ba39",
+    "source_file": "train_TCGAFeat_MIL_CLIP.py",
+    "source_symbol": "get_pathological_tissue_level_prompts().knowledge_from_chatGPT",
+    "source_url": "https://github.com/miccaiif/TOP/blob/8356b0dd1786d35e6d6d617d2b253c949769ba39/train_TCGAFeat_MIL_CLIP.py#L147-L174",
+    "copied_from_upstream": true,
+    "paper": "TOP, NeurIPS 2023; supplementary Figure 1 displays 6 examples from this released 26-prototype code bank",
     "template": "an H&E stained image of {tissue}, which is {description}",
-    "role": "instance-level prompt prototypes; task-agnostic tissue phenotypes, not the bag-level class names",
-    "count": 26
+    "role": "instance_level_prototypes",
+    "task_scope": "task-agnostic; used by the released TCGA-NSCLC and CAMELYON recipes",
+    "learnable_slots_added_by_runtime": 10,
+    "slot_separator": "",
+    "slot_separator_note": "The empty default matches train_TCGAFeat_MIL_CLIP.py; the CAMELYON protocol overrides it with one space to match train_CAMELYONFeat_MIL_CLIP.py.",
+    "count": 26,
+    "ordered_prompt_sha256": "56ae6c7ec40cb2dace3bbe2897d73ec70d0f7c4564d5d69b19912543554b0cd2"
   },
   "prototypes": [
     {

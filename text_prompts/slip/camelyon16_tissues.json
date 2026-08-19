@@ -1,6 +1,13 @@
 {
   "_provenance": "generated",
-  "_note": "SLIP publishes tissue vocabularies only for its own datasets (TCGA lung, DHMC, PatchGastricADC22). This vocabulary is authored for this benchmark in the released format ('Name: description'), reusing the organ-independent phenotypes from text_prompts/slip/TCGA_tissues.json and replacing the lung-specific ones. A SLIP result on this cohort is not prompt-faithful.",
+  "_note": "SLIP publishes prompt banks only for TCGA lung, DHMC, and PatchGastricADC22. This benchmark-authored task extension is stored in a legacy 'Name: description' notation. The declared separator makes the loader expand every row losslessly to [short name, description], preserving SLIP's two-text averaging semantics. It is not an upstream prompt-faithful condition.",
+  "_pair_separator": ": ",
+  "_metadata": {
+    "copied_from_upstream": false,
+    "role": "generated_slip_task_extension",
+    "usage": "task_extension"
+  },
+  "templates": ["{}"],
   "tissues": [
     "Lymph node cortex: Outer nodal region containing densely packed follicles.",
     "Germinal centre: Pale reactive follicle centre with proliferating B lymphocytes.",

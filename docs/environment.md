@@ -20,6 +20,9 @@ The full profile uses Python 3.10, PyTorch 2.5.1, torchvision 0.20.1, CUDA
 12.4, OpenSlide, and every dependency available from the normal package
 indexes. It is intended for the two-GPU benchmark server and keeps PGVL-Gym
 isolated from feature-extraction or unrelated research environments.
+`python scripts/preflight.py --system` also verifies the Torch/torchvision
+release pairing (2.4/0.19, 2.5/0.20, or 2.6/0.21), not only each package's
+individual version range.
 
 Confirm that the environment is internally consistent:
 
@@ -160,7 +163,7 @@ Replace `maple` with one or more profiles:
 | `pathpt` | Nyström attention |
 | `pathpt-musk` | PathPT plus timm and fairscale |
 | `slip` | Nyström attention, OpenCLIP, and timm |
-| `wsi-five` | report/vision training, LoRA, augmentation, and distributed loss |
+| `wsi-five` | BioClinicalBERT/LoRA and native answer-bank augmentation |
 | `convlm` | OpenCLIP attribute encoder support |
 | `sldpc` | TITAN's einops extensions |
 | `all` | every pip-installable profile above |

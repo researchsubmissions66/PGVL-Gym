@@ -24,6 +24,10 @@ n_ctx_bag: 4
 n_ctx_inst: 4
 ctx_init_bag: ""
 ctx_init_inst: ""
+instance_prompt_path: "${PGVL_REPO_ROOT}/text_prompts/top/instance_prototypes.json"
+bag_prompt_path: "${PGVL_REPO_ROOT}/text_prompts/top/tcga_nsclc_upstream_code_bag_prompts.json"
+prompt_provenance: "upstream"
+prompt_source: "top_upstream_code_instance_and_bag_initializers"
 csc: true
 p_drop_out: 0.2
 p_bag_drop_out: 0.2

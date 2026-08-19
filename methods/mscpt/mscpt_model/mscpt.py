@@ -286,7 +286,8 @@ class TextEncoderZS(nn.Module):
 
 class CustomCLIP(nn.Module):
     def __init__(self, classnames, clip_model, gpt_dir, dataset_name,
-                 base_model, n_high, n_tpro, n_vpro, tokenizer=None):
+                 base_model, n_high, n_tpro, n_vpro, tokenizer=None,
+                 high_patch_topk=5, low_patch_topk=100):
         super().__init__()
         # freaze all parmeters
         for p in clip_model.parameters():
@@ -308,6 +309,10 @@ class CustomCLIP(nn.Module):
         self.logit_scale = clip_model.logit_scale
         self.model = clip_model
         self.n_class = len(classnames)
+        self.high_patch_topk = int(high_patch_topk)
+        self.low_patch_topk = int(low_patch_topk)
+        if self.high_patch_topk <= 0 or self.low_patch_topk <= 0:
+            raise ValueError("MSCPT patch top-k values must be positive")
 
         def tokenize(tokenizer, texts):
             tokens = tokenizer.batch_encode_plus(texts, 
@@ -410,21 +415,27 @@ class CustomCLIP(nn.Module):
         logits_i = x_big @ text_features_zs.t()
         return_sim_big = logits_i.reshape(logits_i.shape[0], self.n_class, -1).cpu().detach().numpy()
         logits_i = logits_i.reshape(-1, self.n_class)
-        logits_i = logit_scale * torch.topk(logits_i, 5, dim=0)[0].mean(0)
+        high_k = min(self.high_patch_topk, logits_i.shape[0])
+        logits_i = logit_scale * torch.topk(
+            logits_i, high_k, dim=0)[0].mean(0)
         text_features_i = text_features.reshape(self.n_class, -1, text_features.shape[-1])
         text_features_i = text_features_i.mean(1)
         logits_i_cross = x_big @ text_features_i.t()
-        logits_i_cross = logit_scale * torch.topk(logits_i_cross, 5, dim=0)[0].mean(0)
+        logits_i_cross = logit_scale * torch.topk(
+            logits_i_cross, high_k, dim=0)[0].mean(0)
         logits_i = logits_i + logits_i_cross
         
         logits_t = x_small @ text_features.t()
         return_sim_small = logits_t.reshape(logits_t.shape[0], self.n_class, -1).cpu().detach().numpy()
         logits_t = logits_t.reshape(-1, self.n_class)
-        logits_t = logit_scale * torch.topk(logits_t, 100, dim=0)[0].mean(0)
+        low_k = min(self.low_patch_topk, logits_t.shape[0])
+        logits_t = logit_scale * torch.topk(
+            logits_t, low_k, dim=0)[0].mean(0)
         text_features_t = text_features_zs.reshape(self.n_class, -1, text_features_zs.shape[-1])
         text_features_t = text_features_t.mean(1)
         logits_t_cross = x_small @ text_features_t.t()
-        logits_t_cross = logit_scale * torch.topk(logits_t_cross, 100, dim=0)[0].mean(0)
+        logits_t_cross = logit_scale * torch.topk(
+            logits_t_cross, low_k, dim=0)[0].mean(0)
         logits_t = logits_t + logits_t_cross
         
 
@@ -442,8 +453,8 @@ class Mscpt(nn.Module):
         also adapt it to other structures by changing the `torch.hub.load` content.
     """
     def __init__(self, base_model='plip', base_pretrain_path='', trainer_perc='fp16', dataset_name='RCC',
-                 gpt_dir='', label_dicts={}, n_set=5, n_tpro=2, n_vpro=2, n_high=10, n_topk=5,
-                 clip_model=None, tokenizer=None):
+                 gpt_dir='', label_dicts={}, n_set=5, n_tpro=2, n_vpro=2, n_high=10, n_topk=100,
+                 high_patch_topk=5, clip_model=None, tokenizer=None):
         super().__init__()
 
         classnames = [name for name in label_dicts.keys()]
@@ -454,7 +465,10 @@ class Mscpt(nn.Module):
         
         print("Building custom CLIP")
         self.Custom_model = CustomCLIP(classnames, clip_model, gpt_dir, dataset_name,
-                                        base_model, n_high, n_tpro, n_vpro, tokenizer=tokenizer)
+                                        base_model, n_high, n_tpro, n_vpro,
+                                        tokenizer=tokenizer,
+                                        high_patch_topk=high_patch_topk,
+                                        low_patch_topk=n_topk)
         
         
         print("Turning off gradients in both the image and the text encoder")

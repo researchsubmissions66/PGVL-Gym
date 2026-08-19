@@ -6,6 +6,7 @@ loads a foundation-model checkpoint.
 from __future__ import annotations
 
 import random
+from types import SimpleNamespace
 
 import pytest
 import torch
@@ -24,7 +25,7 @@ from common.backbones import (
     get_spec,
 )
 from methods import get_method, list_methods
-from methods.base import BaseMethod
+from methods.base import BaseMethod, probabilities_to_logits
 
 
 def _bundle_for_builtin(name: str) -> EncoderBundle:
@@ -69,7 +70,6 @@ def test_method_specific_aliases_resolve(method_name, cfg, expected):
     ("method_name", "cfg"),
     [
         ("top", {"clip_arch": "plip"}),
-        ("convlm", {"backbone": "conch"}),
     ],
 )
 def test_fixed_architectures_reject_incompatible_swaps(method_name, cfg):
@@ -80,12 +80,38 @@ def test_fixed_architectures_reject_incompatible_swaps(method_name, cfg):
         contract.validate_config(cfg)
 
 
-def test_precomputed_cod_mil_rejects_unaligned_backbone():
+def test_precomputed_cod_mil_accepts_upstream_spaces_and_rejects_unaligned_backbone():
     contract = get_method("cod_mil").get_backbone_contract()
     assert contract.swap_policy is SwapPolicy.PRECOMPUTED
+    assert contract.validate_config({
+        "backbone": "plip", "feature_dim": 512,
+        "feature_space_id": "hf:vinid/plip",
+    }) == "plip"
+    assert contract.validate_config({
+        "backbone": "quiltnet", "feature_dim": 512,
+        "feature_space_id": "hf:wisdomik/QuiltNet-B-32",
+    }) == "quiltnet"
 
     with pytest.raises(BackboneCompatibilityError, match="cannot use backbone"):
-        contract.validate_config({"backbone": "conch", "feature_dim": 512})
+        contract.validate_config({
+            "backbone": "conch", "feature_dim": 512,
+            "feature_space_id": "hf:MahmoodLab/conch",
+        })
+
+
+def test_convlm_is_precomputed_not_encoder_owning():
+    """ConVLM trains on precomputed patch features, so it owns no vision tower.
+
+    Upstream extracts them with UNI (`ConVLM_visual_feature_extraction.py`) and
+    exposes the embedding width as a config value; the contract is therefore
+    ``PRECOMPUTED``. Rejection of an unaligned backbone is unchanged.
+    """
+    contract = get_method("convlm").get_backbone_contract()
+    assert contract.swap_policy is SwapPolicy.PRECOMPUTED
+    assert contract.feature_level is FeatureLevel.PATCH_BAG
+
+    with pytest.raises(BackboneCompatibilityError, match="cannot use backbone"):
+        contract.validate_config({"backbone": "conch"})
 
 
 def test_wsi_five_is_precomputed_not_encoder_owning():
@@ -101,6 +127,20 @@ def test_wsi_five_is_precomputed_not_encoder_owning():
 
     with pytest.raises(BackboneCompatibilityError, match="cannot use backbone"):
         contract.validate_config({"backbone": "clip-vitb"})
+
+
+def test_focus_declares_the_single_bag_it_actually_consumes():
+    contract = get_method("focus").get_backbone_contract()
+
+    assert contract.feature_level is FeatureLevel.PATCH_BAG
+
+
+def test_probability_outputs_are_converted_without_a_second_softmax():
+    probabilities = torch.tensor([[0.7, 0.2, 0.1]])
+
+    logits = probabilities_to_logits(probabilities)
+
+    torch.testing.assert_close(logits.softmax(dim=1), probabilities)
 
 
 @pytest.mark.parametrize(
@@ -152,6 +192,66 @@ def test_pathpt_aggregates_native_patch_probabilities_to_slide_logits():
 
     assert logits.shape == (1, 2)
     torch.testing.assert_close(logits.exp(), torch.tensor([[0.7, 0.3]]))
+
+
+def test_pathpt_warmup_does_not_zero_the_first_epoch_learning_rate():
+    from methods.pathpt.adapter import PathPTMethod
+
+    method = PathPTMethod({
+        "backbone": "conch", "feature_dim": 512,
+        "n_classes": 2, "epochs": 20,
+    }, device="cpu")
+    parameter = torch.nn.Parameter(torch.ones(()))
+    optimizer = torch.optim.SGD([parameter], lr=1.0)
+
+    method.build_scheduler(optimizer)
+
+    assert optimizer.param_groups[0]["lr"] == pytest.approx(0.5)
+
+
+def test_pathpt_plip_uses_pretrained_token_embeddings_with_random_context():
+    from methods.pathpt.pathpt_models.PathPT_model_PLIP import PromptLearnerPLIP
+
+    class TokenBatch(dict):
+        def to(self, device):
+            return TokenBatch({key: value.to(device)
+                               for key, value in self.items()})
+
+    class Tokenizer:
+        def __call__(self, texts, **_kwargs):
+            ids = torch.tensor([[1, 2, 3, 4, 0] for _ in texts])
+            return TokenBatch({
+                "input_ids": ids,
+                "attention_mask": ids.ne(0).long(),
+            })
+
+    native_embedding = nn.Embedding(8, 4)
+    with torch.no_grad():
+        native_embedding.weight.copy_(torch.arange(32).reshape(8, 4))
+    model = nn.Module()
+    model.text_model = nn.Module()
+    model.text_model.embeddings = nn.Module()
+    model.text_model.embeddings.token_embedding = native_embedding
+    cfg = SimpleNamespace(n_ctx=2, ctx_init=None, token_embedding_size=4)
+
+    learner = PromptLearnerPLIP(
+        cfg, [["class a"], ["class b"]], model, Tokenizer(), "cpu")
+
+    expected_prefix = native_embedding(torch.tensor([1, 1])).unsqueeze(1)
+    expected_suffix = native_embedding(
+        torch.tensor([[4, 0], [4, 0]]))
+    torch.testing.assert_close(learner.token_prefix, expected_prefix)
+    torch.testing.assert_close(learner.token_suffix, expected_suffix)
+
+
+def test_pathpt_vision_only_aggregation_preserves_single_patch_axis():
+    from methods.pathpt._model_utils import ConvTransAttentionAgg
+
+    model = ConvTransAttentionAgg(dim=8, cls_num=3).eval()
+
+    output = model(torch.randn(1, 1, 8))
+
+    assert output.shape == (1, 3)
 
 
 def test_top_averages_prototype_probabilities_like_upstream():
@@ -210,6 +310,49 @@ def test_vila_rejects_multi_slide_variable_length_batches():
     assert ViLaMILMethod._slide_bag(torch.ones(1, 4, 1024)).shape == (4, 1024)
     with pytest.raises(ValueError, match="batch_size=1"):
         ViLaMILMethod._slide_bag(torch.ones(2, 4, 1024))
+
+
+def test_focus_removes_only_the_loader_batch_axis():
+    from methods.focus.adapter import FOCUSMethod
+
+    features, labels = FOCUSMethod._features_and_label((
+        torch.ones(1, 4, 512), torch.tensor([0])))
+
+    assert features.shape == (4, 512)
+    assert labels.shape == (1,)
+    with pytest.raises(ValueError, match="batch_size=1"):
+        FOCUSMethod._features_and_label((
+            torch.ones(2, 4, 512), torch.tensor([0, 1])))
+
+
+def test_maple_removes_only_the_loader_batch_axis():
+    from methods.maple.adapter import MAPLEMethod
+
+    assert MAPLEMethod._slide_bag(torch.ones(1, 4, 512)).shape == (4, 512)
+    with pytest.raises(ValueError, match="batch_size=1"):
+        MAPLEMethod._slide_bag(torch.ones(2, 4, 512))
+
+
+def test_maple_preserves_entity_major_attribute_prompt_order():
+    from methods.maple.maple_model.model import (
+        _entity_major_attribute_view,
+    )
+
+    # PromptLearner emits [entity0/class0, entity0/class1, entity0/class2,
+    # entity1/class0, ...]. Each row must remain attached to that pair.
+    attributes = torch.arange(6).reshape(6, 1)
+    restored = _entity_major_attribute_view(
+        attributes, n_cls=3, num_entities=2)
+
+    assert restored[:, :, 0].tolist() == [[0, 1, 2], [3, 4, 5]]
+
+
+def test_mscpt_restores_native_dropped_batch_axis():
+    from methods.mscpt.adapter import MSCPTMethod
+
+    logits = MSCPTMethod._batch_logits(torch.tensor([1.0, 2.0, 3.0]))
+
+    assert logits.shape == (1, 3)
 
 
 def test_convlm_averages_tile_embeddings_per_slide():
@@ -672,6 +815,18 @@ def test_sldpc_rejects_outer_loop_schedule_changes_before_loading():
     with pytest.raises(ValueError, match="early_stopping: false"):
         SLDPCMethod({**base, "epochs": 4, "early_stopping": True},
                     device="cpu").build_model()
+
+
+def test_sldpc_final_checkpoint_restores_stage2_adapter_state():
+    from methods.sldpc.adapter import SLDPCMethod
+
+    method = object.__new__(SLDPCMethod)
+    model = object()
+
+    method.on_checkpoint_loaded(model, "final", fold=0)
+
+    assert method._phase == "stage2"
+    assert method._last_model is model
 
 
 def test_muse_precomputed_prompt_bank_keeps_encoder_provenance(tmp_path):

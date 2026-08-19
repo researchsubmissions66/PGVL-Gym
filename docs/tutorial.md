@@ -90,6 +90,7 @@ Important fields to inspect are:
 
 ```yaml
 method: pathpt
+training_mode: upstream_patch_ssl
 backbone: conch
 feature_sources: {bag: conch_v1_10x}
 feature_resolutions: {bag: 10x}
@@ -166,8 +167,10 @@ python train.py \
 ```
 
 The config runs folds 0 through 4. Each fold uses the same frozen split files,
-trains on four labeled patients per class, selects its checkpoint with the
-validation partition, and evaluates once on the held-out test partition.
+selects PathPT's zero-shot patch classifier from those training slides only,
+trains on four labeled patients per class with `PatchSSLoss`, selects its
+checkpoint with the validation partition, and evaluates once on the held-out
+test partition using patch voting.
 
 During model construction, confirm that the printed trainable parameter names
 match the intended PathPT recipe. An unexpectedly frozen or fully trainable
@@ -180,6 +183,10 @@ The standard config writes to:
 ```text
 results/tcga_benchmark/pathpt/nsclc/4shot/
 ```
+
+Each fold also writes `foldN_pathpt_prompt_selection.json`, which records the
+active bank's source/provenance, candidate prompt indices, selection scores,
+and winning classifiers.
 
 Inspect the effective config and fold metrics:
 

@@ -1,496 +1,398 @@
-<p align="center">
-  <img src="docs/assets/logo_gym_no_text.png" alt="PGVL-Gym Logo" width="560">
-</p>
+# PGVL-Gym
 
-<h1 align="center">PGVL-Gym</h1>
+PGVL-Gym is a reproducible benchmark for few-shot and zero-shot whole-slide
+pathology vision-language methods. It standardizes datasets, feature
+provenance, patient-disjoint folds, training, and reporting while explicitly
+recording whether each adapter is vendored, mixed, or a partial local
+reimplementation.
 
-<p align="center">
-  <strong>A generalized framework for fair, reproducible evaluation of<br>whole-slide pathology vision-language models.</strong>
-</p>
+The normal workflow is:
 
-<p align="center">
-  <a href="https://researchsubmissions66.github.io/PGVL-Gym/project/"><img src="https://img.shields.io/badge/Project-Website-6b21a8?style=for-the-badge" alt="Project website"></a>
-  <a href="https://researchsubmissions66.github.io/PGVL-Gym/"><img src="https://img.shields.io/badge/Documentation-6b21a8?style=for-the-badge" alt="Documentation"></a>
-  <a href="https://github.com/researchsubmissions66/PGVL-Gym"><img src="https://img.shields.io/badge/Source-1e1b4b?style=for-the-badge&logo=github" alt="Source"></a>
-</p>
+```text
+configure local paths → generate run YAMLs → preflight → train → aggregate
+```
 
----
+## 1. Install the environment
 
-## 🔭 Overview
-
-**PGVL-Gym** is a registry-based benchmark that runs recent few-shot and
-zero-shot whole-slide-image (WSI) vision-language methods through one explicit
-experiment contract. It preserves each paper's model-specific architecture
-while standardizing protocols, feature provenance, folds, shots, seeds, and
-reporting.
-
-Systematic protocols cover TCGA NSCLC, BRCA and RCC plus
-[UBC-OCEAN](benchmarks/ubc_ocean/README.md) and
-[CAMELYON16](benchmarks/camelyon16/README.md).
-
-## 📁 Benchmark layout
-
-Each cohort owns one benchmark directory under `benchmarks/`, holding its
-`protocol.yaml` and everything generated from it (manifests, splits, configs,
-`run_matrix.csv`, readiness reports). Cohorts are kept separate so one whose
-data is not ready cannot hold back the ones that are:
-
-| Benchmark | Task |
-| --------- | ---- |
-| `benchmarks/tcga_nsclc` | LUAD vs LUSC |
-| `benchmarks/tcga_brca`  | IDC vs ILC |
-| `benchmarks/tcga_rcc`   | RCC subtyping |
-| `benchmarks/ubc_ocean`  | five-class ovarian carcinoma subtyping |
-| `benchmarks/camelyon16` | lymph-node metastasis detection |
-
-## ⚙️ Configure local paths
-
-The committed protocols and generated examples use anonymous placeholders such
-as `/path/to/PGVL-Gym`, `/path/to/features`, `/path/to/metadata`, and
-`/path/to/model-cache`. Before generating or launching runs, update the
-`protocol.yaml` of each cohort you intend to run for your own storage layout.
-
-Then regenerate manifests, splits, run configs, and readiness reports:
+The supported Python range is 3.10–3.11. Create the base environment with
+Conda:
 
 ```bash
-python scripts/tcga_benchmark.py all --protocol benchmarks/<cohort>/protocol.yaml
+conda env create -f environment.yml
+conda activate pgvl-gym
+pip install -e .
 ```
 
-Do not infer a cohort from whatever feature files happen to exist.
-
-## 🚀 Launching a campaign
-
-`./launch_pgvl.sh` walks every benchmark's `run_matrix.csv` and submits only the
-runs that are ready and not already complete or queued. A run that cannot
-proceed is skipped with a recorded reason instead of failing on a GPU, and
-resume state is read from each run's `metrics.json`, so the launcher is safe to
-re-run at any time.
+Install only the optional dependencies needed by your method:
 
 ```bash
-./launch_pgvl.sh --dry-run                    # show the plan, submit nothing
-./launch_pgvl.sh                              # submit everything outstanding
-./launch_pgvl.sh --regenerate                 # rebuild configs first, then submit
-./launch_pgvl.sh --cohort brca --shots 4 --limit 3   # canary batch
+pip install -e '.[cod-mil]'
+pip install -e '.[pathpt-musk]'
+pip install -e '.[convlm]'
 ```
 
-## 🛠️ Supported Methods
+Available extras are listed in `pyproject.toml`. Foundation-model checkpoints
+are not downloaded automatically; benchmark runs are designed for local or
+offline model caches.
 
-| Method     | Paper venue          | Validated/default encoder boundary |
-| ---------- | -------------------- | ---------------------------------- |
-| FOCUS      | CVPR 2025            | CONCH                              |
-| ViLa-MIL   | CVPR 2024            | CLIP RN50                          |
-| CoD-MIL    | TMI 2024             | precomputed CLIP RN50 space        |
-| MAPLE      | NeurIPS 2025         | Hugging Face CLIP / PLIP           |
-| MSCPT      | TMI 2025             | Hugging Face CLIP / PLIP / CONCH   |
-| PathPT     | Nat. Commun. 2026    | PLIP / CONCH / KEEP / MUSK         |
-| TOP        | NeurIPS 2023         | CLIP RN50                          |
-| SLIP       | ISBI 2025            | CLIP / BiomedCLIP / PLIP           |
-| WSI-FiVE   | CVPR 2024            | method-owned ViT + report tower    |
-| MUSE       | CVPR 2026            | CONCH default; `text_encode` API   |
-| ConVLM     | —                    | method-owned ViT + QuiltNet attributes |
-| SLDPC      | —                    | TITAN default; paired slide-text API |
+## 2. Configure machine-local paths
 
-## 🗂️ Layout
+Copy the environment template and edit the ignored local file:
 
-```
-unified_wsi_vlm/
-├── train.py                # one entry point for all methods
-├── eval.py                 # evaluation-only entry point
-├── preprocess.py           # CLAM patching script
-├── extract_features.py     # CLAM feature extraction script
-├── clip/                   # OpenAI CLIP source (shared by TOP/SLIP/WSI-FiVE)
-├── common/
-│   ├── wsi_core/           # CLAM tissue segmentation & patching
-│   ├── datasets/           # Generic_MIL_Dataset + bag_features
-│   ├── utils/              # core_utils (EarlyStopping, Accuracy_Logger), file/loss utils
-│   ├── models/
-│   │   ├── coop.py             # canonical PromptLearner + TextEncoder
-│   │   ├── transmil.py         # TransLayer + PPEG (Nyström attention)
-│   │   ├── _clam_blocks.py     # Attn_Net, Attn_Net_Gated, MultiheadAttention
-│   │   └── mil_baselines.py    # MIL_fc, MIL_fc_mc
-│   └── backbones/
-│       ├── interfaces.py       # capabilities, feature provenance, method contracts
-│       └── factory.py          # build_encoder(name) + legacy build_backbone(name)
-├── methods/                 # one folder per paper, each with adapter.py + vendored model files
-│   ├── base.py                  # BaseMethod abstract class
-│   ├── __init__.py              # registry
-│   ├── focus/
-│   ├── vila_mil/
-│   ├── cod_mil/
-│   ├── maple/
-│   ├── mscpt/
-│   ├── pathpt/
-│   ├── top/
-│   ├── slip/
-│   ├── wsi_five/
-│   ├── muse/
-│   ├── convlm/
-│   └── sldpc/
-└── configs/                 # one YAML per method (and per backbone for PathPT)
+```bash
+cp .env.example .env
 ```
 
-## ⚖️ What's shared vs. unique
+```dotenv
+PGVL_REPO_ROOT=/path/to/PGVL-Gym
+PGVL_USER_ROOT=/path/to/user-root
+PGVL_STORAGE_ROOT=/path/to/storage-root
+```
 
-The codebase explicitly keeps the **common parts together** and
-**isolates the unique parts**:
+Committed protocols, manifests, splits, and configs use references such as
+`${PGVL_REPO_ROOT}` and `${PGVL_STORAGE_ROOT}`. Python commands load `.env`
+automatically. The launch shell scripts source it as well. Existing process
+environment variables take precedence, which is useful on a cluster.
 
-* **CLAM scaffolding** (`wsi_core/`, `Generic_MIL_Dataset`,
-  `EarlyStopping`, `collate_MIL`, `get_split_loader`,
-  `Attn_Net_Gated`) – byte-identical across FOCUS / ViLa-MIL /
-  CoD-MIL / MAPLE in their original repos. Stored once in `common/`.
-* **OpenAI CLIP source** (tokenizer, vocab file, ViT/RN50 model code) –
-  byte-identical between TOP, SLIP, and WSI-FiVE. Stored once at
-  `./clip/`.
-* **CoOp prompt-learning blocks** (`PromptLearner`, `TextEncoder`) –
-  recur in seven of the original nine repos with the same structure. Stored
-  once at `common/models/coop.py`.
-* **TransMIL Nyström attention** – byte-identical between SLIP and
-  PathPT. Stored once at `common/models/transmil.py`.
-* **Backbone loading and validation** – CLIP / PLIP / CONCH / MUSK /
-  KEEP / BiomedCLIP / TITAN are exposed as capability-aware encoder bundles
-  from `common/backbones/`. The old `(model, tokenizer, info)` loader remains
-  available to vendored code that needs it.
+Do not commit `.env`; it is intentionally ignored.
 
-The unique parts (e.g. the MAPLE entity GCN, the FOCUS visual
-compression module, the PathPT per-backbone forward, the WSI-FiVE
-report-conditioned patch fusion) live under their own `methods/<name>/`
-folder, and are wired in through a thin `adapter.py` that implements
-a uniform `BaseMethod` interface (`build_model`, `train_step`,
-`eval_step`, optionally `build_optimizer` / `build_scheduler`).
+## 3. Generate experiment YAMLs
 
-## 🔌 Backbone interfaces and safe swaps
+Each cohort has one source-of-truth protocol:
 
-Backbone compatibility is now explicit rather than inferred from a tensor
-width or model name. `BackboneSpec` describes an encoder's dimensions,
-feature-space provenance, and capabilities; `EncoderBundle` exposes only the
-uniform operations the encoder actually supports while retaining
-`raw_model`/`raw_tokenizer` for a paper's native implementation. Every method
-adapter declares a `MethodBackboneContract`, which validates the config before
-the model is constructed.
+```text
+benchmarks/<cohort>/protocol.yaml
+```
 
-This interface layer does not rewrite the paper architectures. Allowlisted
-methods still enter their original family-specific branches, and fixed methods
-remain fixed. Capability-swappable methods accept another registered bundle
-only when it implements every required operation. Inspect all boundaries
-without loading a checkpoint:
+Edit its cohort metadata, feature registry, checkpoints, methods, folds, and
+shot counts, then generate manifests, splits, method configs, and the run
+matrix:
+
+```bash
+python scripts/tcga_benchmark.py all \
+  --protocol benchmarks/tcga_brca/protocol.yaml
+```
+
+Useful stages are `inventory`, `prepare`, `configs`, `validate`, `aggregate`,
+and `all`. Generated configs appear under
+`benchmarks/<cohort>/configs/<experiment>/`; runnable rows are indexed in
+`benchmarks/<cohort>/run_matrix.csv`.
+
+Check one generated run before allocating a GPU:
+
+```bash
+python scripts/preflight.py \
+  benchmarks/tcga_brca/configs/focus/brca_4shot.yaml
+
+python scripts/preflight.py run.yaml --features
+python scripts/preflight.py run.yaml --features --deep
+python scripts/preflight.py run.yaml --prompts --encoders
+python scripts/preflight.py run.yaml --quick
+python scripts/preflight.py --system
+python scripts/preflight.py run.yaml --strict --json
+```
+
+The preflight command is a read-only doctor: failures include suggested fixes.
+Normal mode does not construct a model or load a feature tensor; explicit
+`--deep` mode opens feature payloads to verify keys, shapes, widths, and finite
+values. Shared pickle stores are also checked for key/ID alignment, duplicate
+normalized IDs, and coverage of every slide in the manifest. It checks configured assets for
+missing, empty, unreadable, unresolved, and wrong-type paths; verifies that the results
+directory is safe and writable or creatable; rejects malformed manifests and
+duplicate slide rows or feature aliases; measures individual and joint feature coverage; validates
+fold CSV structure and identities; and detects slide or patient leakage between
+train, validation, and test partitions. Method-aware checks also catch omitted
+feature, prompt, report, map, and encoder inputs before model construction, and
+validate the native FOCUS/ViLa-MIL, MAPLE, MSCPT, PathPT, TOP, SLIP, and CoD-MIL
+prompt schemas, WSI-FiVE's six-question/structured-answer/evaluation banks,
+plus the MUSE, ConVLM, and SLDPC prompt banks, rather than accepting a merely
+present JSON, YAML, or CSV. Flat `splits_<fold>.csv` and upstream
+`fold<fold>.csv` tables are checked against the same phase/label contract used
+at runtime; one unscoped phase table cannot be silently reused across folds.
+It rejects non-unit batches for variable-length bag methods, invalid optimizer
+or staged-training values, and invalid batch-failure tolerances as configuration
+errors. Runtime checks also validate CoD-MIL correspondence-map shape, integer
+type, coverage, and index bounds.
+
+Useful doctor modes are:
+
+| Option | Purpose |
+| --- | --- |
+| `--system` | Check Python 3.10–3.11, all core packages (including the supported and mutually compatible Torch/torchvision releases), `.env`, and all PGVL root directories; a run YAML is optional. |
+| `--quick` | Check feature roots without statting every manifest row; equivalent to `--no-feature-scan`. |
+| `--deep` | Open every available referenced feature and validate its payload; incompatible with `--quick`. |
+| `--min-feature-coverage N` | Temporarily override the configured coverage threshold with a fraction from 0 through 1. |
+| `--strict` | Turn warnings, including explicitly allowed partial coverage, into a failing readiness gate. |
+| `--json` | Emit schema-versioned JSON with summaries, timings, host diagnostics, and per-config results. |
+| `--verbose` | Include successful resolved paths, asset types, and file sizes. |
+| `--quiet` | Print only findings and the final diagnosis. |
+| `--no-color` | Disable ANSI color explicitly; redirected output disables it automatically. |
+
+Selectors `--assets`, `--features`, `--prompts`, `--encoders`, and `--splits`
+can be combined; `--all` or omitting selectors runs every check. Multiple YAMLs
+or shell globs are accepted. A healthy diagnosis exits zero, diagnosed failures
+exit one, and invalid command arguments exit two. See
+[Commands and run lifecycle](docs/commands.md#diagnose-a-run-with-the-doctor)
+for the full interface and JSON contract.
+
+Prompt provenance is tracked by method and by role in
+[`text_prompts/PROVENANCE.json`](text_prompts/PROVENANCE.json). In particular,
+TOP's standard NSCLC declaration uses the released 26-instance code bank and
+the exact released lung bag initializers; its longer supplementary lung
+descriptions are preserved as an explicitly unwired alternative. TOP tasks for
+which the authors published no bag initializer are labeled
+`upstream_instance_with_random_classname_bag`, rather than being presented as a
+fully upstream prompt condition. The doctor validates TOP prompt structure,
+ordered labels, prototype digest, and learnable-slot counts.
+
+SLIP's TCGA-NSCLC condition now uses the complete released bank: the exact
+template, slide-class groups, and all 17 nested tissue name/description pairs.
+The older flattened `Name: description` conversions are unwired because SLIP
+embeds and averages the two texts separately. CAMELYON16, TCGA-BRCA, TCGA-RCC,
+and UBC-OCEAN use clearly labeled generated task extensions in the same runtime
+shape. The exact copied/generated inventory is recorded in
+[`text_prompts/PROVENANCE.json`](text_prompts/PROVENANCE.json).
+
+MAPLE's Lung, RCC, and BRCA attribute graphs are byte-exact upstream copies;
+UBC-OCEAN and CAMELYON16 are labeled task extensions because MAPLE released no
+banks for them. MAPLE class mappings are order-sensitive, so the doctor and
+runtime reject reordered keys and verify the pinned upstream hashes. The local
+runtime also corrects the released entity-major/class-major reshape mismatch
+that otherwise associates attribute text with the wrong logits. This deviation
+is disclosed in the provenance ledger and
+[`docs/design-decisions.md`](docs/design-decisions.md#maple-prompt-origins-and-ordering).
+
+## 4. Run a configuration
+
+```bash
+python train.py \
+  --method focus \
+  --config benchmarks/tcga_brca/configs/focus/brca_4shot.yaml \
+  --device cuda:0
+```
+
+For a campaign:
+
+```bash
+./launch_pgvl.sh --dry-run
+./launch_pgvl.sh --cohort brca --shots 4 --limit 3
+./launch_pgvl.sh
+```
+
+The launcher skips unavailable assets, avoids queued/completed runs, and
+resumes only when the saved method and executable resolved config match. It
+validates the same fingerprint as `train.py`, counts exact completed fold
+indices (including states with holes), and requires finite validation loss plus
+a valid test result for each completed fold. It reports corrupt, duplicate, or
+out-of-range resume state instead of marking it done.
+`train.py` also requires the CLI method and YAML `method` to resolve to the
+same registered adapter; a mismatch exits as a configuration error before it
+creates output files.
+It likewise rejects an invalid/unavailable `--device` or an out-of-range CUDA
+index before creating run state.
+`--rerun` is a real from-scratch run: the trainer archives existing metrics,
+config, checkpoints, prediction CSVs, and TensorBoard state before fold 0.
+Campaign row, regeneration, and submission errors produce a non-zero exit after
+the full report is written;
+`--best-effort` is the explicit automation override.
+The launcher proves the log/report destinations are writable before the first
+submission and refuses a report path that would overwrite campaign inputs or
+run state.
+Malformed matrix booleans/counts, duplicate SLURM job names, and shared results
+directories are errors rather than implicit skips or duplicate submissions.
+The launcher also rejects incomplete/duplicate matrix headers and a `ready=true`
+row whose component readiness evidence or missing-asset counts contradict it.
+Best/final checkpoints, metrics, config snapshots, and prediction CSVs are
+replaced atomically, so a preemption cannot leave a partial canonical artifact.
+Epoch losses are sample-weighted, so a shorter final batch cannot receive the
+same influence as a full batch.
+Each fold also receives a fresh adapter and a private config copy. Prompt banks,
+staged-training state, optimizer references, and derived adapter defaults
+therefore cannot leak across folds or change the saved resume fingerprint.
+Each results directory is also protected by a process lock, so duplicate
+launches cannot write checkpoints, TensorBoard events, or metrics concurrently.
+Result aggregation revalidates that fingerprint before reading any fold and
+uses the same population-standard-deviation convention as the trainer.
+
+Generated results also carry `implementation_provenance` and
+`upstream_fidelity`. These are independent of `encoder_provenance`: a backbone
+can be natively supported while the local objective remains partial. Set
+`require_upstream_fidelity: true` to make the doctor reject partial adapters.
+
+FOCUS prompt provenance is explicit rather than inferred from filenames. None
+of the checked-in FOCUS CSVs is a verbatim upstream copy: CAMELYON16,
+TCGA-NSCLC, and UBC-OCEAN are locally reworded versions of tasks with published
+FOCUS banks, while TCGA-BRCA, TCGA-RCC, and RCC-GEPA are locally generated for
+tasks without an upstream FOCUS prompt CSV. The per-file classification and
+upstream counterpart links live in `text_prompts/PROVENANCE.json`; the readable
+comparison is in `docs/design-decisions.md`.
+
+MSCPT uses copied upstream banks for TCGA-NSCLC, TCGA-RCC, and UBC-OCEAN,
+while the TCGA-BRCA IDC/ILC and CAMELYON16 banks are local task extensions and
+report `prompt_provenance: generated`. The original `Lung.json` is preserved,
+but provenance records the nine LUSC entries that describe
+adenocarcinoma-associated morphology; this known upstream content issue must be
+disclosed with NSCLC results. MSCPT's released `BRCA.json` is retained as an
+upstream asset but is not substituted because it represents a different
+High/Low recurrence/grade task.
+
+PathPT generated benchmark configs now use
+`training_mode: upstream_patch_ssl`: prompts are selected on the training fold only, a
+synthetic `Normal` patch class is added for subtype tasks, patch supervision
+uses the vendored `PatchSSLoss`, and evaluation uses the released patch-voting
+rule. `simplified_slide_ce` remains available only to reproduce older local
+runs. BRCA and UBC-OCEAN use PathPT's upstream 22-template synonym banks;
+NSCLC and RCC use explicitly generated extensions. CAMELYON uses the upstream
+Normal/Tumor bank but is marked partial because binary slide classification is
+an adaptation of PathPT's tumour-subtyping protocol. Its upstream malformed
+concatenated Normal synonym is preserved and disclosed in
+`text_prompts/PROVENANCE.json`.
+
+SLIP preserves prompt-bank structure as well as wording. TCGA-NSCLC uses the
+pinned upstream TCGA bank verbatim; its tissue short names and descriptions are
+encoded independently and averaged exactly as released. The four benchmark
+cohorts for which SLIP published no matching bank use generated extensions and
+report `prompt_provenance: generated`. Legacy flattened upstream conversions
+remain available only for audit and are marked `derived`, not upstream.
+
+MAPLE uses exact released prompt graphs for TCGA-NSCLC, TCGA-RCC, and
+TCGA-BRCA. Its UBC example now selects an explicit generated extension rather
+than the previously missing `UBC_attributes.json`. Prompt dictionary order is
+validated against classifier order because MAPLE turns insertion order directly
+into logit order; the corrected runtime also preserves the entity-major order
+in which the prompt learner emits class attributes.
+
+CoD-MIL treats the unchanged upstream RCC CSV as its canonical ordered prompt
+bank. The released CLIP-RN50 tensor is retained for audit only because it has 30
+rows against the CSV's 27 and shifts the model's positional prompt groups. RCC
+therefore selects a verified 27-row RN50 re-encoding whose payload records the
+source text, hashes, feature space, and row roles; the compiler, doctor, and
+runtime reject unbound legacy tensors. This does not lock the bank to CLIP:
+`scripts/build_cod_mil_prompt_features.py` also supports upstream's PLIP and
+QuiltNet families, provided prompt and patch features use the same encoder
+space. Those width-parameterized paths are labelled partial implementation
+extensions because upstream model code hardcodes RN50's width. Full provenance
+is recorded in `text_prompts/PROVENANCE.json` and the reasoning is documented
+in `docs/design-decisions.md`.
+
+WSI-FiVE's native NSCLC mode now preserves the three distinct text roles in
+the official release. The six copied clinical questions condition patch
+aggregation; the copied per-case six-answer records form a training-fold-only
+candidate bank for the native contrastive objective; and the two copied
+LUAD/LUSC diagnostic descriptions are the only comparison text used for
+validation and test classification. Per-slide answers are never inference
+inputs. RCC and UBC examples remain explicitly labelled
+`simplified_classnames`, because WSI-FiVE did not publish native answer and
+evaluation banks for those tasks. Asset-level sources and this distinction are
+recorded in `text_prompts/PROVENANCE.json` and `docs/design-decisions.md`.
+
+## Example run YAML
+
+Generated YAMLs are preferred, but this shows the core contract:
+
+```yaml
+method: focus
+backbone: conch
+backbone_weights: ${PGVL_STORAGE_ROOT}/models/conch.bin
+feature_space_id: hf:MahmoodLab/conch
+feature_dim: 512
+implementation_provenance: vendored
+upstream_fidelity: upstream
+
+dataset_csv: ${PGVL_REPO_ROOT}/benchmarks/tcga_brca/data/brca/manifest.csv
+split_dir: ${PGVL_REPO_ROOT}/benchmarks/tcga_brca/splits/brca/4shot
+feature_path_column: feature__conch_v1_20x
+feature_path_column_l: feature__conch_v1_20x
+feature_key: features
+min_feature_coverage: 1.0
+
+n_classes: 2
+classnames:
+  - invasive ductal carcinoma
+  - invasive lobular carcinoma
+label_dict:
+  IDC: 0
+  ILC: 1
+text_prompt_path: ${PGVL_REPO_ROOT}/text_prompts/focus/TCGA_BRCA_two_scale_text_prompt.csv
+
+shots: 4
+k: 5
+k_start: 0
+k_end: 5
+seed: 1
+epochs: 200
+batch_size: 1
+lr: 0.0001
+weight_decay: 0.00001
+early_stopping: true
+results_dir: ${PGVL_REPO_ROOT}/results/focus/brca/4shot
+```
+
+Feature provenance and dimensions are part of the experiment identity. Do not
+change a generated YAML in place and reuse its results directory.
+
+## Register a backbone
+
+A backbone registration declares its real capabilities and returns an
+`EncoderBundle`. Registration does not automatically make every method
+compatible; each method's `MethodBackboneContract` still decides whether the
+combination is native, adaptable, or blocked.
+
+```python
+import torch
+from common.backbones import (
+    BackboneCapability,
+    BackboneSpec,
+    EncoderBundle,
+    register_backbone,
+)
+
+SPEC = BackboneSpec(
+    name="my-backbone",
+    family="my-family",
+    feature_space_id="org/my-backbone@revision",
+    capabilities=frozenset({BackboneCapability.TILE_ENCODE}),
+    tile_dim=768,
+    revision="commit-or-checksum",
+)
+
+def build_my_backbone(*, weights_path=None, device="cpu", **kwargs):
+    model = load_my_model(weights_path).to(device)  # your implementation
+    tile_encoder = MyTileEncoder(model)              # implements encode_tiles
+    return EncoderBundle(
+        raw_model=model,
+        spec=SPEC,
+        tile=tile_encoder,
+        metadata={"weights_path": weights_path},
+    )
+
+register_backbone(SPEC, build_my_backbone)
+```
+
+For a permanent built-in registration, place the spec and loader in
+`common/backbones/factory.py`, export any wrapper from `common/backbones/`, and
+add interface tests. Inspect compatibility without loading weights:
 
 ```bash
 python scripts/list_backbone_compatibility.py
-python scripts/list_backbone_compatibility.py --method sldpc --json
+python scripts/list_backbone_compatibility.py --method pathpt --json
 ```
 
-### 📊 How far the matrix reaches
+See `docs/BACKBONE_INTERFACES.md` for capability definitions and method swap
+boundaries.
 
-Across 13 methods and 9 registered encoders there are 117 combinations:
-**43 native**, **29 adaptable** (capabilities met, only the feature width
-differs), and **45 blocked**. Every registered encoder is a dual-tower
-vision-language model; vision-only pathology foundation models are deliberately
-absent, because a method that injects or learns text prompts has no text tower
-to attach to.
+## Repository map
 
-The blocked combinations have five distinct causes, and only one of them is a
-limitation of this benchmark rather than of the methods or encoders:
-
-| Cause | Cells | Can it be resolved? |
-| --- | ---: | --- |
-| Method owns its vision tower (`wsi_five`, `convlm`) | 18 | No — the tower is part of the published architecture |
-| Method hardcodes one encoder's geometry (`top`, `cod_mil`) | 16 | Only by rewriting the method |
-| Encoder exposes no deep-prompt hooks (`mscpt`) | 6 | Per-encoder implementation, not adaptation |
-| TITAN is a slide encoder, not a tile encoder | 5 | No, and none is wanted — a feature-level mismatch |
-| ~~KEEP and MUSK declare no text tower~~ | ~~8~~ | **Resolved** — both verified and now declare `TEXT_ENCODE` |
-
-A `native` result and an `adapted` result are different claims and must not
-share a results table: an adapted run measures the method *and* its projection,
-not the encoder alone. Equal widths never establish compatibility, and no
-adapter is inserted implicitly.
-
-See [Which method and encoder combinations are possible](docs/compatibility-analysis.md)
-for the full matrix and the reasoning behind every blocked cell.
-
-SLDPC keeps native paired projection as its default, while explicitly selected
-linear/MLP variants can align another registered slide-vector source to its
-prompt space. MUSE independently registers an offline patch encoder and a
-runtime prompt encoder: its learned visual adapter maps any declared static
-patch width to the selected black-box text encoder's output width. See
-[Backbone interfaces and swap boundaries](docs/BACKBONE_INTERFACES.md)
-for the complete method matrix and extension examples.
-
-## 🏋️ Training
-
-```bash
-# Configs are organised as configs/<method>/<dataset>[_<backbone>].yaml
-# 42 configs covering 9 methods x 3 datasets (UBC-OCEAN, TCGA-Lung, TCGA-RCC)
-# See configs/README.md for the full matrix.
-
-# FOCUS on UBC-OCEAN
-python train.py --method focus    --config configs/focus/ubc.yaml
-
-# Fresh standard FOCUS+CONCH on patient-disjoint TCGA-RCC fold 0
-python train.py --method focus \
-  --config configs/focus/rcc_conch_fold0.yaml --device cuda:0
-
-# PathPT with each foundation model -- IDENTICAL hyperparams
-python train.py --method pathpt   --config configs/pathpt/ubc_keep.yaml
-python train.py --method pathpt   --config configs/pathpt/ubc_conch.yaml
-python train.py --method pathpt   --config configs/pathpt/ubc_musk.yaml
-python train.py --method pathpt   --config configs/pathpt/ubc_plip.yaml
-
-# Other methods (each on whatever dataset you choose)
-python train.py --method vila_mil --config configs/vila_mil/lung.yaml
-python train.py --method cod_mil  --config configs/cod_mil/rcc.yaml
-python train.py --method maple    --config configs/maple/rcc.yaml
-python train.py --method mscpt    --config configs/mscpt/ubc_conch.yaml
-python train.py --method top      --config configs/top/lung.yaml
-python train.py --method slip     --config configs/slip/lung.yaml
-python train.py --method wsi_five --config configs/wsi_five/lung.yaml
-python train.py --method muse     --config configs/muse/lung.yaml
-python train.py --method convlm   --config configs/convlm/lung_zsl.yaml
-python train.py --method sldpc    --config configs/sldpc/lung.yaml
+```text
+train.py                  unified training and reporting
+common/                   datasets, backbone contracts, shared model blocks
+methods/<name>/           paper-specific model plus BaseMethod adapter
+benchmarks/<cohort>/      protocol and generated experiment artifacts
+scripts/tcga_benchmark.py protocol compiler
+scripts/preflight.py      filesystem and feature health check
+configs/                  small hand-authored examples
+docs/                     detailed design and method documentation
 ```
 
-The dual-scale CLAM loader also accepts native HDF5 bags directly from a
-manifest. Set `feature_path_column_s`, `feature_path_column_l`, and optionally
-`feature_key`; no intermediate `.pt` conversion or duplicated feature tree is
-required.
-
-## 💨 Dummy-feature smoke tests
-
-Build every experiment variant from its generated configuration and run a
-finite-logit forward pass without requiring dataset features:
-
-```bash
-# One representative 4-shot config for every variant of a cohort
-python -u scripts/smoke_test.py \
-  --matrix benchmarks/ubc_ocean/run_matrix.csv \
-  --cohort ubc_ocean --device cuda:0
-
-# The same check for a TCGA cohort
-python -u scripts/smoke_test.py \
-  --matrix benchmarks/tcga_brca/run_matrix.csv \
-  --cohort brca --device cuda:0
-```
-
-Each model runs in an isolated subprocess with a configurable `--timeout`.
-The report is written beside the selected matrix as
-`smoke_report_<cohort>.json` and records the failure stage, traceback, logits
-shape, runtime, trainable parameter count, and peak CUDA allocation.
-
-## 📚 Documentation website
-
-The documentation site combines curated guides with API reference generated
-directly from the stable Python docstrings:
-
-```bash
-python -m pip install -r requirements-docs.txt
-python scripts/check_docstrings.py
-python -m mkdocs build --strict
-python -m mkdocs serve
-```
-
-Start with [the documentation home](docs/index.md). The strict build and
-public-API docstring audit run automatically in
-`.github/workflows/docs.yml`; pushes to `main` or `master` publish the built
-site through GitHub Pages.
-
-## 🧪 Evaluation
-
-```bash
-python eval.py --method pathpt \
-               --config configs/pathpt_ubc_keep.yaml \
-               --ckpt_dir results/pathpt_ubc_keep_10shot
-```
-
-## 📜 Hyperparameter Recipes
-
-Each `configs/*.yaml` mirrors the **exact hyperparameters from the
-original paper's released training script**.  Notable differences:
-
-| Method   | LR        | Epochs    | Optimizer | Scheduler                       |
-| -------- | --------- | --------- | --------- | ------------------------------- |
-| PathPT   | 1e-4      | 20        | Adam      | cosine + 10% warmup (locked across PLIP/CONCH/KEEP/MUSK) |
-| FOCUS    | 1e-4      | 200 max   | Adam      | ReduceLROnPlateau               |
-| ViLa-MIL | 1e-4      | 200 max   | Adam      | ReduceLROnPlateau               |
-| MAPLE    | 2e-4      | 200 max   | Adam      | (none)                          |
-| MSCPT    | 1e-4      | 50–100*   | Adam      | configurable                    |
-| TOP      | **0.02**  | **8000**  | Adam      | (none)                          |
-| SLIP     | 2e-3      | 10        | Adam      | (none)                          |
-| WSI-FiVE | 8e-6      | 30        | Adam      | cosine                          |
-| MUSE     | 1e-4      | 200 max   | Adam      | ReduceLROnPlateau               |
-| ConVLM   | 1e-4      | 40        | Adam      | MultiStep (10/20/30)            |
-| SLDPC    | 1e-3      | 50 + 50   | AdamW     | none                            |
-
-*MSCPT epochs vary by backbone: CLIP=100, PLIP=50, CONCH=50.*
-
-## 🔒 Why PathPT's recipe is locked across backbones
-
-PathPT's main contribution is a **fair benchmark of foundation
-models** for rare-cancer subtyping. Holding optimizer, LR, epochs,
-prompt length, and loss weights constant ensures a backbone's number
-reflects the encoder, not training-recipe variance. The PathPT
-adapter (`methods/pathpt/adapter.py`) overrides
-`build_optimizer` and `build_scheduler` to enforce the locked recipe
-no matter which YAML you pass.
-
-## ➕ Adding a new method
-
-1. Create `methods/<my_method>/` with `__init__.py`.
-2. Drop your model file(s) inside.
-3. Write `methods/<my_method>/adapter.py` subclassing `BaseMethod` with
-   `build_model`, `train_step`, `eval_step` (and optionally
-   `build_optimizer` / `build_scheduler`).
-4. Declare a `MethodBackboneContract` describing the input feature level,
-   required capabilities, and whether the native code is capability-swappable,
-   allowlisted, fixed, or based on precomputed aligned features.
-5. Add a branch to `methods/__init__.py::get_method()`.
-6. Write `configs/<my_method>_<dataset>.yaml`.
-7. Run `python train.py --method <my_method> --config <yaml>`.
-
-## 💻 Installation
-
-```bash
-git clone https://github.com/researchsubmissions66/PGVL-Gym.git
-cd PGVL-Gym
-conda env create --file environment.yml
-conda activate pgvl-gym
-python -m pip check
-```
-
-This creates an isolated `pgvl-gym` environment; the benchmark does not use
-or modify a machine-wide `trident` environment. For a smaller installation,
-install the core package and only the extras for the selected methods:
-
-```bash
-python -m pip install -e .
-python -m pip install -e ".[maple,mscpt,pathpt-musk]"
-```
-
-CONCH and MUSK code and weights are gated upstream and remain explicit opt-in
-installs. See the complete [environment guide](docs/environment.md) for the
-per-method profiles, gated model setup, GPU checks, updates, and removal.
-
-### 🖥️ On a shared cluster
-
-A full PyTorch and CUDA stack is 15-25 GB, which most home quotas will not
-hold, so build the environment under a project filesystem and activate it by
-path:
-
-```bash
-conda env create --file environment.yml --prefix /path/to/project/envs/pgvl-gym
-export PGVL_CONDA_ENV=/path/to/project/envs/pgvl-gym
-```
-
-Compute nodes are usually offline while login nodes are not, so download the
-encoder weights once from a login node and point jobs at that cache:
-
-```bash
-export HF_HOME=/path/to/project/.cache_huggingface
-export HF_HUB_OFFLINE=1
-```
-
-`scripts/pgvl_job.sh` reads `PGVL_CONDA_ENV` and sets the Hugging Face variables
-for every submitted run. A site-provided `pytorch` module is *not* a substitute:
-it lacks `h5py`, `ftfy`, `torch_geometric` and the gated encoder packages. See
-[Install on a shared cluster](docs/environment.md#install-on-a-shared-cluster)
-for the full setup, including the first-import cost of an environment on a
-parallel filesystem.
-
-## 🔄 Preprocessing pipeline
-
-```bash
-# 1. Tile WSIs into patches (CLAM)
-python preprocess.py \
-    --source /path/to/raw_wsi \
-    --save_dir /path/to/patches \
-    --patch_size 256 --step_size 256 --seg --patch
-
-# 2. Extract features per patch using your chosen backbone
-python extract_features.py \
-    --data_h5_dir /path/to/patches \
-    --csv_path /path/to/dataset.csv \
-    --feat_dir /path/to/features \
-    --model_name conch          # or plip / clip / keep / musk
-```
-
-## 📥 Importing upstream prompt and report assets
-
-The source repos distribute some of the text priors and reports separately
-from this consolidated tree.  Import the published assets with:
-
-```bash
-python scripts/import_upstream_assets.py --download
-```
-
-This installs the published CoD-MIL RCC prompts and CLIP embeddings, MAPLE
-Lung/RCC/BRCA attribute JSONs, MSCPT GPT descriptions, SLIP tissue lists,
-WSI-FiVE's raw TCGA report CSV, MUSE class-description CSVs, and SLDPC
-zero-shot prompt templates. For new tasks, the benchmark prompt compiler can
-derive method-native prompt files from one declarative task profile. CoD-MIL
-can encode a generated chain at runtime, and ConVLM can encode generated
-attributes with its configured QuiltNet tower. Data-derived assets such as
-CoD-MIL cross-magnification maps must still be generated from patch coordinates.
-
-## 🤝 Method-specific data contracts
-
-Paper-faithful MUSE uses a single bag of 512-dimensional CONCH patch features
-and encodes the published per-class GPT descriptions with CONCH. Experimental
-variants may instead use MUSK, KEEP, or another registered static patch source:
-`patch_encoder` records its provenance, and the trainable visual adapter maps
-`feature_dim` to the independently declared prompt encoder's `embed_dim`. A
-different registered text encoder can also be selected when its shared output
-width is used as `embed_dim`.
-
-ConVLM is a patch-image zero-shot classifier, not a WSI-bag method. Its split
-CSVs contain `image_path,label`; training labels must be a subset of
-`seen_class_indices`, while evaluation compares against all attribute vectors.
-Supply your own `[n_classes, attribute_dim]` QuiltNet embeddings from the
-paper's Quilt-LLaVA descriptions—the release does not distribute a reusable
-attribute bank.
-
-Methods that declare `FeatureLevel.SLIDE_EMBEDDING` consume one registered
-vector per slide through the shared loader. HDF5, torch, and stacked pickle
-stores use the same exact-key and exact-width validation; the offline slide
-encoder's checkpoint, feature space, resolution, and path are recorded
-independently from any runtime prompt backbone. SLDPC is currently the only
-registered method at this feature level. Its default `MahmoodLab/TITAN` path
-uses TITAN's matching native projection. A different offline slide encoder may
-instead select an explicit trainable `linear` or `mlp` alignment into the
-prompt text space. Equal vector widths alone never establish compatibility,
-and an adapter is never inserted implicitly.
-Its run is deliberately two-stage: continuous prompt initialization (CPI),
-then hard-negative sampling and symmetric InfoNCE (SICL) prompt refinement,
-with the best validation prompt restored at each stage boundary.
-
-Generate CoD-MIL maps from paired CLAM coordinate files before training:
-
-```bash
-python scripts/generate_cross_magnification_maps.py \
-    --low-h5-dir /path/to/10x/h5_files \
-    --high-h5-dir /path/to/20x/h5_files \
-    --output-dir maps/TCGA_RCC_10x_to_20x \
-    --low-patch-size 512 --high-patch-size 256
-```
-
-Patch and stride values must use the level-0 coordinate system stored in the
-H5 files; add `--low-step-size` when the low-resolution patches overlap.
-
-## 🙏 Acknowledgments
-
-| Repository | Method/Role | License |
-| --- | --- | --- |
-| [dddavid4real/FOCUS](https://github.com/dddavid4real/focus) | FOCUS | 🔒 [Apache-2.0](https://opensource.org/licenses/Apache-2.0) |
-| [Jiangbo-Shi/ViLa-MIL](https://github.com/Jiangbo-Shi/ViLa-MIL) | ViLa-MIL | 🔒 [CC-BY-NC-ND-4.0](https://creativecommons.org/licenses/by-nc-nd/4.0/) (Assumed) |
-| [Jiangbo-Shi/CoD-MIL](https://github.com/Jiangbo-Shi/CoD-MIL) | CoD-MIL | 🔒 [CC-BY-NC-ND-4.0](https://creativecommons.org/licenses/by-nc-nd/4.0/) (Assumed) |
-| [JJ-ZHOU-Code/MAPLE](https://github.com/JJ-ZHOU-Code/MAPLE) | MAPLE | 🔒 [CC-BY-NC-ND-4.0](https://creativecommons.org/licenses/by-nc-nd/4.0/) (Assumed) |
-| [Hanminghao/MSCPT](https://github.com/Hanminghao/MSCPT) | MSCPT | 🔒 [CC-BY-NC-ND-4.0](https://creativecommons.org/licenses/by-nc-nd/4.0/) (Assumed) |
-| [MAGIC-AI4Med/PathPT](https://github.com/MAGIC-AI4Med/PathPT) | PathPT | 🔒 [MIT](https://opensource.org/licenses/MIT) |
-| [miccaiif/TOP](https://github.com/miccaiif/TOP) | TOP | 🔒 [CC-BY-NC-ND-4.0](https://creativecommons.org/licenses/by-nc-nd/4.0/) (Assumed) |
-| [LTS5/SLIP](https://github.com/LTS5/SLIP) | SLIP | 🔒 [CC-BY-NC-ND-4.0](https://creativecommons.org/licenses/by-nc-nd/4.0/) (Assumed) |
-| [ls1rius/WSI_FiVE](https://github.com/ls1rius/WSI_FiVE) | WSI-FiVE | 🔒 [CC-BY-NC-ND-4.0](https://creativecommons.org/licenses/by-nc-nd/4.0/) (Assumed) |
-| [JiahaoXu-god/CVPR2026_MUSE](https://github.com/JiahaoXu-god/CVPR2026_MUSE) | MUSE | 🔒 [CC-BY-NC-ND-4.0](https://creativecommons.org/licenses/by-nc-nd/4.0/) (Assumed) |
-| [BasitAlawode/ConVLM](https://github.com/BasitAlawode/ConVLM) | ConVLM | 🔒 [MIT](https://opensource.org/licenses/MIT) |
-| [linlu2022/SLDPC](https://github.com/linlu2022/SLDPC) | SLDPC | 🔒 [Apache-2.0](https://opensource.org/licenses/Apache-2.0) |
-
-| Repository | Method/Role | License |
-| --- | --- | --- |
-| [mahmoodlab/CLAM](https://github.com/mahmoodlab/CLAM) | CLAM Scaffold | 🔒 [GPL-3.0](https://opensource.org/licenses/GPL-3.0) |
-| [KaiyangZhou/CoOp](https://github.com/KaiyangZhou/CoOp) | CoOp Blocks | 🔒 [MIT](https://opensource.org/licenses/MIT) |
+Run tests with `pytest -q`. Contribution and extension guidance lives in
+`CONTRIBUTING.md` and `docs/extending.md`.

@@ -1,8 +1,13 @@
 {
+  "_provenance": "upstream",
   "_metadata": {
     "source": "TOP NeurIPS 2023 supplementary, Figure 4 (bag descriptive prompts, TCGA Lung Cancer subtyping)",
     "url": "https://proceedings.neurips.cc/paper_files/paper/2023/file/d599b81036fd1a3b3949b7d444f31082-Supplemental-Conference.pdf",
-    "role": "bag-level class descriptions",
+    "copied_from_upstream": true,
+    "role": "bag_level_prompts",
+    "usage": "alternative_unwired",
+    "condition": "supplementary_figure_wording; not the initialization literals in the released training script",
+    "learnable_slots_added_by_runtime": 10,
     "label_order": [
       "LUAD",
       "LUSC"

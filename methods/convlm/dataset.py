@@ -1,8 +1,10 @@
-"""Image-patch data loading for ConVLM.
+"""Legacy raw-image loader retained for ConVLM data exploration.
 
-ConVLM is trained on individual pathology patches, not pre-extracted WSI
-feature bags.  The split CSVs therefore contain an image path plus a class
-label.  This deliberately stays separate from ``common.datasets.bag_features``.
+The benchmark path does not use this loader. ConVLM's training input is the
+offline patch-embedding bag produced by its visual feature-extraction stage, so
+``train.py`` dispatches registered runs through
+``common.datasets.bag_features``. This module remains available for inspecting
+raw upstream layouts, but using it would define a different experiment.
 """
 from __future__ import annotations
 

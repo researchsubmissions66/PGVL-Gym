@@ -6,6 +6,11 @@ TCGA-Lung alone — and the questions themselves are lung-specific. MUSE publish
 description banks for three tasks. CoD-MIL publishes a normal-tissue bank for
 kidney only.
 
+In native WSI-FiVE, generated or published per-slide answers are training
+supervision only. They form a fold-local candidate bank and are never supplied
+to fusion or classification at validation/test time. The fixed diagnostic
+evaluation bank is a separate asset.
+
 This framework can generate the missing text with a served language model. The
 generated asset is an experimental input like any other, so it records exactly
 what produced it and never passes as the published condition.

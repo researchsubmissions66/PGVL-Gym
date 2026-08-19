@@ -1,0 +1,96 @@
+{
+  "_provenance": "upstream",
+  "_metadata": {
+    "source_repository": "https://github.com/LTS5/SLIP",
+    "source_commit": "9351c4480ec8d7a8216316a1861025b4f086ac78",
+    "source_file": "datasets/prompt.py",
+    "source_dataset_key": "TCGA",
+    "source_url": "https://github.com/LTS5/SLIP/blob/9351c4480ec8d7a8216316a1861025b4f086ac78/datasets/prompt.py#L90-L122",
+    "copied_from_upstream": true,
+    "role": "complete_slip_prompt_bank",
+    "label_order": ["LUAD", "LUSC"],
+    "prompt_bank_sha256": "acea8dc45d6cd37e124d06a155c9d84ed80d3b58dba0eda05fcf25db7edd9d62",
+    "encoding_semantics": "Each tissue entry is a two-text ensemble. SLIP encodes the short name and long description separately, normalizes each, averages them, and renormalizes."
+  },
+  "templates": [
+    "{}"
+  ],
+  "slide_classnames": [
+    [
+      "lung adenocarcinoma"
+    ],
+    [
+      "lung squamous cell carcinoma"
+    ]
+  ],
+  "tissue_classnames": [
+    [
+      "Alveolar tissue",
+      "The normal lung tissue, consisting of air spaces and alveolar sacs. Typically seen in adenocarcinoma cases."
+    ],
+    [
+      "Tumor nests",
+      "Clusters of cancerous cells that form distinct groups, often more pronounced in squamous cell carcinoma."
+    ],
+    [
+      "Solid tumor",
+      "A solid mass of cancer cells, more frequent in adenocarcinoma but also found in squamous cell carcinoma."
+    ],
+    [
+      "Keratin pearls",
+      "Concentric layers of keratin seen in squamous cell carcinoma, an important diagnostic feature."
+    ],
+    [
+      "Glandular formation",
+      "Structures resembling glands, indicative of adenocarcinoma, formed by malignant cells."
+    ],
+    [
+      "Squamous differentiation",
+      "A hallmark of squamous cell carcinoma, including keratinization, intercellular bridges, and squamous cells."
+    ],
+    [
+      "Stroma",
+      "The supportive tissue around the tumor, providing context to cancer growth. Can vary between LADC and LSCC."
+    ],
+    [
+      "Necrosis",
+      "Dead or dying tumor tissue, commonly seen in both types but may exhibit different patterns."
+    ],
+    [
+      "Mucin production",
+      "Presence of mucin (slimy protein substance) in cancer cells, a characteristic of adenocarcinoma."
+    ],
+    [
+      "Basement membrane",
+      "A thin layer that separates epithelial tissue from underlying connective tissue, can be disrupted by tumors."
+    ],
+    [
+      "Inflammatory infiltrate",
+      "Immune cells that have infiltrated the tumor, varying in quantity and type between the two carcinoma types."
+    ],
+    [
+      "Vascular invasion",
+      "Tumor cells invading blood vessels, a marker of aggressiveness, often assessed in both cancer types."
+    ],
+    [
+      "Fibrosis",
+      "Scarring tissue, can be associated with tumor growth, commonly seen in adenocarcinoma."
+    ],
+    [
+      "Pleomorphism",
+      "Variability in the size and shape of cancer cells, observed in both adenocarcinoma and squamous cell carcinoma."
+    ],
+    [
+      "Lymphocytic infiltration",
+      "The presence of lymphocytes, which may vary between tumor types and can help distinguish between them."
+    ],
+    [
+      "Bronchial epithelium",
+      "Lining of the bronchial tubes, often shows changes in squamous cell carcinoma cases."
+    ],
+    [
+      "Hyalinization",
+      "Increased deposition of extracellular matrix proteins, often found in squamous cell carcinoma stroma."
+    ]
+  ]
+}

@@ -161,6 +161,22 @@ def cfg_vila_mil(meta, dset):
 
 # ---- CoD-MIL -------------------------------------------------------------
 def cfg_cod_mil(meta, dset):
+    if dset == "rcc":
+        prompt_assets = textwrap.dedent("""\
+            # The released 30-row RN50 tensor is audit-only because it is not
+            # aligned with the published 27-row source CSV.
+            text_prompt_bank_csv: "text_prompts/cod_mil/rcc_chain_of_diagnosis.csv"
+            text_prompt_features: "text_prompts/cod_mil/rcc_text_prompt_features_clip_rn50_verified.pt"
+            prompt_encoding: "precomputed"
+            """)
+    else:
+        prompt_assets = textwrap.dedent("""\
+            # No task-matched upstream tensor exists; encode the declared chain
+            # and normal-tissue bank once with the matching RN50 text tower.
+            text_prompt_features: null
+            prompt_encoding: "runtime_cached"
+            backbone_weights: "${PGVL_USER_ROOT}/.cache/clip/RN50.pt"
+            """)
     return textwrap.dedent(f"""\
         # CoD-MIL / {dset.upper()} / full data / 5-fold
         # Source: README of Jiangbo-Shi/CoD-MIL.
@@ -168,6 +184,8 @@ def cfg_cod_mil(meta, dset):
         method: "cod_mil"
         backbone: "clip-rn50"
         feature_dim: 1024
+        feature_space_id: "openai/clip-rn50@official"
+        text_feature_space_id: "openai/clip-rn50@official"
         n_classes: {meta['n_classes']}
         classnames: {_yml_classnames(meta)}
         label_dict: {_yml_label_dict(meta)}
@@ -190,12 +208,18 @@ def cfg_cod_mil(meta, dset):
         data_folder_l:  "path/to/{meta['split_dirname']}/feats_20x"
         split_dir:      "splits/{meta['task']}"
         text_prompt_path: "text_prompts/cod_mil/{dset}_chain_of_diagnosis.json"
+{textwrap.indent(prompt_assets.rstrip(), '        ')}
         results_dir:    "results/cod_mil_{dset}"
         """)
 
 
 # ---- MAPLE ---------------------------------------------------------------
 def cfg_maple(meta, dset):
+    provenance = "generated" if dset == "ubc" else "upstream"
+    prompt_source = (
+        "maple_task_extension_attribute_json" if dset == "ubc"
+        else "maple_upstream_attribute_json"
+    )
     return textwrap.dedent(f"""\
         # MAPLE / {dset.upper()} / 16-shot / 5-fold
         # Source: run.sh from JJ-ZHOU-Code/MAPLE.
@@ -235,6 +259,8 @@ def cfg_maple(meta, dset):
         data_folder_l:  "data_dir/TCGA/{dset.upper()}/feats-l0-s1024-PLIP/pt_files"
         split_dir:      "splits/{meta['task']}_16shots_5folds"
         text_prompt_path: "text_prompts/maple/{dset.upper()}_attributes.json"
+        prompt_provenance: "{provenance}"
+        prompt_source: "{prompt_source}"
         results_dir:    "results/maple_{dset}16"
         """)
 
@@ -376,6 +402,16 @@ def cfg_top(meta, dset):
 
 # ---- SLIP ----------------------------------------------------------------
 def cfg_slip(meta, dset):
+    prompt_bank = {
+        "lung": "TCGA_prompt_bank.json",
+        "rcc": "tcga_rcc_tissues.json",
+        "ubc": "ubc_ocean_tissues.json",
+    }[dset]
+    provenance = "upstream" if dset == "lung" else "generated"
+    prompt_source = (
+        "slip_upstream_complete_prompt_bank" if dset == "lung"
+        else "slip_generated_task_extension_prompt_bank"
+    )
     return textwrap.dedent(f"""\
         # SLIP / {dset.upper()} / 1-shot
         # Source: main.py defaults from LTS5/SLIP.
@@ -386,6 +422,9 @@ def cfg_slip(meta, dset):
         n_classes: {meta['n_classes']}
         classnames: {_yml_classnames(meta)}
         label_dict: {_yml_label_dict(meta)}
+        tissue_classnames_path: "${{PGVL_REPO_ROOT}}/text_prompts/slip/{prompt_bank}"
+        prompt_provenance: "{provenance}"
+        prompt_source: "{prompt_source}"
 
         shots: 1
         k: 5
@@ -413,13 +452,26 @@ def cfg_slip(meta, dset):
 
 # ---- WSI-FiVE ------------------------------------------------------------
 def cfg_wsi_five(meta, dset):
+    native = dset == "lung"
+    training_mode = ("upstream_answer_bank" if native
+                     else "simplified_classnames")
+    question_name = {"lung": "nsclc", "rcc": "rcc", "ubc": "ubc_ocean"}[dset]
+    native_assets = (
+        '        report_csv: "text_prompts/wsi_five/'
+        'nsclc_report_answers.csv"\n'
+        '        evaluation_prompt_path: "text_prompts/wsi_five/'
+        'nsclc_evaluation_prompts.json"\n'
+        '        require_report: true\n'
+        if native else
+        '        require_report: false\n'
+    )
     return textwrap.dedent(f"""\
         # WSI-FiVE / {dset.upper()}
         # Source: configs/wsi/fix_pth.yaml from ls1rius/WSI_FiVE.
-        # Different from the rest: uses GPT-summarised pathology reports.
+        # Per-slide answers are native training targets, never inference input.
 
         method: "wsi_five"
-        backbone: "wsi-five-vit"  # method-owned FiVE tower, not a factory CLIP
+        backbone: "wsi-five-vit"  # fixed precomputed 512-d feature boundary
         n_classes: {meta['n_classes']}
         classnames: {_yml_classnames(meta)}
         label_dict: {_yml_label_dict(meta)}
@@ -428,14 +480,15 @@ def cfg_wsi_five(meta, dset):
         epochs: 30
         lr: 8.0e-6
         weight_decay: 0.05
-        batch_size: 4
+        batch_size: 1
         num_frames: 2048
         T_mit: 8
         is_img_pth: true
-
+        training_mode: "{training_mode}"
+        clinical_questions: "text_prompts/wsi_five/clinical_questions/{question_name}.json"
+{native_assets}
         dataset:    "tcga"
         data_path:  "path/to/{meta['split_dirname']}"
-        report_csv: "methods/wsi_five/gpt_preprocess/{dset.upper()}_report.csv"
 
         dataset_csv: "splits/{meta['split_dirname']}/dataset.csv"
         data_folder_s: "path/to/{meta['split_dirname']}/features"

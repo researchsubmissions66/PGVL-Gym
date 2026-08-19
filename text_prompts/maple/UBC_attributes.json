@@ -1,0 +1,57 @@
+{
+  "low": {
+    "tumor": "Histopathologic subtyping of primary ovarian carcinoma without access to the diagnostic label.",
+    "global_info": {
+      "HGSC": "Tumor areas often appear as irregular sheets of cells that form broad, diffuse regions of invasion.",
+      "LGSC": "Tumor growth appears as relatively well-formed glandular structures, often with a tubular or cystic appearance.",
+      "EC": "Closely packed glands form irregular and complex arrangements, often appearing crowded or fused in various orientations.",
+      "CC": "Tumor nodules appear circumscribed with rounded or irregular edges separating them from adjacent tissue.",
+      "MC": "Tumor areas often appear as large cystic structures filled with mucin, which gives the tumor a fluid-filled look."
+    },
+    "entities": [
+      {
+        "name": "Diagnostic morphology",
+        "general_feature": "Class-specific architectural findings visible at low magnification.",
+        "attributes": {
+          "HGSC": "Tumor areas often appear as irregular sheets of cells that form broad, diffuse regions of invasion. Glandular or papillary structures are irregularly distributed, with some having slit-like spaces or empty lumina. Solid cellular nests and sheets alternate with regions that show poorly formed glandular architecture.",
+          "LGSC": "Tumor growth appears as relatively well-formed glandular structures, often with a tubular or cystic appearance. The glandular structures exhibit a somewhat orderly arrangement, with smaller, more regular lumina compared to high-grade tumors. Tumor cells tend to form papillary structures with thin fibrovascular cores, but these structures are less complex than in high-grade types.",
+          "EC": "Closely packed glands form irregular and complex arrangements, often appearing crowded or fused in various orientations. Glandular structures display angular, branching, or cribriform patterns, creating a labyrinth-like appearance in certain regions. Papillary projections extend into cystic spaces, with fibrovascular cores forming central supportive structures.",
+          "CC": "Tumor nodules appear circumscribed with rounded or irregular edges separating them from adjacent tissue. Solid cellular areas alternate with tubulocystic spaces, forming complex architectural patterns. Cystic cavities of varying sizes are visible, some containing eosinophilic fluid or necrotic debris.",
+          "MC": "Tumor areas often appear as large cystic structures filled with mucin, which gives the tumor a fluid-filled look. The tumor grows in a relatively well-demarcated fashion, with distinct boundaries between the tumor and surrounding tissue. Cells tend to be arranged in irregular clusters or gland-like structures, sometimes forming tubules or papillary projections."
+        }
+      }
+    ]
+  },
+  "high": {
+    "tumor": "Histopathologic subtyping of primary ovarian carcinoma without access to the diagnostic label.",
+    "global_info": {
+      "HGSC": "Nuclei in tumor cells vary widely in size and shape, contributing to pleomorphism, with some cells showing irregular contours.",
+      "LGSC": "Tumor cells form relatively uniform, well-defined glandular structures, with cells lining the lumina in a regular fashion.",
+      "EC": "Columnar epithelial cells line glandular lumina, showing elongated shapes with polarized nuclei oriented toward the basal membrane.",
+      "CC": "Tumor cells display clear cytoplasm due to glycogen accumulation, producing a transparent effect.",
+      "MC": "Tumor cells often form irregular glandular structures or tubules, with a variable lumen size filled with mucin or secretions."
+    },
+    "entities": [
+      {
+        "name": "Diagnostic morphology",
+        "general_feature": "Class-specific cytologic findings visible at high magnification.",
+        "attributes": {
+          "HGSC": "Nuclei in tumor cells vary widely in size and shape, contributing to pleomorphism, with some cells showing irregular contours. Hyperchromatic nuclei appear dark and densely stained, especially in areas with high tumor cell activity. Nucleoli within tumor cells are prominent, often appearing eosinophilic and varying in size from small to large.",
+          "LGSC": "Tumor cells form relatively uniform, well-defined glandular structures, with cells lining the lumina in a regular fashion. The nuclei of tumor cells are slightly enlarged but generally show uniformity in shape, with fewer pleomorphic features. Nucleoli are small but distinct, often appearing centrally located and round, unlike the large, irregular nucleoli in higher-grade tumors.",
+          "EC": "Columnar epithelial cells line glandular lumina, showing elongated shapes with polarized nuclei oriented toward the basal membrane. Pseudostratification of nuclei creates layered arrangements within glandular epithelium, emphasizing cellular crowding. Hyperchromatic nuclei appear dark and densely stained, highlighting regions of high nuclear activity.",
+          "CC": "Tumor cells display clear cytoplasm due to glycogen accumulation, producing a transparent effect. Some cells show eosinophilic cytoplasm with a granular texture contrasting clear regions. Round or oval nuclei with prominent nucleoli dominate the cells, suggesting high metabolic activity.",
+          "MC": "Tumor cells often form irregular glandular structures or tubules, with a variable lumen size filled with mucin or secretions. Nuclei of tumor cells are usually round to oval, with a uniform appearance and moderate size, lacking significant pleomorphism. Cytoplasm in tumor cells appears pale or clear due to the mucin-filled vacuoles, which distort cellular morphology."
+        }
+      }
+    ]
+  },
+  "_provenance": "generated",
+  "_metadata": {
+    "role": "generated_maple_task_extension",
+    "source_text": "train_data/gpt/description/UBC-OCEAN.json",
+    "source_method": "MSCPT",
+    "copied_from_maple_upstream": false,
+    "classnames": ["HGSC", "LGSC", "EC", "CC", "MC"],
+    "prompt_bank_sha256": "700a091433fb3c5b654cbcf3082cd5757bf42f77c29079ca93aa95e8b7135e60"
+  }
+}

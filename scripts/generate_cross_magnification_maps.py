@@ -94,6 +94,11 @@ def build_correspondence(low: np.ndarray, high: np.ndarray,
         raise ValueError(
             "No low/high correspondence was found. Verify that both coordinate "
             "sets use the same reference frame and patch/stride sizes.")
+    unmatched = sum(not selected for selected in matches)
+    if unmatched:
+        raise ValueError(
+            f"{unmatched} low-resolution patches have no high-resolution "
+            "correspondence; CoD-MIL may select any low-resolution patch")
     output = torch.full((len(low), max_matches), -1, dtype=torch.long)
     for low_index, selected in enumerate(matches):
         if selected:

@@ -1,0 +1,4 @@
+experiment,method,cohort,shots,reason
+slip,slip,brca,4,ValueError: ${PGVL_REPO_ROOT}/text_prompts/slip/tcga_brca_tissues.json:tissue 0 must be a non-empty list
+slip,slip,brca,8,ValueError: ${PGVL_REPO_ROOT}/text_prompts/slip/tcga_brca_tissues.json:tissue 0 must be a non-empty list
+slip,slip,brca,16,ValueError: ${PGVL_REPO_ROOT}/text_prompts/slip/tcga_brca_tissues.json:tissue 0 must be a non-empty list

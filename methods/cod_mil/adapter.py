@@ -14,6 +14,10 @@ import torch.nn as nn
 
 from methods.base import BaseMethod
 from common.backbones import FeatureLevel, MethodBackboneContract, SwapPolicy
+from common.prompts import (
+    load_prompt_bank_csv,
+    validate_prompt_feature_metadata,
+)
 
 
 class CoDMILMethod(BaseMethod):
@@ -22,9 +26,16 @@ class CoDMILMethod(BaseMethod):
     backbone_contract = MethodBackboneContract(
         method=name, feature_level=FeatureLevel.DUAL_SCALE_PATCH_BAG,
         swap_policy=SwapPolicy.PRECOMPUTED, default_backbone="clip-rn50",
-        supported_backbones=("clip-rn50",), feature_dims={"clip-rn50": (1024,)},
+        supported_backbones=("clip-rn50", "plip", "quiltnet"),
+        feature_dims={
+            "clip-rn50": (1024,), "plip": (512,), "quiltnet": (512,),
+        },
+        require_feature_space=True,
         required_capabilities=frozenset(),
-        rationale="CoD-MIL consumes aligned 1024-wide patch and precomputed prompt tensors; it has no runtime encoder.")
+        rationale=(
+            "CoD-MIL consumes aligned dual-scale patch and prompt tensors. "
+            "Upstream released CLIP-RN50, PLIP, and QuiltNet prompt banks; "
+            "every selected bank must match its patch feature space."))
 
     _GENERIC_BACKGROUND = Path(
         "text_prompts/cod_mil/background_tissue_generic.json")
@@ -67,8 +78,22 @@ class CoDMILMethod(BaseMethod):
 
         path = self.cfg.get("text_prompt_features")
         if path:
-            payload = torch.load(
+            raw_payload = torch.load(
                 path, map_location=self.device, weights_only=True)
+            source = self.cfg.get("text_prompt_bank_csv")
+            if not source:
+                raise ValueError(
+                    "Precomputed CoD-MIL prompts require "
+                    "'text_prompt_bank_csv' so positional rows can be verified.")
+            prompts = load_prompt_bank_csv(source)
+            payload = validate_prompt_feature_metadata(
+                raw_payload,
+                prompts=prompts,
+                n_classes=int(self.cfg["n_classes"]),
+                source_path=source,
+                context=path,
+            )
+            embedded_space = raw_payload.get("feature_space_id")
         elif self.cfg.get("prompt_encoding") == "runtime_cached":
             chain_path = Path(self.cfg["text_prompt_path"])
             with chain_path.open(encoding="utf-8") as handle:
@@ -78,6 +103,19 @@ class CoDMILMethod(BaseMethod):
             classnames = list(self.cfg["classnames"])
             low = [chain[name]["broad"][0] for name in classnames]
             high = [chain[name]["specific"][0] for name in classnames]
+            # When a complete bank CSV exists, it is canonical and can be
+            # encoded by any supported paired text tower. Other cohorts compile
+            # the same layout from their chain plus normal-tissue assets.
+            bank_source = self.cfg.get("text_prompt_bank_csv")
+            if bank_source:
+                prompts = load_prompt_bank_csv(bank_source)
+                class_rows = low + high
+                if prompts[:len(class_rows)] != class_rows:
+                    raise ValueError(
+                        "CoD-MIL source bank's leading rows do not match its "
+                        "configured low/high diagnosis chain.")
+            else:
+                prompts = []
             # CoD-MIL's auxiliary branch pushes non-diagnostic patches toward a
             # bank of *normal tissue phenotypes*: the released kidney bank is
             # 3 low + 3 high + 21 background. Templated strings naming the
@@ -85,36 +123,46 @@ class CoDMILMethod(BaseMethod):
             # they carry the diagnosis the branch is meant to contrast against.
             # The 15 organ-independent rows are reused verbatim; a cohort may
             # add its own normal structures via `normal_structures_json`.
-            background = self._background_prompts()
-            if not background:
-                raise ValueError(
-                    "CoD-MIL needs a normal-tissue background bank. Expected "
-                    "text_prompts/cod_mil/background_tissue_generic.json or a "
-                    "'normal_structures_json' entry in the config.")
-            prompts = low + high + background
+            if not prompts:
+                background = self._background_prompts()
+                if not background:
+                    raise ValueError(
+                        "CoD-MIL needs a normal-tissue background bank. Expected "
+                        "text_prompts/cod_mil/background_tissue_generic.json or a "
+                        "'normal_structures_json' entry in the config.")
+                prompts = low + high + background
             bundle = self.load_encoder(
                 weights_path=self.cfg.get("backbone_weights"))
             bundle.freeze()
             payload = bundle.encode_text(prompts, normalize=True).detach()
+            embedded_space = getattr(
+                getattr(bundle, "spec", None), "feature_space_id", None)
         else:
             raise KeyError(
                 "CoD-MIL requires text_prompt_features or "
                 "prompt_encoding=runtime_cached with text_prompt_path.")
-        embedded_space = None
-        if isinstance(payload, dict):
-            embedded_space = payload.get("feature_space_id")
-            payload = payload.get("embeddings", payload.get("features"))
         if not isinstance(payload, torch.Tensor) or payload.ndim != 2:
             raise ValueError(
-                "CoD-MIL text_prompt_features must be a rank-2 tensor or a "
-                "dict containing 'embeddings'.")
+                "CoD-MIL text_prompt_features embeddings must be a rank-2 tensor.")
+        if path and payload.shape[0] != len(prompts):
+            raise ValueError(
+                f"CoD-MIL prompt tensor has {payload.shape[0]} rows but its "
+                f"verified source bank has {len(prompts)} prompts.")
+        if not torch.isfinite(payload).all():
+            raise ValueError("CoD-MIL prompt embeddings contain non-finite values.")
         expected_dim = self.cfg.get("feature_dim", 1024)
         if payload.shape[-1] != expected_dim:
             raise ValueError(
                 f"CoD-MIL prompt width {payload.shape[-1]} does not match "
                 f"patch feature_dim {expected_dim}; no alignment layer is inserted.")
         configured_space = self.cfg.get("feature_space_id")
-        text_space = self.cfg.get("text_feature_space_id", embedded_space)
+        declared_text_space = self.cfg.get("text_feature_space_id")
+        if (declared_text_space and embedded_space
+                and declared_text_space != embedded_space):
+            raise ValueError(
+                f"CoD-MIL configured prompt space '{declared_text_space}' "
+                f"does not match embedded space '{embedded_space}'.")
+        text_space = embedded_space or declared_text_space
         if configured_space and text_space and configured_space != text_space:
             raise ValueError(
                 f"CoD-MIL patch space '{configured_space}' and prompt space "
@@ -123,7 +171,7 @@ class CoDMILMethod(BaseMethod):
         return self._txt_feats
 
     def train_step(self, batch, model, optimizer, loss_fn):
-        x_s, x_l, cross_map, label = batch
+        x_s, x_l, cross_map, label = batch[0], batch[1], batch[2], batch[-1]
         x_s = x_s.to(self.device)
         x_l = x_l.to(self.device)
         cross_map = cross_map.to(self.device)
@@ -146,7 +194,7 @@ class CoDMILMethod(BaseMethod):
 
     @torch.no_grad()
     def eval_step(self, batch, model, loss_fn=None):
-        x_s, x_l, cross_map, label = batch
+        x_s, x_l, cross_map, label = batch[0], batch[1], batch[2], batch[-1]
         x_s = x_s.to(self.device)
         x_l = x_l.to(self.device)
         cross_map = cross_map.to(self.device)

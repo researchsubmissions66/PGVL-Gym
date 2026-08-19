@@ -1,17 +1,23 @@
-"""Compile one dataset prompt profile into every method's native schema.
+"""Compile one dataset prompt profile into supported method prompt schemas.
 
 The benchmark protocol should describe diagnostic semantics once.  This
 module turns that description into the CSV/JSON/YAML layouts expected by the
-vendored methods without putting dataset names in model code.
+vendored methods without putting dataset names in model code. WSI-FiVE is
+deliberately excluded: a generic class-description profile cannot supply its
+six aligned clinical questions, per-case training answers, and separate
+evaluation bank without inventing supervision.
 """
 from __future__ import annotations
 
 import csv
+import hashlib
 import json
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
 import yaml
+
+from common.configuration import load_yaml_file
 
 
 def _resolve_path(value: str | Path, repo_root: Path) -> Path:
@@ -20,13 +26,13 @@ def _resolve_path(value: str | Path, repo_root: Path) -> Path:
 
 
 def _load_mapping(path: Path) -> dict[str, Any]:
-    with path.open(encoding="utf-8") as handle:
-        if path.suffix.lower() in {".yaml", ".yml"}:
-            payload = yaml.safe_load(handle)
-        elif path.suffix.lower() == ".json":
+    if path.suffix.lower() in {".yaml", ".yml"}:
+        payload = load_yaml_file(path)
+    elif path.suffix.lower() == ".json":
+        with path.open(encoding="utf-8") as handle:
             payload = json.load(handle)
-        else:
-            raise ValueError(f"Prompt profile must be YAML or JSON: {path}")
+    else:
+        raise ValueError(f"Prompt profile must be YAML or JSON: {path}")
     if not isinstance(payload, dict):
         raise ValueError(f"Prompt profile must contain a mapping: {path}")
     return payload
@@ -249,6 +255,20 @@ def compile_task_prompt_assets(
                 },
             }],
         }
+    maple_digest = hashlib.sha256(json.dumps(
+        {level: maple_payload[level] for level in ("low", "high")},
+        ensure_ascii=False,
+        separators=(",", ":"),
+    ).encode()).hexdigest()
+    maple_payload.update({
+        "_provenance": "generated",
+        "_metadata": {
+            "role": "generated_maple_task_extension",
+            "source_profile": profile["provenance"],
+            "classnames": [classes[label]["classname"] for label in labels],
+            "prompt_bank_sha256": maple_digest,
+        },
+    })
     maple_path = root / "maple_attributes.json"
     maple_path.write_text(
         json.dumps(maple_payload, indent=2) + "\n", encoding="utf-8")
@@ -297,5 +317,4 @@ def compile_task_prompt_assets(
         "slip": str(slip_path),
         "sldpc": str(sldpc_path),
         "convlm": str(convlm_path),
-        "wsi_five_default_report": profile["context"],
     }

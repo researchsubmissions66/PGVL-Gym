@@ -102,8 +102,11 @@ class MUSEMethod(BaseMethod):
             width = max(item.shape[0] for item in vectors)
             bank = torch.stack([torch.cat([item, item[-1:].expand(width - item.shape[0], -1)])
                                 if item.shape[0] < width else item for item in vectors])
-        if bank.ndim != 3 or bank.shape[0] != self.cfg["n_classes"]:
+        if (bank.ndim != 3 or bank.shape[0] != self.cfg["n_classes"]
+                or bank.shape[1] == 0):
             raise ValueError("MUSE prompt features must be [n_classes, descriptions, embedding_dim]")
+        if not torch.isfinite(bank).all():
+            raise ValueError("MUSE prompt features contain NaN or infinity")
         if (prompt_spec.shared_dim is not None and
                 bank.shape[-1] != prompt_spec.shared_dim):
             raise BackboneCompatibilityError(

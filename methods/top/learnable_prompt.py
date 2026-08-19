@@ -357,33 +357,40 @@ class MIL_CLIP(nn.Module):
         # shared trainable-layer dtype.
         compute_device = self.coord_trans[0].weight.device
         compute_dtype = self.coord_trans[0].weight.dtype
-        image_raw = image_raw.to(
-            device=compute_device, dtype=compute_dtype).squeeze()
+        image_raw = image_raw.to(device=compute_device, dtype=compute_dtype)
+        if image_raw.ndim == 3:
+            if image_raw.shape[0] != 1:
+                raise ValueError(
+                    "TOP requires batch_size=1 for variable-length bags")
+            image_raw = image_raw.squeeze(0)
+        if image_raw.ndim != 2 or image_raw.shape[0] == 0:
+            raise ValueError(
+                "TOP expects a non-empty [patches, dimension] feature bag")
         bag_text_features = bag_text_features.to(dtype=compute_dtype)
         instance_text_features = instance_text_features.to(dtype=compute_dtype)
         # image = self.projector(image_raw)
         image = image_raw
 
         if self.pooling_strategy == 'NoCoOp':  # special case for experiments, equivalent to baseline linear-probe(ABMIL)
-            logits, _, atten_socre = self.pooling(image.squeeze())
+            logits, _, atten_socre = self.pooling(image)
             atten_socre = atten_socre.permute(1, 0)
             return logits, atten_socre
 
         if self.pooling_strategy == 'ABMIL':
             # attention-based pooling
-            image_features, attn_score = self.pooling(image.squeeze())
+            image_features, attn_score = self.pooling(image)
             logit_scale = self.logit_scale.exp()
             logits = logit_scale * image_features @ bag_text_features.t()
             return logits, attn_score
         elif self.pooling_strategy == 'mean':
             # mean-pooling
-            image_features = torch.mean(image.squeeze(), dim=0, keepdim=True)
+            image_features = torch.mean(image, dim=0, keepdim=True)
         elif self.pooling_strategy == 'max':
             # max-pooling
-            image_features = torch.max(image.squeeze(), dim=0, keepdim=True)[0]
+            image_features = torch.max(image, dim=0, keepdim=True)[0]
         elif self.pooling_strategy == 'first-one':
             # max-pooling
-            image_features = image.squeeze()[0:1]
+            image_features = image[0:1]
         elif self.pooling_strategy == 'CoOp':
             text_features_2 = instance_text_features[1:2]  # only keep the second as classifier
             # logit_scale = self.logit_scale.exp()

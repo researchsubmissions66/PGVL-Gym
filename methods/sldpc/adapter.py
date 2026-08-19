@@ -239,6 +239,7 @@ class SLDPCMethod(BaseMethod):
 
     @torch.no_grad()
     def eval_step(self, batch, model, loss_fn=None):
+        self._remember_model(model)
         features = batch["feat"].to(self.device)
         labels = torch.as_tensor(batch["label"], device=self.device, dtype=torch.long)
         mode = "fused" if self._phase == "stage2" else "task"
@@ -348,6 +349,17 @@ class SLDPCMethod(BaseMethod):
 
     def on_fold_end(self, fold: int, metrics) -> None:
         self._cache = {}
+
+    def on_checkpoint_loaded(self, model, checkpoint_kind: str, fold: int) -> None:
+        if checkpoint_kind != "final":
+            raise ValueError(
+                "SLDPC standalone evaluation requires the final checkpoint; "
+                "the unified two-stage run does not write an early-stopping "
+                "best checkpoint")
+        # The phase is adapter state rather than a model parameter. Final
+        # checkpoints are written only after the mandatory Stage-2 transition.
+        self._phase = "stage2"
+        self._last_model = model
 
     # Keep the model reference only for the automatic Stage-1 -> Stage-2
     # transition. It is not a registered module and does not affect checkpoints.

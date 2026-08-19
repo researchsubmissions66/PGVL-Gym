@@ -395,6 +395,23 @@ class GNNEncoder(nn.Module):
             x = layer(x, adj)
         return x  # [B, N, out_dim]
 
+
+def _entity_major_attribute_view(attrs_f, n_cls, num_entities):
+    """Restore the entity-major order produced by ``PromptLearner``.
+
+    PromptLearner appends every class attribute for entity 0, then every class
+    attribute for entity 1, and so on. The released reshape treated that tensor
+    as class-major, silently pairing most entities with another entity's class
+    descriptions.
+    """
+    expected = n_cls * num_entities
+    if attrs_f.ndim != 2 or attrs_f.shape[0] != expected:
+        raise ValueError(
+            "MAPLE attribute prompt tensor has incompatible shape: "
+            f"got {list(attrs_f.shape)}, expected [{expected}, D]")
+    return attrs_f.reshape(num_entities, n_cls, attrs_f.shape[1])
+
+
 class MAPLE(nn.Module):
     def __init__(self, args, clip_model=None, tokenizer=None):
         super().__init__()
@@ -473,13 +490,16 @@ class MAPLE(nn.Module):
         self.loss_ce = nn.CrossEntropyLoss()
 
     def get_topk_indices(self, x, positive_f):
-        x_norm = x / x.norm(dim=-1, keepdim=True)
-        positive_f_norm = positive_f / positive_f.norm(dim=-1, keepdim=True)
+        if x.ndim != 2 or x.shape[0] == 0:
+            raise ValueError("MAPLE requires a non-empty rank-2 patch bag")
+        x_norm = F.normalize(x, dim=-1)
+        positive_f_norm = F.normalize(positive_f, dim=-1)
         positive_sim = self.logit_scale.exp() * x_norm @ positive_f_norm.t()
 
         positive_sim = positive_sim.max(dim=-1)[0]
 
-        pos_top_k = int(self.pos_ratio * len(x_norm))
+        pos_top_k = max(
+            1, min(len(x_norm), int(self.pos_ratio * len(x_norm))))
         pos_indices = torch.topk(positive_sim, pos_top_k, dim=-1).indices
         
         return pos_indices
@@ -493,10 +513,8 @@ class MAPLE(nn.Module):
         entities_feature_norm = entities_feature / entities_feature.norm(dim=-1, keepdim=True) # num_entities x dim
         attrs_f_norm = attrs_f / attrs_f.norm(dim=-1, keepdim=True) # numcls*num_entities x dim
 
-        _, attrs_dim = attrs_f_norm.shape
-        attrs_f_norm = attrs_f_norm.view(
-            n_cls, num_entities, attrs_dim
-        ).permute(1,0,2) # num_entities x num_cls x dim
+        attrs_f_norm = _entity_major_attribute_view(
+            attrs_f_norm, n_cls, num_entities)
         # entities_feature_norm = entities_feature_norm[:, None, :] # num_entities x 1 x dim
         
         if self.weight > 0.:

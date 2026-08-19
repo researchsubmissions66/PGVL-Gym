@@ -1,0 +1,29 @@
+{
+  "_provenance": "upstream",
+  "_metadata": {
+    "source_repository": "https://github.com/miccaiif/TOP",
+    "source_commit": "8356b0dd1786d35e6d6d617d2b253c949769ba39",
+    "source_file": "train_CAMELYONFeat_MIL_CLIP.py",
+    "source_symbol": "bagPrompt_ctx_init",
+    "source_url": "https://github.com/miccaiif/TOP/blob/8356b0dd1786d35e6d6d617d2b253c949769ba39/train_CAMELYONFeat_MIL_CLIP.py#L518-L526",
+    "copied_from_upstream": true,
+    "role": "bag_level_ctx_init",
+    "task": "CAMELYON16",
+    "usage": "standard_upstream_recipe",
+    "contains_learnable_slots": true,
+    "learnable_slot_count": 10,
+    "label_order": [
+      "normal",
+      "tumor"
+    ],
+    "upstream_classnames": [
+      "normal",
+      "tumor"
+    ],
+    "note": "The richer normal/tumor descriptions immediately above these literals are commented out upstream; the active released recipe uses the one-word initializers copied here."
+  },
+  "ctx_init": {
+    "normal": "normal * * * * * * * * * *",
+    "tumor": "tumor * * * * * * * * * *"
+  }
+}

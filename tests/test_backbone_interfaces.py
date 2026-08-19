@@ -132,6 +132,11 @@ def test_builtin_aliases_resolve_without_loading(spelling, canonical):
     assert get_spec(spelling).name == canonical
 
 
+def test_titan_rejects_unknown_loader_options_before_loading():
+    with pytest.raises(TypeError, match="Unexpected loader options"):
+        build_encoder("titan", device="cpu", unsupported_option=True)
+
+
 def test_custom_registration_builds_bundle_without_builtin_loader(
         registered_dummy_encoder):
     spec, calls = registered_dummy_encoder

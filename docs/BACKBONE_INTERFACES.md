@@ -59,7 +59,7 @@ Capabilities describe behavior, not approximate architecture labels.
 | `paired_slide_text` | Projected slide and text outputs belong to the same trained comparison space. |
 
 Other capability values reserve explicit boundaries for patch projection and
-report-conditioned methods. Declaring a capability does not add an adapter or
+specialized text-supervision methods. Declaring a capability does not add an adapter or
 projection to a model. Capability-policy methods require the corresponding
 bundle wrapper operation. Allowlisted methods may instead consume the
 validated native object through an existing family-specific implementation.
@@ -90,17 +90,17 @@ python scripts/list_backbone_compatibility.py --method muse
 | Method | Policy | Validated boundary | Why the boundary stops there |
 | --- | --- | --- | --- |
 | Composite | capability | Paired tile/text bundle with black-box text encoding | Individual enabled prompt modules can impose stricter native soft-prompt requirements; patch and text dimensions must match because selectors compare them directly. |
-| FOCUS | allowlist: CONCH | Dual-scale bags plus CONCH soft prompting | Its prompt learner accesses the CONCH text tower; the native visual input adapter can accept configured patch widths. |
+| FOCUS | allowlist: CONCH | One high-resolution bag plus CONCH soft prompting | Its prompt learner accesses the CONCH text tower; the upstream model accepts a low-scale argument but does not consume it. |
 | ViLa-MIL | allowlist: CLIP RN50 | Paired 1024-wide RN50 patch/text space and soft prompting | Prompted text and patch vectors are compared directly. |
-| CoD-MIL | precomputed: CLIP RN50 | Aligned 1024-wide dual-scale bags, prompt tensors, and cross-scale maps | There is no runtime encoder to swap; every precomputed artifact must be regenerated together. |
+| CoD-MIL | precomputed: CLIP RN50, PLIP, or QuiltNet | Aligned dual-scale bags, metadata-bound prompt tensors, and cross-scale maps in one feature space | The CSV bank is encoder-independent, but every encoded prompt/patch artifact must use the same tower; runtime-cached CSV encoding is also supported with that tower's checkpoint. |
 | MAPLE | allowlist: PLIP or Hugging Face CLIP ViT-B | Paired 512-wide bags and native soft-prompt text layers | MAPLE traverses Hugging Face CLIP/PLIP internals. |
 | MSCPT | allowlist: PLIP, Hugging Face CLIP ViT-B, or CONCH | Paired 512-wide bags with deep text and vision prompt hooks | It injects prompts at multiple layers in both towers. |
 | PathPT | allowlist: PLIP, CONCH, KEEP, or MUSK | Backbone-specific paired feature width and soft-prompt implementation | The release contains a distinct native prompt class for each family. |
 | TOP | fixed: CLIP RN50 | 1024-wide RN50 bags and two-level native prompts | RN50 dimensions and instance/bag prompt attention are structural assumptions. |
 | SLIP | allowlist: CLIP ViT-B, CLIP RN50, PLIP, or BiomedCLIP | Paired patch/text features and the matching native prompt branch | Each supported family uses its own tokenizer and prompt implementation. |
-| WSI-FiVE | fixed: internal WSI-FiVE ViT | Patch sequence plus report tokens | Its video/tile transformer and ClinicalBERT prompt tower are method-owned architecture. |
-| MUSE | capability | Any registered static patch source plus any registered black-box `text_encode` prompt bundle | `patch_encoder` provenance is independent from `prompt_feature_space_id`; a learned visual adapter maps patch `feature_dim` to the prompt encoder's `embed_dim`. CONCH/CONCH remains the paper-faithful default. |
-| ConVLM | fixed: internal ConVLM ViT | Raw tiles plus QuiltNet attribute vectors | Attribute injection and token pruning occur inside its own transformer blocks. |
+| WSI-FiVE | precomputed: 512-wide patch bag | Offline patch features; native training also requires a fold-local six-answer bank | Its patch-fusion transformer and ClinicalBERT question/prompt tower are method-owned; per-slide answers are targets, never inference inputs. |
+| MUSE | capability | Any registered static patch source plus any registered black-box `text_encode` prompt bundle | `patch_encoder` provenance is independent from `prompt_feature_space_id`; a learned visual adapter maps patch `feature_dim` to the prompt encoder's `embed_dim`. CONCH/CONCH is the native encoder condition, while implementation fidelity is separately marked partial. |
+| ConVLM | precomputed: UNI patch bags | 1024-wide UNI patch bags plus QuiltNet attribute vectors | The visual encoder runs offline; attribute injection and token pruning occur in ConVLM's transformer over the resulting patch tokens. |
 | SLDPC | capability | Promptable text tower and native slide projector from one paired slide-text model | A slide-only tower, unrelated text encoder, or width-only match cannot reproduce the trained comparison space. TITAN is the default. |
 
 This matrix deliberately distinguishes architectural compatibility from an

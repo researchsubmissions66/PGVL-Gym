@@ -16,6 +16,10 @@ import torch.nn.functional as F
 class _SparseMoE(nn.Module):
     def __init__(self, dim: int, num_experts: int = 8, top_k: int = 2):
         super().__init__()
+        if num_experts <= 0:
+            raise ValueError("num_experts must be positive")
+        if top_k <= 0:
+            raise ValueError("num_selected must be positive")
         self.top_k = min(top_k, num_experts)
         self.router = nn.Linear(dim, num_experts)
         self.experts = nn.ModuleList([
@@ -51,9 +55,21 @@ class MUSEModel(nn.Module):
         super().__init__()
         if prompt_bank.ndim != 3 or prompt_bank.shape[0] != n_classes:
             raise ValueError("prompt_bank must have shape [n_classes, n_descriptions, dim]")
+        if prompt_bank.shape[1] == 0:
+            raise ValueError("prompt_bank must contain at least one description per class")
+        if not torch.isfinite(prompt_bank).all():
+            raise ValueError("prompt_bank contains NaN or infinity")
         if prompt_bank.shape[-1] != embed_dim:
             raise ValueError(
                 f"prompt_bank dim {prompt_bank.shape[-1]} does not match embed_dim {embed_dim}")
+        if input_dim <= 0 or embed_dim <= 0:
+            raise ValueError("input_dim and embed_dim must be positive")
+        if num_heads <= 0 or embed_dim % num_heads != 0:
+            raise ValueError("embed_dim must be divisible by positive num_heads")
+        if retrieval_k <= 0:
+            raise ValueError("retrieval_k must be positive")
+        if not 0.0 <= dropout < 1.0:
+            raise ValueError("dropout must be in [0, 1)")
         self.n_classes = n_classes
         self.input_dim = int(input_dim)
         self.retrieval_k = retrieval_k

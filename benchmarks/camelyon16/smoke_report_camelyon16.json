@@ -1,12 +1,12 @@
 {
-  "matrix": "/u/dchanda/PGVL-Gym/benchmarks/camelyon16/run_matrix.csv",
+  "matrix": "${PGVL_REPO_ROOT}/benchmarks/camelyon16/run_matrix.csv",
   "cohort": "camelyon16",
   "device": "cpu",
   "results": [
     {
       "experiment": "focus",
       "method": "focus",
-      "config": "/u/dchanda/PGVL-Gym/benchmarks/camelyon16/configs/focus/camelyon16_4shot.yaml",
+      "config": "${PGVL_REPO_ROOT}/benchmarks/camelyon16/configs/focus/camelyon16_4shot.yaml",
       "device": "cpu",
       "status": "passed",
       "stage": "complete",
@@ -21,7 +21,7 @@
     {
       "experiment": "focus_5x20x",
       "method": "focus",
-      "config": "/u/dchanda/PGVL-Gym/benchmarks/camelyon16/configs/focus_5x20x/camelyon16_4shot.yaml",
+      "config": "${PGVL_REPO_ROOT}/benchmarks/camelyon16/configs/focus_5x20x/camelyon16_4shot.yaml",
       "device": "cpu",
       "status": "passed",
       "stage": "complete",
@@ -36,7 +36,7 @@
     {
       "experiment": "mscpt",
       "method": "mscpt",
-      "config": "/u/dchanda/PGVL-Gym/benchmarks/camelyon16/configs/mscpt/camelyon16_4shot.yaml",
+      "config": "${PGVL_REPO_ROOT}/benchmarks/camelyon16/configs/mscpt/camelyon16_4shot.yaml",
       "device": "cpu",
       "status": "passed",
       "stage": "complete",
@@ -51,7 +51,7 @@
     {
       "experiment": "mscpt_5x20x",
       "method": "mscpt",
-      "config": "/u/dchanda/PGVL-Gym/benchmarks/camelyon16/configs/mscpt_5x20x/camelyon16_4shot.yaml",
+      "config": "${PGVL_REPO_ROOT}/benchmarks/camelyon16/configs/mscpt_5x20x/camelyon16_4shot.yaml",
       "device": "cpu",
       "status": "passed",
       "stage": "complete",
@@ -66,7 +66,7 @@
     {
       "experiment": "muse",
       "method": "muse",
-      "config": "/u/dchanda/PGVL-Gym/benchmarks/camelyon16/configs/muse/camelyon16_4shot.yaml",
+      "config": "${PGVL_REPO_ROOT}/benchmarks/camelyon16/configs/muse/camelyon16_4shot.yaml",
       "device": "cpu",
       "status": "passed",
       "stage": "complete",
@@ -81,7 +81,7 @@
     {
       "experiment": "muse_keep",
       "method": "muse",
-      "config": "/u/dchanda/PGVL-Gym/benchmarks/camelyon16/configs/muse_keep/camelyon16_4shot.yaml",
+      "config": "${PGVL_REPO_ROOT}/benchmarks/camelyon16/configs/muse_keep/camelyon16_4shot.yaml",
       "device": "cpu",
       "status": "passed",
       "stage": "complete",
@@ -96,7 +96,7 @@
     {
       "experiment": "pathpt",
       "method": "pathpt",
-      "config": "/u/dchanda/PGVL-Gym/benchmarks/camelyon16/configs/pathpt/camelyon16_4shot.yaml",
+      "config": "${PGVL_REPO_ROOT}/benchmarks/camelyon16/configs/pathpt/camelyon16_4shot.yaml",
       "device": "cpu",
       "status": "passed",
       "stage": "complete",
@@ -111,7 +111,7 @@
     {
       "experiment": "pathpt_keep",
       "method": "pathpt",
-      "config": "/u/dchanda/PGVL-Gym/benchmarks/camelyon16/configs/pathpt_keep/camelyon16_4shot.yaml",
+      "config": "${PGVL_REPO_ROOT}/benchmarks/camelyon16/configs/pathpt_keep/camelyon16_4shot.yaml",
       "device": "cpu",
       "status": "passed",
       "stage": "complete",

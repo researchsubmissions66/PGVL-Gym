@@ -100,8 +100,15 @@ class CompositeMethod(BaseMethod):
     @torch.no_grad()
     def eval_step(self, batch, model, loss_fn=None):
         feats, coords, label = self._unpack_batch(batch)
-        logits, _ = model(feats, coords=coords, return_extras=False)
-        loss = 0.0
+        logits, extras = model(feats, coords=coords, return_extras=True)
+        kwargs = self._loss_kwargs()
+        if "slip_cross_corr" in extras:
+            kwargs["slip_extras"] = (
+                extras["slip_cross_corr"],
+                extras.get("slip_temperature", 0.01))
+        if "maple_attributes" in extras:
+            kwargs["maple_extras"] = extras["maple_attributes"]
+        loss = composite_loss(logits, label, **kwargs).item()
         if logits.dim() == 1:
             logits = logits.unsqueeze(0)
         return {"loss": loss, "logits": logits, "label": label}

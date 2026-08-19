@@ -197,8 +197,14 @@ class SLIP(SlideCoOp):
         # contrastive
         logits = cross_corr.view(-1) # c x c
         n_cls = cross_corr.size(0)
-        positive_index = wsi_label * n_cls + wsi_label
-        negative_index = [i for i  in range(n_cls * n_cls) if i != positive_index]
+        # Keep Python slicing/list construction independent of the label's
+        # device. A CUDA scalar used as a slice bound is invalid on some torch
+        # releases and comparing every Python integer with it also forces
+        # repeated device synchronisation.
+        label_index = int(wsi_label.item())
+        positive_index = label_index * n_cls + label_index
+        negative_index = [
+            i for i in range(n_cls * n_cls) if i != positive_index]
         positive_logit = logits[positive_index:(positive_index + 1)]
         negative_logits = logits[negative_index]
         _logits = torch.cat([positive_logit, negative_logits])

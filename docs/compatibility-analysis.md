@@ -14,13 +14,13 @@ python scripts/list_backbone_compatibility.py --method mscpt --json
 
 ## Summary
 
-Across 13 methods and 9 registered encoders there are 117 combinations:
+Across 13 methods and 10 registered encoders there are 130 combinations:
 
 | Outcome | Count | Meaning |
 | --- | ---: | --- |
-| `native` | 43 | The method's own code supports this encoder. Paper-faithful. |
-| `adapt` | 29 | Capabilities are satisfied; only the feature width differs, so a declared projection can bridge it. |
-| `blocked` | 45 | Cannot run without changing what the method is. |
+| `native` | 48 | The method's encoder boundary supports this encoder without a learned compatibility projection. |
+| `adapt` | 34 | Capabilities are satisfied; only the feature width differs, so a declared projection can bridge it. |
+| `blocked` | 48 | Cannot run without changing what the method is. |
 
 Every encoder listed is a dual-tower vision-language model. Vision-only
 pathology foundation models — UNI, GigaPath, Virchow, Phikon, CTransPath,
@@ -30,20 +30,20 @@ text prompts has nothing to attach to without a text tower.
 ## The matrix
 
 ```
-              biomedcl clip-rn5 clip-vit    conch hf-clip-     keep     musk     plip    titan
-focus            adapt    adapt    adapt   native    adapt    adapt    adapt    adapt    adapt
-vila_mil         adapt   native    adapt    adapt    adapt    adapt    adapt    adapt        -
-cod_mil              -   native        -        -        -        -        -        -        -
-maple            adapt    adapt    adapt    adapt   native    adapt    adapt   native        -
-mscpt                -        -        -   native   native        -        -   native        -
-pathpt           adapt    adapt    adapt   native    adapt   native   native   native        -
-top                  -   native        -        -        -        -        -        -        -
-slip            native   native   native    adapt    adapt    adapt    adapt   native        -
-wsi_five             -        -        -        -        -        -        -        -        -
-muse            native   native   native   native   native   native   native   native   native
-convlm               -        -        -        -        -        -        -        -        -
-sldpc           native   native   native   native   native   native   native   native   native
-composite       native   native   native   native   native   native   native   native        -
+              biomedcl clip-rn5 clip-vit    conch hf-clip-     keep     musk     plip quiltnet    titan
+focus            adapt    adapt    adapt   native    adapt    adapt    adapt    adapt    adapt    adapt
+vila_mil         adapt   native    adapt    adapt    adapt    adapt    adapt    adapt    adapt        -
+cod_mil              -   native        -        -        -        -        -   native   native        -
+maple            adapt    adapt    adapt    adapt   native    adapt    adapt   native    adapt        -
+mscpt                -        -        -   native   native        -        -   native        -        -
+pathpt           adapt    adapt    adapt   native    adapt   native   native   native    adapt        -
+top                  -   native        -        -        -        -        -        -        -        -
+slip            native   native   native    adapt    adapt    adapt    adapt   native    adapt        -
+wsi_five             -        -        -        -        -        -        -        -        -        -
+muse            native   native   native   native   native   native   native   native   native   native
+convlm               -        -        -        -        -        -        -        -        -        -
+sldpc           native   native   native   native   native   native   native   native   native   native
+composite       native   native   native   native   native   native   native   native   native        -
 ```
 
 ## Why the blocked cells are blocked
@@ -52,17 +52,20 @@ The 45 blocked combinations fall into four remaining causes; a fifth has since
 been resolved. Only that fifth was ever a limitation of this benchmark rather
 than of the methods or encoders themselves.
 
-### 1. The method owns its vision tower (18 cells)
+### 1. The method fixes its visual representation boundary (20 cells)
 
 `wsi_five` and `convlm` are pinned to `wsi-five-vit` and `convlm-vit`.
 
-For **ConVLM** this holds: attribute injection and token pruning happen inside
-its own ViT blocks, so substituting the encoder does not produce "ConVLM with a
-different backbone" — it produces a different method.
+For **ConVLM**, UNI produces the patch embeddings offline; ConVLM does not own
+or train that image encoder. The fixed boundary is nevertheless meaningful:
+attribute injection and token pruning happen in ConVLM's transformer over UNI
+tokens, so swapping the feature space without regenerating and validating the
+paired assets does not reproduce the declared protocol.
 
-For **`wsi_five` the justification is wrong**, and the pin is retained for a
-different reason. WSI-FiVE has no vision tower at all. With its shipped default
-`IS_IMG_PTH: True` the upstream model sets `self.visual = nn.Identity()`,
+For **WSI-FiVE**, the pin likewise describes a fixed precomputed feature
+boundary, not an owned image encoder. WSI-FiVE has no vision tower at all.
+With its shipped default `IS_IMG_PTH: True` the upstream model sets
+`self.visual = nn.Identity()`,
 hardcodes `embed_dim = 512`, never parses the CLIP state dict, and reads
 precomputed patch features from disk. The paper is explicit: *"we employed
 ResNet following [15] as image encoder to extract image features, while
@@ -80,7 +83,7 @@ that cross-attends patch features to encoded clinical questions.
 **Resolution: `wsi_five` is a patch-bag consumer**, not an encoder-owning
 method, and its nine cells are blocked by the current contract rather than by
 the architecture. See [Design decisions](design-decisions.md) for the full
-analysis and the reimplementation gap.
+analysis, restored native text objective, and remaining fidelity gaps.
 
 ### 2. The method hardcodes one encoder's geometry (16 cells)
 
@@ -88,11 +91,15 @@ analysis and the reimplementation gap.
 written against RN50 width. `cod_mil` is `precomputed`: it consumes text
 embeddings that were produced in a specific feature space, and comparing them to
 patches from a different encoder compares vectors that do not share a geometry.
+Its width is parameterized for the CLIP-RN50, PLIP, and QuiltNet families
+released upstream, but each run must use a verified prompt tensor and dual-scale
+patch bags from the same family.
 
-**Resolution: only by rewriting the method.** A width adapter does not help,
-because the mismatch is semantic rather than dimensional.
+**Resolution: regenerate the complete paired artifact set in a supported
+space.** A width adapter does not help, because the mismatch is semantic rather
+than dimensional.
 
-### 3. The encoder has no deep-prompt hooks (6 cells)
+### 3. The encoder has no deep-prompt hooks (7 cells)
 
 `mscpt` requires `deep_text_prompt` and `deep_vision_prompt`: it injects learned
 prompts into *intermediate layers* of both towers, not just at the input. Only
@@ -166,6 +173,11 @@ Equal widths never establish compatibility on their own. Two 512-d encoders
 occupy different semantic spaces, and no adapter is inserted implicitly — it must
 be declared, exactly as `slide_projection_mode` declares SLDPC's `native`,
 `linear` and `mlp` variants.
+
+Neither outcome establishes paper fidelity. That is recorded separately as
+`implementation_provenance` and `upstream_fidelity`; for example, PathPT can
+have a native KEEP encoder boundary while its current unified objective is
+still labelled partial.
 
 ## Adding an encoder or opening a method
 

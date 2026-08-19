@@ -1,0 +1,13 @@
+{
+  "_provenance": "upstream",
+  "_source": "https://github.com/ls1rius/WSI_FiVE/tree/main/data/TCGA-lung-patch_report",
+  "_upstream_files": [
+    "LUAD_LUSC_labels_train_reid.csv",
+    "LUAD_LUSC_labels_val_reid.csv"
+  ],
+  "_note": "Verbatim two-row evaluation bank released by WSI-FiVE. Both upstream train and validation class-description CSVs contain these same prompts in LUAD, LUSC order.",
+  "prompts": {
+    "LUAD": "LUAD (Lung Adenocarcinoma) typically exhibits a diverse array of cell types, including glandular, papillary, and acinar structures with mucin production, and varying differentiation levels from well-differentiated to poorly-differentiated.",
+    "LUSC": "LUSC (Lung Squamous Cell Carcinoma) is characterized by tumor cells forming sheet-like squamous structures, possibly showing keratinization features like keratin pearl formation, and is typically well-differentiated."
+  }
+}

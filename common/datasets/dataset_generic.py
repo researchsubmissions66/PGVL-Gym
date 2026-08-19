@@ -8,11 +8,12 @@ from torch.utils.data import Dataset
 import h5py
 
 from common.utils.utils import generate_split, nth
+from common.configuration import expand_path
 
 
 def _load_feature_tensor(path, feature_key='features'):
 	"""Load a patch bag from either the native HDF5 store or a torch file."""
-	path = os.path.expanduser(str(path))
+	path = os.path.expanduser(expand_path(path))
 	if path.lower().endswith(('.h5', '.hdf5')):
 		with h5py.File(path, 'r') as hdf5_file:
 			keys = [feature_key, 'features', 'embeddings', 'feats']
@@ -66,9 +67,9 @@ class Generic_WSI_Classification_Dataset(Dataset):
 				 shuffle = False,
 				 seed = 7,
 				 print_info = True,
-				 label_dict = {},
-				 filter_dict = {},
-				 ignore=[],
+				 label_dict = None,
+				 filter_dict = None,
+				 ignore=None,
 				 patient_strat=False,
 				 label_col = None,
 				 patient_voting = 'max',
@@ -82,6 +83,9 @@ class Generic_WSI_Classification_Dataset(Dataset):
 			label_dict (dict): Dictionary with key, value pairs for converting str labels to int
 			ignore (list): List containing class labels to ignore
 		"""
+		label_dict = {} if label_dict is None else label_dict
+		filter_dict = {} if filter_dict is None else filter_dict
+		ignore = [] if ignore is None else ignore
 		self.label_dict = label_dict
 		self.num_classes = len(set(self.label_dict.values()))
 		self.seed = seed
@@ -99,8 +103,8 @@ class Generic_WSI_Classification_Dataset(Dataset):
 		slide_data = self.df_prep(slide_data, self.label_dict, ignore, self.label_col)
 
 		if shuffle:
-			np.random.seed(seed)
-			np.random.shuffle(slide_data)
+			slide_data = slide_data.sample(
+				frac=1.0, random_state=seed).reset_index(drop=True)
 
 		self.slide_data = slide_data
 
@@ -152,7 +156,8 @@ class Generic_WSI_Classification_Dataset(Dataset):
 
 		return data
 
-	def filter_df(self, df, filter_dict={}):
+	def filter_df(self, df, filter_dict=None):
+		filter_dict = {} if filter_dict is None else filter_dict
 		if len(filter_dict) > 0:
 			filter_mask = np.full(len(df), True, bool)
 			for key, val in filter_dict.items():
@@ -220,24 +225,49 @@ class Generic_WSI_Classification_Dataset(Dataset):
 		split = split.dropna().reset_index(drop=True)
 
 		if len(split) > 0:
-			mask = self.slide_data['slide_id'].isin(split.tolist())
+			requested = split.astype(str).tolist()
+			seen = set()
+			duplicates = set()
+			for value in requested:
+				if value in seen:
+					duplicates.add(value)
+				seen.add(value)
+			duplicates = sorted(duplicates)
+			if duplicates:
+				raise ValueError(
+					'{} split repeats slide IDs: {}'.format(
+						split_key, ', '.join(duplicates[:3])))
+			available = self.slide_data['slide_id'].astype(str)
+			duplicate_annotations = sorted(
+				set(available[available.duplicated()].tolist()))
+			if duplicate_annotations:
+				raise ValueError(
+					'dataset manifest repeats slide IDs: {}'.format(
+						', '.join(duplicate_annotations[:3])))
+			missing = sorted(set(requested) - set(available.tolist()))
+			if missing:
+				raise ValueError(
+					'{} split contains slide IDs absent from the dataset '
+					'manifest: {}'.format(split_key, ', '.join(missing[:3])))
+			mask = available.isin(requested)
 			df_slice = self.slide_data[mask].reset_index(drop=True)
 			split = Generic_Split(df_slice, data_dir_s=self.data_dir_s, data_dir_l=self.data_dir_l, mode=self.mode, num_classes=self.num_classes, feature_path_column_s=getattr(self, 'feature_path_column_s', None), feature_path_column_l=getattr(self, 'feature_path_column_l', None), feature_key=getattr(self, 'feature_key', 'features'), include_metadata=getattr(self, 'include_metadata', False))
 		else:
 			split = None
-   
-		print(len(split))
+
+		print(len(split) if split is not None else 0)
 
 		return split
 
-	def get_merged_split_from_df(self, all_splits, split_keys=['train']):
+	def get_merged_split_from_df(self, all_splits, split_keys=None):
+		split_keys = ['train'] if split_keys is None else split_keys
 		merged_split = []
 		for split_key in split_keys:
 			split = all_splits[split_key]
 			split = split.dropna().reset_index(drop=True).tolist()
 			merged_split.extend(split)
 
-		if len(split) > 0:
+		if len(merged_split) > 0:
 			mask = self.slide_data['slide_id'].isin(merged_split)
 			df_slice = self.slide_data[mask].reset_index(drop=True)
 			split = Generic_Split(df_slice, data_dir_s=self.data_dir_s, data_dir_l=self.data_dir_l, mode=self.mode, num_classes=self.num_classes, feature_path_column_s=getattr(self, 'feature_path_column_s', None), feature_path_column_l=getattr(self, 'feature_path_column_l', None), feature_key=getattr(self, 'feature_key', 'features'), include_metadata=getattr(self, 'include_metadata', False))

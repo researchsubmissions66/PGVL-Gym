@@ -26,11 +26,14 @@ from collections import Counter
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(REPO))
+from common.configuration import expand_path  # noqa: E402
 
 SOURCE = Path(
-    "/work/hdd/bhwm/metadata/RAW_DATA_Cleaned/UBC-OCEAN/metadata.csv")
+    expand_path(
+        "${PGVL_STORAGE_ROOT}/metadata/RAW_DATA_Cleaned/UBC-OCEAN/metadata.csv"))
 DESTINATION = REPO / "metadata" / "ubc_ocean.csv"
-FEATURE_ROOT = Path("/work/hdd/bhwm/UBC-OCEAN")
+FEATURE_ROOT = Path(expand_path("${PGVL_STORAGE_ROOT}/UBC-OCEAN"))
 
 # Magnification recorded for tissue microarray cores; see the module docstring.
 TMA_MAGNIFICATION = "40x"

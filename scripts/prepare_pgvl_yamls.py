@@ -28,15 +28,15 @@ def prepare():
     
     # Patch paths
     fs = proto_brca['feature_sources']
-    fs['conch_v1_5x']['path_template'] = '/work/hdd/bhwm/trident_features/master_benchmark/5x_512px_0px_overlap/features_conch_v1/{slide_id}.h5'
-    fs['conch_v1_10x']['path_template'] = '/work/hdd/bhwm/trident_features/master_benchmark/10x_256px_0px_overlap/features_conch_v1/{slide_id}.h5'
-    fs['conch_v1_20x']['path_template'] = '/work/hdd/bhwm/trident_features/master_benchmark/20x_512px_0px_overlap/features_conch_v1/{slide_id}.h5'
-    fs['keep_20x']['path_template'] = '/work/hdd/bhwm/trident_features/master_benchmark/20x_256px_0px_overlap/features_keep/{slide_id}.h5'
-    fs['titan_slide_20x']['path_template'] = '/work/hdd/bhwm/trident_features/master_benchmark/20x_512px_0px_overlap/slide_features_titan/{slide_id}.h5'
+    fs['conch_v1_5x']['path_template'] = '${PGVL_STORAGE_ROOT}/trident_features/master_benchmark/5x_512px_0px_overlap/features_conch_v1/{slide_id}.h5'
+    fs['conch_v1_10x']['path_template'] = '${PGVL_STORAGE_ROOT}/trident_features/master_benchmark/10x_256px_0px_overlap/features_conch_v1/{slide_id}.h5'
+    fs['conch_v1_20x']['path_template'] = '${PGVL_STORAGE_ROOT}/trident_features/master_benchmark/20x_512px_0px_overlap/features_conch_v1/{slide_id}.h5'
+    fs['keep_20x']['path_template'] = '${PGVL_STORAGE_ROOT}/trident_features/master_benchmark/20x_256px_0px_overlap/features_keep/{slide_id}.h5'
+    fs['titan_slide_20x']['path_template'] = '${PGVL_STORAGE_ROOT}/trident_features/master_benchmark/20x_512px_0px_overlap/slide_features_titan/{slide_id}.h5'
     
     with open('benchmarks/tcga_brca/protocol.yaml', 'w') as f:
         proto_str = yaml.dump(proto_brca, sort_keys=False)
-        proto_str = proto_str.replace('/u/dchanda/.cache/huggingface', '/work/hdd/bhwm/.cache_huggingface')
+        proto_str = proto_str.replace('${PGVL_USER_ROOT}/.cache/huggingface', '${PGVL_STORAGE_ROOT}/.cache_huggingface')
         f.write(proto_str)
         
     # ------------- NSCLC -------------
@@ -47,10 +47,10 @@ def prepare():
     
     # Patch paths
     fs = proto_nsclc['feature_sources']
-    fs['conch_v1_10x']['path_template'] = '/work/hdd/bhwm/trident_features/master_benchmark/10x_256px_0px_overlap/features_conch_v1/{slide_id}.h5'
-    fs['conch_v1_20x']['path_template'] = '/work/hdd/bhwm/trident_features/master_benchmark/20x_512px_0px_overlap/features_conch_v1/{slide_id}.h5'
-    fs['keep_20x']['path_template'] = '/work/hdd/bhwm/trident_features/master_benchmark/20x_256px_0px_overlap/features_keep/{slide_id}.h5'
-    fs['titan_slide_20x']['path_template'] = '/work/hdd/bhwm/trident_features/master_benchmark/20x_512px_0px_overlap/slide_features_titan/{slide_id}.h5'
+    fs['conch_v1_10x']['path_template'] = '${PGVL_STORAGE_ROOT}/trident_features/master_benchmark/10x_256px_0px_overlap/features_conch_v1/{slide_id}.h5'
+    fs['conch_v1_20x']['path_template'] = '${PGVL_STORAGE_ROOT}/trident_features/master_benchmark/20x_512px_0px_overlap/features_conch_v1/{slide_id}.h5'
+    fs['keep_20x']['path_template'] = '${PGVL_STORAGE_ROOT}/trident_features/master_benchmark/20x_256px_0px_overlap/features_keep/{slide_id}.h5'
+    fs['titan_slide_20x']['path_template'] = '${PGVL_STORAGE_ROOT}/trident_features/master_benchmark/20x_512px_0px_overlap/slide_features_titan/{slide_id}.h5'
     
     # Remove 5x experiments
     exps = proto_nsclc['experiments']
@@ -59,7 +59,7 @@ def prepare():
     
     with open('benchmarks/tcga_nsclc/protocol.yaml', 'w') as f:
         proto_str = yaml.dump(proto_nsclc, sort_keys=False)
-        proto_str = proto_str.replace('/u/dchanda/.cache/huggingface', '/work/hdd/bhwm/.cache_huggingface')
+        proto_str = proto_str.replace('${PGVL_USER_ROOT}/.cache/huggingface', '${PGVL_STORAGE_ROOT}/.cache_huggingface')
         f.write(proto_str)
 
     # ------------- RCC -------------
@@ -70,10 +70,10 @@ def prepare():
     
     # Patch paths
     fs = proto_rcc['feature_sources']
-    fs['conch_v1_10x']['path_template'] = '/work/hdd/bhwm/trident_features/master_benchmark/10x_256px_0px_overlap/features_conch_v1/{slide_id}.h5'
-    fs['conch_v1_20x']['path_template'] = '/work/hdd/bhwm/trident_features/master_benchmark/20x_512px_0px_overlap/features_conch_v1/{slide_id}.h5'
-    fs['keep_20x']['path_template'] = '/work/hdd/bhwm/trident_features/master_benchmark/20x_256px_0px_overlap/features_keep/{slide_id}.h5'
-    fs['titan_slide_20x']['path_template'] = '/work/hdd/bhwm/trident_features/master_benchmark/20x_512px_0px_overlap/slide_features_titan/{slide_id}.h5'
+    fs['conch_v1_10x']['path_template'] = '${PGVL_STORAGE_ROOT}/trident_features/master_benchmark/10x_256px_0px_overlap/features_conch_v1/{slide_id}.h5'
+    fs['conch_v1_20x']['path_template'] = '${PGVL_STORAGE_ROOT}/trident_features/master_benchmark/20x_512px_0px_overlap/features_conch_v1/{slide_id}.h5'
+    fs['keep_20x']['path_template'] = '${PGVL_STORAGE_ROOT}/trident_features/master_benchmark/20x_256px_0px_overlap/features_keep/{slide_id}.h5'
+    fs['titan_slide_20x']['path_template'] = '${PGVL_STORAGE_ROOT}/trident_features/master_benchmark/20x_512px_0px_overlap/slide_features_titan/{slide_id}.h5'
     
     if 'rcc' in proto_rcc['cohorts']:
         proto_rcc['cohorts']['rcc']['metadata_availability'] = 'future'
@@ -81,7 +81,7 @@ def prepare():
     os.makedirs('benchmarks/tcga_rcc', exist_ok=True)
     with open('benchmarks/tcga_rcc/protocol.yaml', 'w') as f:
         proto_str = yaml.dump(proto_rcc, sort_keys=False)
-        proto_str = proto_str.replace('/u/dchanda/.cache/huggingface', '/work/hdd/bhwm/.cache_huggingface')
+        proto_str = proto_str.replace('${PGVL_USER_ROOT}/.cache/huggingface', '${PGVL_STORAGE_ROOT}/.cache_huggingface')
         f.write(proto_str)
 
     # ------------- ADDITIONAL TASKS -------------
@@ -89,10 +89,10 @@ def prepare():
         proto_addl = yaml.safe_load(f)
         
     fs = proto_addl['feature_sources']
-    fs['conch_v1_5x']['path_template'] = '/work/hdd/bhwm/UBC-OCEAN/5x_256px_0px_overlap/features_conch_v1/{slide_id}.h5'
-    fs['conch_v1_10x']['path_template'] = '/work/hdd/bhwm/UBC-OCEAN/10x_256px_0px_overlap/features_conch_v1/{slide_id}.h5'
-    fs['conch_v1_20x']['path_template'] = '/work/hdd/bhwm/UBC-OCEAN/20x_256px_0px_overlap/features_conch_v1/{slide_id}.h5'
-    fs['keep_20x']['path_template'] = '/work/hdd/bhwm/UBC-OCEAN/20x_256px_0px_overlap/features_keep/{slide_id}.h5'
+    fs['conch_v1_5x']['path_template'] = '${PGVL_STORAGE_ROOT}/UBC-OCEAN/5x_256px_0px_overlap/features_conch_v1/{slide_id}.h5'
+    fs['conch_v1_10x']['path_template'] = '${PGVL_STORAGE_ROOT}/UBC-OCEAN/10x_256px_0px_overlap/features_conch_v1/{slide_id}.h5'
+    fs['conch_v1_20x']['path_template'] = '${PGVL_STORAGE_ROOT}/UBC-OCEAN/20x_256px_0px_overlap/features_conch_v1/{slide_id}.h5'
+    fs['keep_20x']['path_template'] = '${PGVL_STORAGE_ROOT}/UBC-OCEAN/20x_256px_0px_overlap/features_keep/{slide_id}.h5'
     
     if 'titan_slide_20x' in fs: del fs['titan_slide_20x']
     if 'sldpc' in proto_addl['experiments']: del proto_addl['experiments']['sldpc']
@@ -102,7 +102,7 @@ def prepare():
     
     with open('benchmarks/additional_tasks/protocol.yaml', 'w') as f:
         proto_str = yaml.dump(proto_addl, sort_keys=False)
-        proto_str = proto_str.replace('/u/dchanda/.cache/huggingface', '/work/hdd/bhwm/.cache_huggingface')
+        proto_str = proto_str.replace('${PGVL_USER_ROOT}/.cache/huggingface', '${PGVL_STORAGE_ROOT}/.cache_huggingface')
         f.write(proto_str)
 
 if __name__ == "__main__":

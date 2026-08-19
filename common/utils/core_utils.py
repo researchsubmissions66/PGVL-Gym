@@ -2,6 +2,7 @@ import numpy as np
 import torch
 from common.utils.utils import *
 import os
+from pathlib import Path
 from common.datasets.dataset_generic import save_splits
 from common.models.mil_baselines import MIL_fc, MIL_fc_mc
 from sklearn.preprocessing import label_binarize
@@ -92,8 +93,21 @@ class EarlyStopping:
         '''Saves model when validation loss decrease.'''
         if self.verbose:
             print(f'Validation loss decreased ({self.val_loss_min:.6f} --> {val_loss:.6f}).  Saving model ...')
-        torch.save(model.state_dict(), ckpt_name)
+        save_torch_state_atomic(model.state_dict(), ckpt_name)
         self.val_loss_min = val_loss
+
+
+def save_torch_state_atomic(state, path):
+    """Write a torch checkpoint without exposing a partially written file."""
+    destination = Path(path)
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    temporary = destination.with_suffix(destination.suffix + '.tmp')
+    try:
+        torch.save(state, temporary)
+        os.replace(temporary, destination)
+    finally:
+        # A failed serialization must not look like another usable checkpoint.
+        temporary.unlink(missing_ok=True)
 
 def train(datasets, cur, args):
     """   

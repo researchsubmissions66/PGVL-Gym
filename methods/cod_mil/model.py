@@ -90,7 +90,7 @@ def trunc_normal_(tensor, mean=0., std=1., a=-2., b=2.):
 class attention_block(nn.Module):
     def __init__(self, config):
         super(attention_block, self).__init__()
-        self.L = 1024
+        self.L = config.input_size
         self.D = config.hidden_size
         self.K = 1
         self.attention_V = nn.Sequential(nn.Linear(self.L, self.D), nn.Tanh())
@@ -112,7 +112,7 @@ class CoT(nn.Module):
     def __init__(self, config, img_size=224, num_classes=21843, smoothing_value=0, zero_head=False):
         super(CoT, self).__init__()
         self.loss_ce = nn.CrossEntropyLoss()
-        self.L = 1024
+        self.L = config.input_size
         self.K = 1
         self.classifier = nn.Sequential(nn.Linear(self.L*self.K, num_classes))
         self.num_classes = num_classes
@@ -122,7 +122,7 @@ class CoT(nn.Module):
         self.fc_text = nn.Sequential(nn.Linear(self.L, self.L), nn.ReLU(), nn.Linear(self.L, self.L))
 
         # for ablation
-        self.self_attention = MultiheadAttention(embed_dim=1024, num_heads=1)
+        self.self_attention = MultiheadAttention(embed_dim=self.L, num_heads=1)
 
     def forward(self, x_s, coord_s, x_l, coords_l, patch_label, label, text_prompt_feature, slide_id, attention_only=False, labels=None):
         """Run CoD-MIL with a correspondence tensor or legacy encoded slide ID.
@@ -133,8 +133,14 @@ class CoT(nn.Module):
         """
         if not torch.is_tensor(slide_id):
             raise TypeError("slide_id/cross-magnification map must be a tensor")
-        if slide_id.ndim >= 2:
+        if slide_id.ndim == 2:
+            cross_map = slide_id.to(x_s.device)
+        elif slide_id.ndim == 3 and slide_id.shape[0] == 1:
             cross_map = slide_id.squeeze(0).to(x_s.device)
+        elif slide_id.ndim >= 2:
+            raise ValueError(
+                "cross-magnification map must have shape [low, children] "
+                f"or [1, low, children], got {tuple(slide_id.shape)}")
         else:
             name = ''.join([chr(int(item)) for item in slide_id]).rstrip('.tif')
             cross_map = torch.load('map_10x_20x_files/' + name + '.pt',
@@ -156,8 +162,8 @@ class CoT(nn.Module):
 
         A = sim_map[torch.topk(logits_text_low, 1, dim = 1)[1].squeeze()].unsqueeze(0)
         _, mask_id = torch.topk(A, int(A.shape[1] * 0.1))
-        mask = torch.ones_like(A, dtype=torch.bool).squeeze()
-        mask[mask_id.squeeze()] = False
+        mask = torch.ones_like(A, dtype=torch.bool).squeeze(0)
+        mask[mask_id.reshape(-1)] = False
         M_back = M[mask]
         sim_back = torch.sum(M_back @ torch.cat(
             (low_text, text_feature[2 * self.num_classes:-1]), dim=0).T,
@@ -165,7 +171,7 @@ class CoT(nn.Module):
         loss_cl = self.loss_ce(sim_back, label)
 
         _, top_indices = torch.topk(A, min(A.shape[1], 16)) 
-        high_scale_ids = cross_map[top_indices.squeeze()].flatten()
+        high_scale_ids = cross_map[top_indices.reshape(-1)].flatten()
         high_scale_ids = high_scale_ids[high_scale_ids!=-1]
         selected_high_scale_patch = x_l.float()[high_scale_ids.type(torch.long)]
         high_M, _ = self.attention_block(selected_high_scale_patch)
@@ -178,7 +184,10 @@ class CoT(nn.Module):
         Y_prob = F.softmax(logits, dim = 1)
         Y_hat = torch.topk(logits, 1, dim = 1)[1]
 
-        patch_prediction = (A - A.min()) / (A.max() - A.min())
+        attention_range = A.max() - A.min()
+        patch_prediction = (
+            torch.zeros_like(A) if attention_range == 0 else
+            (A - A.min()) / attention_range)
         patch_prediction[patch_prediction > 0.5] = 1
         patch_prediction[patch_prediction != 1] = 0
 

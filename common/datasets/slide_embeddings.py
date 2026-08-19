@@ -15,16 +15,32 @@ from typing import Any, Mapping
 
 import h5py
 import numpy as np
+import pandas as pd
 import torch
 from torch.utils.data import DataLoader, Dataset
+from common.configuration import expand_path
 
 
 _FILE_SUFFIXES = {".pt", ".pth", ".h5", ".hdf5", ".svs", ".tif", ".tiff"}
 
 
-def normalise_slide_id(value: str) -> str:
-    """Remove only known file suffixes while preserving periods in slide IDs."""
-    path = Path(str(value))
+def normalise_slide_id(value: Any) -> str:
+    """Decode an identifier and remove only known slide/feature suffixes.
+
+    NumPy and Python pickle producers commonly persist identifier arrays as
+    fixed-width byte strings. Calling ``str`` on those values produces text
+    such as ``"b'slide-a.svs'"``, which can never match a manifest slide ID.
+    Decode byte-like values explicitly and reject blank identifiers at the
+    source boundary instead.
+    """
+    if isinstance(value, (bytes, bytearray, memoryview)):
+        text = bytes(value).decode("utf-8")
+    else:
+        text = str(value)
+    text = text.strip()
+    if not text:
+        raise ValueError("slide ID must not be blank")
+    path = Path(text)
     return path.stem if path.suffix.lower() in _FILE_SUFFIXES else path.name
 
 
@@ -123,16 +139,16 @@ class SlideEmbeddingDataset(Dataset):
         feature_dim: Expected flattened vector width.
         slide_id_key: Identifier key used by a shared pickle payload.
 
-    Samples are dictionaries with ``feat``, ``label``, and ``slide_id``.
-    Entries without a matching feature are excluded; an entirely unmatched
-    split raises instead of producing an empty loader.
+    Samples are dictionaries with ``feat``, ``label``, ``slide_id``, and
+    ``case_id``. Every declared split row must match exactly one feature;
+    missing or ambiguous IDs are fatal rather than silently changing a split.
     """
 
     def __init__(
         self,
         source_type: str,
         features_path: str | Path,
-        csv_path: str | Path,
+        csv_path: str | Path | pd.DataFrame,
         label_dict: Mapping[str, int],
         feature_path_column: str | None = None,
         feature_key: str = "features",
@@ -141,88 +157,199 @@ class SlideEmbeddingDataset(Dataset):
     ):
         self.source_type = (
             "per_slide_torch" if source_type == "per_slide_pth" else source_type)
-        self.features_path = Path(features_path)
+        self.features_path = Path(expand_path(features_path))
         self.label_dict = dict(label_dict)
         self.feature_path_column = feature_path_column
         self.feature_key = feature_key
         self.slide_id_key = slide_id_key
         self.feature_dim = int(feature_dim) if feature_dim is not None else None
         self.entries = self._read_entries(csv_path)
+        if not self.entries:
+            raise ValueError(f"slide-embedding split has no rows: {csv_path}")
 
         if self.source_type == "pkl":
             with self.features_path.open("rb") as handle:
                 payload = pickle.load(handle)
+            if not isinstance(payload, Mapping):
+                raise TypeError("pickle slide-embedding payload must be a mapping")
+            missing_keys = [
+                key for key in (self.feature_key, self.slide_id_key)
+                if key not in payload]
+            if missing_keys:
+                raise KeyError(
+                    "pickle slide-embedding payload is missing keys "
+                    f"{missing_keys}; available keys: {list(payload.keys())}")
             self.embeddings = torch.as_tensor(
                 np.asarray(payload[self.feature_key])).float()
+            if self.embeddings.ndim != 2 or self.embeddings.shape[0] == 0:
+                raise ValueError(
+                    "pickle slide embeddings must have shape [slides, dimension], "
+                    f"got {tuple(self.embeddings.shape)}")
             ids = payload[self.slide_id_key]
-            self.paths = {
-                normalise_slide_id(slide_id): index
-                for index, slide_id in enumerate(ids)
-            }
+            if isinstance(ids, (str, bytes)):
+                raise TypeError(
+                    f"pickle {self.slide_id_key!r} must be a sequence of IDs")
+            try:
+                ids = list(ids)
+            except TypeError as error:
+                raise TypeError(
+                    f"pickle {self.slide_id_key!r} must be a sequence of IDs") \
+                    from error
+            if len(ids) != len(self.embeddings):
+                raise ValueError(
+                    f"pickle has {len(ids)} slide IDs for "
+                    f"{len(self.embeddings)} embeddings")
+            indexed = [
+                (normalise_slide_id(slide_id), index)
+                for index, slide_id in enumerate(ids)]
         elif self.source_type == "per_slide_torch":
             self.embeddings = None
-            paths = (
+            paths = (() if all(entry[2] for entry in self.entries) else (
                 path for pattern in ("*.pt", "*.pth")
-                for path in self.features_path.rglob(pattern)
-            )
-            self.paths = {
-                normalise_slide_id(path.name): path for path in paths}
+                for path in self.features_path.rglob(pattern)))
+            indexed = [
+                (normalise_slide_id(path.name), path) for path in paths]
         elif self.source_type == "per_slide_h5":
             self.embeddings = None
-            paths = (
+            paths = (() if all(entry[2] for entry in self.entries) else (
                 path for pattern in ("*.h5", "*.hdf5")
-                for path in self.features_path.rglob(pattern)
-            )
-            self.paths = {
-                normalise_slide_id(path.name): path for path in paths}
+                for path in self.features_path.rglob(pattern)))
+            indexed = [
+                (normalise_slide_id(path.name), path) for path in paths]
         else:
             raise ValueError(
                 "source_type must be pkl, per_slide_h5, or per_slide_torch")
 
-        self.entries = [
-            entry for entry in self.entries
-            if ((entry[2] and Path(entry[2]).is_file())
-                or normalise_slide_id(entry[0]) in self.paths)
-        ]
-        if not self.entries:
-            raise RuntimeError(
-                "No split IDs match the registered slide-embedding store")
+        self.paths = {}
+        duplicate_sources: dict[str, list[str]] = {}
+        for slide_id, pointer in indexed:
+            if slide_id in self.paths:
+                duplicate_sources.setdefault(
+                    slide_id, [str(self.paths[slide_id])]).append(str(pointer))
+            else:
+                self.paths[slide_id] = pointer
+        if duplicate_sources:
+            sample = "; ".join(
+                f"{slide_id}: {paths}"
+                for slide_id, paths in list(duplicate_sources.items())[:3])
+            raise ValueError(
+                "slide-embedding store has duplicate normalized slide IDs: "
+                f"{sample}")
 
-    def _read_entries(self, csv_path: str | Path):
-        with Path(csv_path).open(encoding="utf-8", newline="") as handle:
-            rows = list(csv.reader(handle))
+        missing: list[str] = []
+        for slide_id, _label, explicit_path, _case_id in self.entries:
+            if explicit_path and self.embeddings is None:
+                try:
+                    available = Path(expand_path(explicit_path)).is_file()
+                except ValueError:
+                    available = False
+            else:
+                available = normalise_slide_id(slide_id) in self.paths
+            if not available:
+                missing.append(slide_id)
+        if missing:
+            sample = ", ".join(missing[:5])
+            suffix = " ..." if len(missing) > 5 else ""
+            raise FileNotFoundError(
+                f"{len(missing)} split slide embeddings are missing: "
+                f"{sample}{suffix}")
+
+    def _read_entries(self, csv_path: str | Path | pd.DataFrame):
+        if isinstance(csv_path, pd.DataFrame):
+            header = [str(column) for column in csv_path.columns]
+            rows = [header] + [
+                ["" if pd.isna(value) else str(value) for value in row]
+                for row in csv_path.itertuples(index=False, name=None)]
+        else:
+            with Path(csv_path).open(encoding="utf-8", newline="") as handle:
+                rows = list(csv.reader(handle))
         if not rows:
             return []
         header = [item.strip().lower() for item in rows[0]]
         has_header = "slide_id" in header or "label" in header
         if has_header:
-            slide_column = header.index("slide_id") if "slide_id" in header else 0
-            label_column = header.index("label") if "label" in header else 1
+            duplicate_headers = sorted({
+                field for field in header if header.count(field) > 1})
+            if duplicate_headers:
+                raise ValueError(
+                    "slide-embedding split has duplicate columns: "
+                    + ", ".join(duplicate_headers))
+            missing = [
+                field for field in ("slide_id", "label") if field not in header]
+            if missing:
+                raise ValueError(
+                    "slide-embedding split header is missing: "
+                    + ", ".join(missing))
+            slide_column = header.index("slide_id")
+            label_column = header.index("label")
+            if (self.feature_path_column
+                    and self.feature_path_column.lower() not in header):
+                raise ValueError(
+                    "slide-embedding split has no configured feature column "
+                    f"{self.feature_path_column!r}")
             feature_column = (
                 header.index(self.feature_path_column.lower())
                 if self.feature_path_column
                 and self.feature_path_column.lower() in header else None)
+            case_column = header.index("case_id") if "case_id" in header else None
             rows = rows[1:]
         else:
-            slide_column, label_column, feature_column = 0, 1, None
+            slide_column, label_column, feature_column, case_column = 0, 1, None, None
 
         entries = []
-        for row in rows:
+        seen: set[str] = set()
+        valid_labels = set(self.label_dict.values())
+        for row_number, row in enumerate(rows, start=2 if has_header else 1):
             if len(row) <= max(slide_column, label_column):
-                continue
+                raise ValueError(
+                    f"split row {row_number} has fewer than two columns")
             slide_id = row[slide_column].strip()
+            if not slide_id:
+                raise ValueError(f"split row {row_number} has a blank slide_id")
+            normalized = normalise_slide_id(slide_id)
+            if normalized in seen:
+                raise ValueError(
+                    f"split repeats normalized slide ID {normalized!r}")
+            seen.add(normalized)
             raw_label = row[label_column].strip()
             try:
                 label = (
                     self.label_dict[raw_label]
                     if raw_label in self.label_dict else int(raw_label))
-            except ValueError:
-                continue
-            explicit_path = (
-                row[feature_column].strip()
-                if feature_column is not None and len(row) > feature_column
-                else "")
-            entries.append((slide_id, label, explicit_path))
+            except ValueError as error:
+                # Wide upstream tables are rectangular CSVs, so pandas may
+                # promote integer phase-label columns with blank rows to
+                # floating values (``0`` becomes ``0.0``). Preserve the class
+                # index when that representation is exactly integral.
+                try:
+                    numeric_label = float(raw_label)
+                    if not numeric_label.is_integer():
+                        raise ValueError
+                    label = int(numeric_label)
+                except ValueError:
+                    raise ValueError(
+                        f"split row {row_number} has unknown label "
+                        f"{raw_label!r}") from error
+            if label not in valid_labels:
+                raise ValueError(
+                    f"split row {row_number} has out-of-range label {label}")
+            if feature_column is not None:
+                explicit_path = (
+                    row[feature_column].strip()
+                    if len(row) > feature_column else "")
+                if not explicit_path:
+                    raise ValueError(
+                        f"split row {row_number} has a blank configured "
+                        f"feature path in {self.feature_path_column!r}")
+            else:
+                explicit_path = ""
+            case_id = (
+                row[case_column].strip()
+                if case_column is not None and len(row) > case_column
+                else slide_id)
+            if not case_id:
+                raise ValueError(f"split row {row_number} has a blank case_id")
+            entries.append((slide_id, label, explicit_path, case_id))
         return entries
 
     def _load_tensor(self, path: Path) -> torch.Tensor:
@@ -235,7 +362,10 @@ class SlideEmbeddingDataset(Dataset):
                         f"No slide embedding key {self.feature_key!r} found "
                         f"in {path}; available keys: {list(handle.keys())}")
                 return torch.from_numpy(handle[key][:]).float().view(-1)
-        payload = torch.load(path, map_location="cpu", weights_only=False)
+        try:
+            payload = torch.load(path, map_location="cpu", weights_only=True)
+        except TypeError:  # torch < 2.0
+            payload = torch.load(path, map_location="cpu")
         if isinstance(payload, torch.Tensor):
             return payload.float().view(-1)
         if isinstance(payload, Mapping):
@@ -249,9 +379,10 @@ class SlideEmbeddingDataset(Dataset):
         return len(self.entries)
 
     def __getitem__(self, index: int):
-        slide_id, label, explicit_path = self.entries[index]
+        slide_id, label, explicit_path, case_id = self.entries[index]
         pointer = (
-            Path(explicit_path) if explicit_path
+            Path(expand_path(explicit_path))
+            if explicit_path and self.embeddings is None
             else self.paths[normalise_slide_id(slide_id)])
         feature = (
             self.embeddings[pointer]
@@ -261,7 +392,13 @@ class SlideEmbeddingDataset(Dataset):
             raise ValueError(
                 f"Slide {slide_id!r} has embedding width {feature.numel()}, "
                 f"expected {self.feature_dim}")
-        return {"feat": feature, "label": label, "slide_id": slide_id}
+        if not torch.isfinite(feature).all():
+            raise ValueError(
+                f"Slide {slide_id!r} contains NaN or infinite embeddings")
+        return {
+            "feat": feature, "label": label,
+            "slide_id": slide_id, "case_id": case_id,
+        }
 
 
 def split_csv(cfg: Mapping[str, Any], split: str, fold: int) -> Path:
@@ -298,11 +435,13 @@ def build_slide_embedding_loader(
     Returns:
         A data loader yielding slide-vector dictionaries.
     """
+    from common.datasets.split_tables import load_phase_table
+
     source = SlideEmbeddingSource.from_config(cfg)
     dataset = SlideEmbeddingDataset(
         source.source_type,
         source.features_path,
-        split_csv(cfg, split, fold),
+        load_phase_table(cfg, split, fold),
         cfg["label_dict"],
         feature_path_column=source.feature_path_column,
         feature_key=source.feature_key,

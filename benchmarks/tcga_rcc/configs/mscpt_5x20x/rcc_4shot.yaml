@@ -1,8 +1,8 @@
 backbone: conch
-backbone_weights: /work/hdd/bhwm/.cache_huggingface/hub/models--MahmoodLab--conch/blobs/40a9644b9ba0e83a74576e0a5e5f7313599fa9c9cdaf3c20f8a3e271b0e9ae7c
+backbone_weights: ${PGVL_STORAGE_ROOT}/.cache_huggingface/hub/models--MahmoodLab--conch/blobs/40a9644b9ba0e83a74576e0a5e5f7313599fa9c9cdaf3c20f8a3e271b0e9ae7c
 encoder:
   name: conch
-  weights: /work/hdd/bhwm/.cache_huggingface/hub/models--MahmoodLab--conch/blobs/40a9644b9ba0e83a74576e0a5e5f7313599fa9c9cdaf3c20f8a3e271b0e9ae7c
+  weights: ${PGVL_STORAGE_ROOT}/.cache_huggingface/hub/models--MahmoodLab--conch/blobs/40a9644b9ba0e83a74576e0a5e5f7313599fa9c9cdaf3c20f8a3e271b0e9ae7c
   feature_space_id: hf:MahmoodLab/conch
   feature_dim: 512
   initialization: pretrained
@@ -34,16 +34,16 @@ feature_input_kinds:
   low: patch_bag
   high: patch_bag
 include_metadata: true
-dataset_csv: /u/dchanda/PGVL-Gym/benchmarks/tcga_rcc/data/rcc/manifest.csv
-split_dir: /u/dchanda/PGVL-Gym/benchmarks/tcga_rcc/splits/rcc/4shot
+dataset_csv: ${PGVL_REPO_ROOT}/benchmarks/tcga_rcc/data/rcc/manifest.csv
+split_dir: ${PGVL_REPO_ROOT}/benchmarks/tcga_rcc/splits/rcc/4shot
 task: rcc
 benchmark: tcga_rcc_resolution_registry
 feature_dim: 512
 method: mscpt
 experiment: mscpt_5x20x
 epochs: 50
-prompt_provenance: explicit
-results_dir: /u/dchanda/PGVL-Gym/results/tcga_benchmark/mscpt_5x20x/rcc/4shot
+prompt_provenance: upstream
+results_dir: ${PGVL_REPO_ROOT}/results/tcga_benchmark/mscpt_5x20x/rcc/4shot
 lr: 0.0001
 weight_decay: 1.0e-05
 dataset_name: RCC
@@ -55,11 +55,11 @@ num_k: 100
 input_mode: precomputed_shared_features
 low_input_kind: patch_feature_bag
 high_input_kind: patch_feature_bag
-feat_data_dir: /work/hdd/bhwm/trident_features/master_benchmark/5x_512px_0px_overlap/features_conch_v1
-selected_5x_dir: /work/hdd/bhwm/trident_features/master_benchmark/20x_512px_0px_overlap/features_conch_v1
+feat_data_dir: ${PGVL_STORAGE_ROOT}/trident_features/master_benchmark/5x_512px_0px_overlap/features_conch_v1
+selected_5x_dir: ${PGVL_STORAGE_ROOT}/trident_features/master_benchmark/20x_512px_0px_overlap/features_conch_v1
 feature_path_column_s: feature__conch_v1_5x
 feature_path_column_l: feature__conch_v1_20x
-gpt_dir: /u/dchanda/PGVL-Gym/train_data/gpt
-description_prompt_path: /u/dchanda/PGVL-Gym/train_data/gpt/description/RCC.json
+gpt_dir: ${PGVL_REPO_ROOT}/train_data/gpt
+description_prompt_path: ${PGVL_REPO_ROOT}/train_data/gpt/description/RCC.json
 prompt_source: mscpt_multiscale_description_json
 encoder_provenance: native

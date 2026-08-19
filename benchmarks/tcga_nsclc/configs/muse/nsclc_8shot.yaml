@@ -1,8 +1,8 @@
 backbone: conch
-backbone_weights: /work/hdd/bhwm/.cache_huggingface/hub/models--MahmoodLab--conch/blobs/40a9644b9ba0e83a74576e0a5e5f7313599fa9c9cdaf3c20f8a3e271b0e9ae7c
+backbone_weights: ${PGVL_STORAGE_ROOT}/.cache_huggingface/hub/models--MahmoodLab--conch/blobs/40a9644b9ba0e83a74576e0a5e5f7313599fa9c9cdaf3c20f8a3e271b0e9ae7c
 encoder:
   name: conch
-  weights: /work/hdd/bhwm/.cache_huggingface/hub/models--MahmoodLab--conch/blobs/40a9644b9ba0e83a74576e0a5e5f7313599fa9c9cdaf3c20f8a3e271b0e9ae7c
+  weights: ${PGVL_STORAGE_ROOT}/.cache_huggingface/hub/models--MahmoodLab--conch/blobs/40a9644b9ba0e83a74576e0a5e5f7313599fa9c9cdaf3c20f8a3e271b0e9ae7c
   feature_space_id: hf:MahmoodLab/conch
   feature_dim: 512
   initialization: pretrained
@@ -29,8 +29,8 @@ feature_resolutions:
 feature_input_kinds:
   bag: patch_bag
 include_metadata: true
-dataset_csv: /u/dchanda/PGVL-Gym/benchmarks/tcga_nsclc/data/nsclc/manifest.csv
-split_dir: /u/dchanda/PGVL-Gym/benchmarks/tcga_nsclc/splits/nsclc/8shot
+dataset_csv: ${PGVL_REPO_ROOT}/benchmarks/tcga_nsclc/data/nsclc/manifest.csv
+split_dir: ${PGVL_REPO_ROOT}/benchmarks/tcga_nsclc/splits/nsclc/8shot
 task: nsclc
 benchmark: tcga_nsclc_resolution_registry
 feature_dim: 512
@@ -38,17 +38,17 @@ method: muse
 experiment: muse
 epochs: 200
 prompt_provenance: upstream
-results_dir: /u/dchanda/PGVL-Gym/results/tcga_benchmark/muse/nsclc/8shot
+results_dir: ${PGVL_REPO_ROOT}/results/tcga_benchmark/muse/nsclc/8shot
 prompt_feature_space_id: hf:MahmoodLab/conch
 patch_encoder:
   input_kind: patch_bag
   name: conch
-  weights: /work/hdd/bhwm/.cache_huggingface/hub/models--MahmoodLab--conch/blobs/40a9644b9ba0e83a74576e0a5e5f7313599fa9c9cdaf3c20f8a3e271b0e9ae7c
+  weights: ${PGVL_STORAGE_ROOT}/.cache_huggingface/hub/models--MahmoodLab--conch/blobs/40a9644b9ba0e83a74576e0a5e5f7313599fa9c9cdaf3c20f8a3e271b0e9ae7c
   feature_space_id: hf:MahmoodLab/conch
   feature_dim: 512
   feature_key: features
   resolution: 10x
-  path_template: /work/hdd/bhwm/trident_features/master_benchmark/10x_256px_0px_overlap/features_conch_v1/{slide_id}.h5
+  path_template: ${PGVL_STORAGE_ROOT}/trident_features/master_benchmark/10x_256px_0px_overlap/features_conch_v1/{slide_id}.h5
 lr: 0.0001
 weight_decay: 1.0e-05
 early_stopping: true
@@ -62,10 +62,10 @@ retrieval_k: 8
 dropout: 0.25
 text_batch_size: 64
 prompt_csvs:
-  lung adenocarcinoma: /u/dchanda/PGVL-Gym/text_prompts/muse/tcga_nsclc/generated_new_0.csv
-  lung squamous cell carcinoma: /u/dchanda/PGVL-Gym/text_prompts/muse/tcga_nsclc/generated_new_1.csv
+  lung adenocarcinoma: ${PGVL_REPO_ROOT}/text_prompts/muse/tcga_nsclc/generated_new_0.csv
+  lung squamous cell carcinoma: ${PGVL_REPO_ROOT}/text_prompts/muse/tcga_nsclc/generated_new_1.csv
 prompt_source: muse_description_csvs
-conch_ckpt: /work/hdd/bhwm/.cache_huggingface/hub/models--MahmoodLab--conch/blobs/40a9644b9ba0e83a74576e0a5e5f7313599fa9c9cdaf3c20f8a3e271b0e9ae7c
-data_folder_s: /work/hdd/bhwm/trident_features/master_benchmark/10x_256px_0px_overlap/features_conch_v1
+conch_ckpt: ${PGVL_STORAGE_ROOT}/.cache_huggingface/hub/models--MahmoodLab--conch/blobs/40a9644b9ba0e83a74576e0a5e5f7313599fa9c9cdaf3c20f8a3e271b0e9ae7c
+data_folder_s: ${PGVL_STORAGE_ROOT}/trident_features/master_benchmark/10x_256px_0px_overlap/features_conch_v1
 feature_path_column: feature__conch_v1_10x
 encoder_provenance: native

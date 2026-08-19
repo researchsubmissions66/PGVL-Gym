@@ -14,13 +14,17 @@ from common.backbones import FeatureLevel, MethodBackboneContract, SwapPolicy
 
 
 class ConVLMMethod(BaseMethod):
-    """Adapt ConVLM's raw-tile, attribute-conditioned zero-shot protocol."""
+    """Adapt ConVLM's patch-bag, attribute-conditioned zero-shot protocol."""
     name = "convlm"
     backbone_contract = MethodBackboneContract(
-        method=name, feature_level=FeatureLevel.ATTRIBUTE_CONDITIONED_TILE,
-        swap_policy=SwapPolicy.FIXED, default_backbone="convlm-vit",
-        supported_backbones=("convlm-vit",), feature_dim_key=None,
-        rationale="Attribute injection and token pruning occur inside ConVLM's own ViT blocks.")
+        method=name, feature_level=FeatureLevel.PATCH_BAG,
+        swap_policy=SwapPolicy.PRECOMPUTED, default_backbone="convlm-vit",
+        supported_backbones=("convlm-vit",),
+        rationale=(
+            "ConVLM trains on precomputed patch features -- upstream extracts "
+            "them with UNI and exposes the embedding width as a config value. "
+            "Attribute injection and token pruning are the method's own; the "
+            "visual encoder is not."))
 
     def _attributes(self) -> torch.Tensor:
         if hasattr(self, "_attribute_bank"):
@@ -70,22 +74,34 @@ class ConVLMMethod(BaseMethod):
             raise ValueError("attribute_embeddings must be a rank-2 tensor or contain 'embeddings'")
         if attributes.shape[0] != self.cfg["n_classes"]:
             raise ValueError("attribute_embeddings row count must equal n_classes")
-        self._attribute_bank = F.normalize(attributes.float().to(self.device), dim=-1)
+        attributes = attributes.float()
+        if not torch.isfinite(attributes).all():
+            raise ValueError("attribute_embeddings contain NaN or infinity")
+        if (attributes.norm(dim=-1) == 0).any():
+            raise ValueError("attribute_embeddings contain an all-zero class row")
+        self._attribute_bank = F.normalize(attributes.to(self.device), dim=-1)
         return self._attribute_bank
 
     def _seen_indices(self, device: torch.device) -> torch.Tensor:
         values = self.cfg.get("seen_class_indices", list(range(self.cfg["n_classes"])))
         indices = torch.as_tensor(values, device=device, dtype=torch.long)
-        if indices.numel() == 0 or indices.min() < 0 or indices.max() >= self.cfg["n_classes"]:
+        if indices.ndim != 1:
+            raise ValueError("seen_class_indices must be a one-dimensional list")
+        if (indices.numel() == 0 or indices.min() < 0
+                or indices.max() >= self.cfg["n_classes"]):
             raise ValueError("seen_class_indices must be non-empty valid global class indices")
+        if indices.unique().numel() != indices.numel():
+            raise ValueError("seen_class_indices must not contain duplicates")
         return indices
 
     def build_model(self) -> nn.Module:
         from .model import AttributeConVLM
         attributes = self._attributes()
         model = AttributeConVLM(
-            attr_dim=attributes.shape[1], image_size=self.cfg.get("image_size", 448),
-            patch_size=self.cfg.get("patch_size", 16), width=self.cfg.get("embed_dim", 768),
+            attr_dim=attributes.shape[1],
+            feature_dim=self.cfg.get("feature_dim", 1024),
+            max_patches=self.cfg.get("max_patches", 4096),
+            width=self.cfg.get("embed_dim", 768),
             depth=self.cfg.get("depth", 12), heads=self.cfg.get("num_heads", 12),
             drop=self.cfg.get("drop", 0.0), keep_rate=self.cfg.get("keep_rate", 0.7),
         )
@@ -105,15 +121,19 @@ class ConVLMMethod(BaseMethod):
         return embedding @ attributes.t()
 
     @staticmethod
-    def _flatten_tiles(images: torch.Tensor) -> tuple[torch.Tensor, int, int]:
-        if images.ndim == 5:
-            batch_size, tile_count = images.shape[:2]
-            return images.flatten(0, 1), batch_size, tile_count
-        if images.ndim == 4:
-            return images, images.shape[0], 1
-        raise ValueError(
-            "ConVLM expects [batch, tiles, channels, height, width] or "
-            f"[batch, channels, height, width], got {list(images.shape)}")
+    def _flatten_tiles(features: torch.Tensor) -> tuple[torch.Tensor, int, int]:
+        """Normalise a feature bag to ``[batch, patches, dim]``.
+
+        The bag is already the unit ConVLM encodes, so unlike the raw-tile form
+        there is nothing to flatten -- each slide is one sequence.
+        """
+        if features.ndim == 2:
+            features = features.unsqueeze(0)
+        if features.ndim != 3:
+            raise ValueError(
+                "ConVLM expects [batch, patches, feature_dim], got "
+                f"{list(features.shape)}")
+        return features, features.shape[0], 1
 
     @staticmethod
     def _slide_embeddings(tile_embeddings: torch.Tensor, batch_size: int,

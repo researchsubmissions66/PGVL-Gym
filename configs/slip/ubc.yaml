@@ -7,6 +7,9 @@ backbone: "CLIP"
 n_classes: 5
 classnames: ["HGSC", "LGSC", "EC", "CC", "MC"]
 label_dict: {"HGSC": 0, "LGSC": 1, "EC": 2, "CC": 3, "MC": 4}
+tissue_classnames_path: "${PGVL_REPO_ROOT}/text_prompts/slip/ubc_ocean_tissues.json"
+prompt_provenance: "generated"
+prompt_source: "slip_generated_task_extension_prompt_bank"
 
 shots: 1
 k: 5

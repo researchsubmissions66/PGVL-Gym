@@ -1,9 +1,9 @@
 # WSI-FiVE / LUNG
 # Source: configs/wsi/fix_pth.yaml from ls1rius/WSI_FiVE.
-# Different from the rest: uses GPT-summarised pathology reports.
+# Native text objective: training-fold answer bank + released eval prompts.
 
 method: "wsi_five"
-backbone: "wsi-five-vit"  # FiVE's method-owned video/patch transformer
+backbone: "wsi-five-vit"  # FiVE consumes upstream 512-d DSMIL patch features
 n_classes: 2
 classnames: ["lung adenocarcinoma", "lung squamous cell carcinoma"]
 label_dict: {"LUAD": 0, "LUSC": 1}
@@ -12,15 +12,19 @@ seed: 0
 epochs: 30
 lr: 8.0e-6
 weight_decay: 0.05
-batch_size: 4
+batch_size: 1
 num_frames: 2048
 T_mit: 8
 is_img_pth: true
+training_mode: "upstream_answer_bank"
+text_gradient_sample_size: 96
 
 dataset:    "tcga"
 data_path:  "path/to/TCGA_Lung"
-# Import TCGA_Reports.csv with scripts/import_upstream_assets.py.
-report_csv: "methods/wsi_five/gpt_preprocess/TCGA_Reports.csv"
+report_csv: "text_prompts/wsi_five/nsclc_report_answers.csv"
+clinical_questions: "text_prompts/wsi_five/clinical_questions/nsclc.json"
+evaluation_prompt_path: "text_prompts/wsi_five/nsclc_evaluation_prompts.json"
+require_report: true  # enforced only for the training fold
 
 dataset_csv: "splits/TCGA_Lung/dataset.csv"
 data_folder_s: "path/to/TCGA_Lung/features"

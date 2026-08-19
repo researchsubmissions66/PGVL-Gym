@@ -1,8 +1,8 @@
 backbone: clip-rn50
-backbone_weights: /u/dchanda/.cache/clip/RN50.pt
+backbone_weights: ${PGVL_USER_ROOT}/.cache/clip/RN50.pt
 encoder:
   name: clip-rn50
-  weights: /u/dchanda/.cache/clip/RN50.pt
+  weights: ${PGVL_USER_ROOT}/.cache/clip/RN50.pt
   feature_space_id: openai/clip-rn50@official
   feature_dim: 1024
   initialization: pretrained
@@ -32,30 +32,30 @@ feature_input_kinds:
   low: patch_bag
   high: patch_bag
 include_metadata: true
-dataset_csv: /u/dchanda/PGVL-Gym/benchmarks/tcga_brca/data/brca/manifest.csv
-split_dir: /u/dchanda/PGVL-Gym/benchmarks/tcga_brca/splits/brca/16shot
+dataset_csv: ${PGVL_REPO_ROOT}/benchmarks/tcga_brca/data/brca/manifest.csv
+split_dir: ${PGVL_REPO_ROOT}/benchmarks/tcga_brca/splits/brca/16shot
 task: brca
 benchmark: tcga_brca_resolution_registry
 feature_dim: 1024
 method: cod_mil
 experiment: cod_mil
 epochs: 200
-prompt_provenance: upstream_chain_with_generated_normal_tissue
-results_dir: /u/dchanda/PGVL-Gym/results/tcga_benchmark/cod_mil/brca/16shot
+prompt_provenance: generated_chain_with_generated_normal_tissue
+results_dir: ${PGVL_REPO_ROOT}/results/tcga_benchmark/cod_mil/brca/16shot
 lr: 0.0001
 weight_decay: 1.0e-05
 early_stopping: true
 es_patience: 20
 es_stop_epoch: 50
-data_folder_s: /work/hdd/bhwm/trident_features/master_benchmark/10x_224px_0px_overlap/features_clip_rn50
-data_folder_l: /work/hdd/bhwm/trident_features/master_benchmark/20x_224px_0px_overlap/features_clip_rn50
+data_folder_s: ${PGVL_STORAGE_ROOT}/trident_features/master_benchmark/10x_224px_0px_overlap/features_clip_rn50
+data_folder_l: ${PGVL_STORAGE_ROOT}/trident_features/master_benchmark/20x_224px_0px_overlap/features_clip_rn50
 feature_path_column_s: feature__clip_rn50_10x
 feature_path_column_l: feature__clip_rn50_20x
-text_prompt_path: /u/dchanda/PGVL-Gym/text_prompts/cod_mil/brca_chain_of_diagnosis.json
+text_prompt_path: ${PGVL_REPO_ROOT}/text_prompts/cod_mil/brca_chain_of_diagnosis.json
 text_prompt_features: null
-normal_structures_json: /u/dchanda/PGVL-Gym/text_prompts/cod_mil/brca_normal_structures.json
+normal_structures_json: ${PGVL_REPO_ROOT}/text_prompts/cod_mil/brca_normal_structures.json
 prompt_encoding: runtime_cached
 text_feature_space_id: openai/clip-rn50@official
-cross_mag_map_dir: /u/dchanda/PGVL-Gym/benchmarks/tcga_brca/maps/cod_mil/clip_rn50_10x__clip_rn50_20x
+cross_mag_map_dir: ${PGVL_REPO_ROOT}/benchmarks/tcga_brca/maps/cod_mil/clip_rn50_10x__clip_rn50_20x
 prompt_source: cod_chain_runtime_clip_rn50
 encoder_provenance: native

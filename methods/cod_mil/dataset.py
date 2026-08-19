@@ -41,7 +41,9 @@ class CoDMILFeaturesDataset(Dataset):
                  high_feature_root: str, map_dir: str, label_dict: dict,
                  low_feature_column: str | None = None,
                  high_feature_column: str | None = None,
-                 feature_key: str = "features"):
+                 feature_key: str = "features",
+                 feature_dim: int | None = None,
+                 include_metadata: bool = False):
         self.annotations = annotations.reset_index(drop=True)
         self.low_feature_root = low_feature_root
         self.high_feature_root = high_feature_root
@@ -50,6 +52,9 @@ class CoDMILFeaturesDataset(Dataset):
         self.low_feature_column = low_feature_column
         self.high_feature_column = high_feature_column
         self.feature_key = feature_key
+        self.feature_dim = (
+            int(feature_dim) if feature_dim is not None else None)
+        self.include_metadata = bool(include_metadata)
 
     def __len__(self):
         return len(self.annotations)
@@ -69,8 +74,46 @@ class CoDMILFeaturesDataset(Dataset):
                                     "high-resolution features"))
         low = _load_feature_tensor(low_path, self.feature_key)
         high = _load_feature_tensor(high_path, self.feature_key)
-        mapping = torch.load(_find_artifact(self.map_dir, slide_id, "cross-magnification map"),
-                             map_location="cpu", weights_only=True).long()
+        if self.feature_dim is not None:
+            for scale, features in (("low", low), ("high", high)):
+                if features.shape[1] != self.feature_dim:
+                    raise ValueError(
+                        f"CoD-MIL {scale}-resolution features for {slide_id!r} "
+                        f"have width {features.shape[1]}, expected "
+                        f"{self.feature_dim}")
+        map_path = _find_artifact(
+            self.map_dir, slide_id, "cross-magnification map")
+        mapping = torch.load(
+            map_path, map_location="cpu", weights_only=True)
+        if not torch.is_tensor(mapping):
+            raise TypeError(
+                f"CoD-MIL correspondence map must be a tensor: {map_path}")
+        if (mapping.dtype == torch.bool or torch.is_floating_point(mapping)
+                or torch.is_complex(mapping)):
+            raise TypeError(
+                f"CoD-MIL correspondence map must contain integer indices: "
+                f"{map_path}")
+        if (mapping.ndim != 2 or mapping.shape[0] != low.shape[0]
+                or mapping.shape[1] == 0):
+            raise ValueError(
+                f"CoD-MIL correspondence map for {slide_id!r} must have "
+                f"shape [{low.shape[0]}, children], got "
+                f"{tuple(mapping.shape)}")
+        mapping = mapping.long()
+        if (mapping < -1).any() or (mapping >= high.shape[0]).any():
+            raise ValueError(
+                f"CoD-MIL correspondence map for {slide_id!r} contains "
+                f"indices outside [-1, {high.shape[0]})")
+        if not (mapping >= 0).any(dim=1).all():
+            raise ValueError(
+                f"CoD-MIL correspondence map for {slide_id!r} has a "
+                "low-resolution patch with no high-resolution match")
+        if self.include_metadata:
+            metadata = {
+                "slide_id": slide_id,
+                "case_id": str(row.get("case_id", slide_id)),
+            }
+            return low, high, mapping, metadata, label
         return low, high, mapping, label
 
 
@@ -94,7 +137,24 @@ def _read_split(cfg: dict, split: str, fold: int) -> pd.DataFrame:
         selected = split_data[split].dropna().astype(str)
     else:
         raise ValueError(f"{split_path} must contain a '{split}' or 'slide_id' column")
-    result = annotation[annotation["slide_id"].astype(str).isin(set(selected))]
+    annotation_ids = annotation["slide_id"].astype(str)
+    duplicate_annotations = annotation_ids[annotation_ids.duplicated()].unique()
+    if len(duplicate_annotations):
+        raise ValueError(
+            f"{cfg['dataset_csv']} repeats slide IDs: "
+            + ", ".join(map(str, duplicate_annotations[:3])))
+    duplicate_selected = selected[selected.duplicated()].unique()
+    if len(duplicate_selected):
+        raise ValueError(
+            f"{split_path} repeats slide IDs: "
+            + ", ".join(map(str, duplicate_selected[:3])))
+    selected_ids = set(selected)
+    missing = sorted(selected_ids - set(annotation_ids))
+    if missing:
+        raise ValueError(
+            f"{split_path} contains {len(missing)} slide IDs absent from "
+            f"{cfg['dataset_csv']}: {', '.join(missing[:3])}")
+    result = annotation[annotation_ids.isin(selected_ids)]
     if result.empty:
         raise ValueError(f"No annotations match the {split} IDs in {split_path}")
     return result
@@ -103,7 +163,19 @@ def _read_split(cfg: dict, split: str, fold: int) -> pd.DataFrame:
 def _collate(batch):
     if len(batch) != 1:
         raise ValueError("CoD-MIL requires batch_size=1 because bags have variable patch counts")
-    low, high, mapping, label = batch[0]
+    item = batch[0]
+    metadata = None
+    if len(item) == 5:
+        low, high, mapping, metadata, label = item
+    else:
+        low, high, mapping, label = item
+    if metadata is not None:
+        return (
+            low, high, mapping,
+            {"slide_id": [metadata["slide_id"]],
+             "case_id": [metadata["case_id"]]},
+            torch.tensor([label], dtype=torch.long),
+        )
     return low, high, mapping, torch.tensor([label], dtype=torch.long)
 
 
@@ -114,10 +186,13 @@ def build_cod_mil_loader(cfg: dict, split: str, fold: int, shuffle: bool = True)
             "CoD-MIL requires 'cross_mag_map_dir'. Generate maps with "
             "scripts/generate_cross_magnification_maps.py first.")
     dataset = CoDMILFeaturesDataset(
-        _read_split(cfg, split, fold), cfg["data_folder_s"], cfg["data_folder_l"],
+        _read_split(cfg, split, fold), cfg.get("data_folder_s", ""),
+        cfg.get("data_folder_l", ""),
         map_dir, cfg["label_dict"],
         low_feature_column=cfg.get("feature_path_column_s"),
         high_feature_column=cfg.get("feature_path_column_l"),
-        feature_key=cfg.get("feature_key", "features"))
+        feature_key=cfg.get("feature_key", "features"),
+        feature_dim=cfg.get("feature_dim"),
+        include_metadata=cfg.get("include_metadata", False))
     return DataLoader(dataset, batch_size=1, shuffle=shuffle and split == "train",
                       num_workers=cfg.get("num_workers", 0), collate_fn=_collate)

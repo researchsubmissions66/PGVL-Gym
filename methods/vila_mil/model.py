@@ -208,7 +208,10 @@ class ViLa_MIL_Model(nn.Module):
         compents_high, _ = self.cross_attention_1(self.learnable_image_center, M_high, M_high)
         compents_high = self.norm(compents_high + self.learnable_image_center)
 
-        H = compents.squeeze().float()
+        # MultiheadAttention returns [prototypes, 1, width].  Remove only its
+        # synthetic batch axis: unrestricted squeeze also removes the
+        # prototype axis when prototype_number=1 and turns H into a vector.
+        H = compents.squeeze(1).float()
         A_V = self.attention_V(H)  
         A_U = self.attention_U(H)  
         A = self.attention_weights(A_V * A_U) 
@@ -216,7 +219,7 @@ class ViLa_MIL_Model(nn.Module):
         A = F.softmax(A, dim=1)  
         image_features_low = torch.mm(A, H)  
 
-        H_high = compents_high.squeeze().float()
+        H_high = compents_high.squeeze(1).float()
         A_V_high = self.attention_V(H_high)  
         A_U_high = self.attention_U(H_high)  
         A_high = self.attention_weights(A_V_high * A_U_high) 
@@ -225,14 +228,14 @@ class ViLa_MIL_Model(nn.Module):
         image_features_high = torch.mm(A_high, H_high)  
 
         text_features_low = text_features[:self.num_classes]
-        image_context = torch.cat((compents.squeeze(), M), dim=0)
+        image_context = torch.cat((compents.squeeze(1), M), dim=0)
         text_context_features, _ = self.cross_attention_2(text_features_low.unsqueeze(1), image_context, image_context)
-        text_features_low = text_context_features.squeeze() + text_features_low
+        text_features_low = text_context_features.squeeze(1) + text_features_low
 
         text_features_high = text_features[self.num_classes:]
-        image_context_high = torch.cat((compents_high.squeeze(), M_high), dim=0)
+        image_context_high = torch.cat((compents_high.squeeze(1), M_high), dim=0)
         text_context_features_high, _ = self.cross_attention_2(text_features_high.unsqueeze(1), image_context_high, image_context_high)
-        text_features_high = text_context_features_high.squeeze() + text_features_high
+        text_features_high = text_context_features_high.squeeze(1) + text_features_high
 
         logits_low = image_features_low @ text_features_low.T
         logits_high = image_features_high @ text_features_high.T

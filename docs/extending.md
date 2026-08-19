@@ -15,6 +15,12 @@ The prompt compiler emits FOCUS/ViLa two-scale CSVs, MUSE description CSVs,
 MSCPT description JSON, MAPLE entity JSON, CoD chains, SLIP tissues, SLDPC
 aliases, and ConVLM attributes from that single canonical profile.
 
+WSI-FiVE is intentionally not synthesized from this profile. A task must
+declare an explicit six-question bank; native mode additionally needs aligned
+per-case training answers and a separate class-indexed evaluation bank. If
+those upstream assets do not exist, use the explicitly partial
+`simplified_classnames` mode and mark the question bank as generated.
+
 ## Add a feature source or resolution
 
 Register a new source under `feature_registry`; do not add a new loader solely

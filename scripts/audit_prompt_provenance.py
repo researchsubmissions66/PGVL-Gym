@@ -64,24 +64,55 @@ def main() -> int:
     manifest = (json.loads(MANIFEST.read_text(encoding="utf-8"))
                 if MANIFEST.is_file() else {})
     records = manifest.get("assets", {})
+    repository_records = manifest.get("repository_assets", {})
 
-    unrecorded, rows = [], []
+    unrecorded, missing, rows = [], [], []
     for path in assets():
         key = str(path.relative_to(PROMPT_ROOT))
         inline = inline_provenance(path)
-        recorded = records.get(key, {}).get("provenance")
+        record = records.get(key, {})
+        recorded = record.get("provenance")
         origin = inline or recorded
         if origin not in CATEGORIES:
             unrecorded.append(key)
-        rows.append((key, origin or "UNRECORDED", "inline" if inline else
-                     ("manifest" if recorded else "-")))
+        copied = record.get("copied_from_upstream")
+        copy_status = (
+            "copied" if copied is True else
+            "not-copied" if copied is False else "-")
+        rows.append((key, origin or "UNRECORDED", copy_status,
+                     "inline" if inline else ("manifest" if recorded else "-")))
+
+    # Some method-native banks intentionally live at their upstream-compatible
+    # repository paths rather than under text_prompts/. Register and validate
+    # those explicitly so their content origin is not inferred from path style.
+    for key, record in sorted(repository_records.items()):
+        path = (REPO_ROOT / key).resolve()
+        try:
+            path.relative_to(REPO_ROOT.resolve())
+        except ValueError:
+            missing.append(f"{key} (outside repository)")
+            rows.append((key, "INVALID", "-", "repository-manifest"))
+            continue
+        if not path.is_file():
+            missing.append(key)
+            rows.append((key, "MISSING", "-", "repository-manifest"))
+            continue
+        recorded = record.get("provenance") if isinstance(record, dict) else None
+        if recorded not in CATEGORIES:
+            unrecorded.append(key)
+        copied = record.get("copied_from_upstream") if isinstance(record, dict) else None
+        copy_status = (
+            "copied" if copied is True else
+            "not-copied" if copied is False else "-")
+        rows.append((key, recorded or "UNRECORDED", copy_status,
+                     "repository-manifest"))
 
     width = max(len(r[0]) for r in rows) if rows else 10
-    for key, origin, where in rows:
-        print(f"  {key:{width}s}  {origin:10s} {where}")
+    for key, origin, copy_status, where in rows:
+        print(f"  {key:{width}s}  {origin:10s} {copy_status:10s} {where}")
 
     counts: dict[str, int] = {}
-    for _, origin, _ in rows:
+    for _, origin, _, _ in rows:
         counts[origin] = counts.get(origin, 0) + 1
     print(f"\n{len(rows)} assets: " +
           ", ".join(f"{v} {k}" for k, v in sorted(counts.items())))
@@ -92,8 +123,12 @@ def main() -> int:
             print(f"  {key}")
         print(f"\nAdd them to {MANIFEST.relative_to(REPO_ROOT)} or mark them "
               "inline with a '_provenance' key.")
-        if args.check:
-            return 1
+    if missing:
+        print(f"\n{len(missing)} registered repository asset(s) missing or invalid:")
+        for key in missing:
+            print(f"  {key}")
+    if args.check and (unrecorded or missing):
+        return 1
     return 0
 
 

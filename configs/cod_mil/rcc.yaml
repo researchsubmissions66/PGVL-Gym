@@ -4,6 +4,8 @@
 method: "cod_mil"
 backbone: "clip-rn50"
 feature_dim: 1024
+feature_space_id: "openai/clip-rn50@official"
+text_feature_space_id: "openai/clip-rn50@official"
 n_classes: 3
 classnames: ["clear cell renal cell carcinoma", "papillary renal cell carcinoma", "chromophobe renal cell carcinoma"]
 label_dict: {"CCRCC": 0, "PRCC": 1, "CHRCC": 2}
@@ -25,9 +27,12 @@ dataset_csv:    "splits/TCGA_RCC/dataset.csv"
 data_folder_s:  "path/to/TCGA_RCC/feats_5x"
 data_folder_l:  "path/to/TCGA_RCC/feats_20x"
 split_dir:      "splits/task_tcga_rcc_subtyping"
-# Imported from upstream with scripts/import_upstream_assets.py.
+# The original upstream 30-row tensor is retained as an audit-only asset. This
+# verified tensor re-encodes the upstream 27-row CSV in exact row order.
 # Generate this directory with scripts/generate_cross_magnification_maps.py.
 text_prompt_path: "text_prompts/cod_mil/rcc_chain_of_diagnosis.json"
-text_prompt_features: "text_prompts/cod_mil/rcc_text_prompt_features_clip.pt"
+text_prompt_bank_csv: "text_prompts/cod_mil/rcc_chain_of_diagnosis.csv"
+text_prompt_features: "text_prompts/cod_mil/rcc_text_prompt_features_clip_rn50_verified.pt"
+prompt_encoding: "precomputed"
 cross_mag_map_dir: "maps/TCGA_RCC_10x_to_20x"
 results_dir:    "results/cod_mil_rcc"

@@ -28,6 +28,13 @@ Every cohort needs columns that resolve to:
 - one label from the ordered task label list;
 - optional source-partition or filtering fields.
 
+Protocol compilation rejects blank required metadata fields, slide IDs that
+collide after suffix normalization, and patients carrying conflicting labels.
+At runtime, split members must all exist in the annotation manifest; loaders do
+not silently filter unknown IDs or substitute a root scan when an exact feature
+column was configured. CoD-MIL additionally validates every low-to-high patch
+map before indexing it.
+
 Patient identity is mandatory for patient-disjoint cancer-cohort folds.
 CAMELYON16 treats each slide identifier as one case under its current
 annotation contract.

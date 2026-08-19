@@ -14,9 +14,14 @@ FOREGROUND=0
 [[ "${1:-}" == "--foreground" ]] && FOREGROUND=1
 
 REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+if [[ -f "${REPO}/.env" ]]; then
+    set -a
+    source "${REPO}/.env"
+    set +a
+fi
 PORT="${PGVL_VLLM_PORT:-8000}"
-VLLM_ENV="${PGVL_VLLM_ENV:-/work/hdd/bhwm/dchanda/envs/pgvl-vllm}"
-export HF_HOME="${HF_HOME:-/work/hdd/bhwm/.cache_huggingface}"
+VLLM_ENV="${PGVL_VLLM_ENV:-${PGVL_STORAGE_ROOT}/dchanda/envs/pgvl-vllm}"
+export HF_HOME="${HF_HOME:-${PGVL_STORAGE_ROOT}/.cache_huggingface}"
 export HF_HUB_OFFLINE="${HF_HUB_OFFLINE:-1}"
 # Python adds ~/.local/lib/pythonX.Y/site-packages ahead of the environment,
 # so a stray user-installed package can shadow one of vLLM's pinned deps.
@@ -60,6 +65,7 @@ ${python_bin} -m vllm.entrypoints.openai.api_server \
   --served-model-name ${MODEL} \
   --port ${PORT} \
   --download-dir ${HF_HOME}/hub \
+  ${PGVL_VLLM_EAGER:-} \
   ${PGVL_VLLM_ARGS:-}
 CMD
 }
@@ -71,6 +77,15 @@ if [[ "${FOREGROUND}" == "1" ]]; then
     exit $?
 fi
 
+# NOTE: flashinfer's comm/fd_exchange.py annotates `array.array[int]` without
+# postponed evaluation. array.array is not subscriptable, so the annotation
+# raises TypeError at import -- and vLLM guards that import with
+# `except ImportError`, which does not catch it, so the engine dies at startup.
+# The environment's copy is patched with `from __future__ import annotations`
+# (original kept as fd_exchange.py.orig). Reinstalling the vLLM environment
+# loses that patch and the failure returns. Eager mode does NOT avoid it: the
+# import arrives through the model registry, not the compile backend.
+#
 # vLLM stages the whole checkpoint through host RAM before moving it to the
 # device, so a GPU request alone is not enough: without --mem the default
 # allocation is a fraction of what a 7B model needs and the job is OOM-killed

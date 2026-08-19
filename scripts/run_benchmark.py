@@ -40,6 +40,7 @@ import argparse
 import csv
 import json
 import os
+import re
 import subprocess
 import sys
 from dataclasses import dataclass, field
@@ -48,11 +49,14 @@ from typing import Any, Iterable, Sequence
 
 import yaml
 
+
 REPO = Path(__file__).resolve().parent.parent
 JOB_SCRIPT = REPO / "scripts" / "pgvl_job.sh"
 
 sys.path.insert(0, str(REPO))
 from common.preflight import preflight  # noqa: E402
+from common.configuration import expand_path, load_yaml_config  # noqa: E402
+from common.run_state import validate_resume_state  # noqa: E402
 
 # One benchmark directory per cohort. Multi-cohort protocols were split up so a
 # cohort whose data is not ready cannot hold back the cohorts that are.
@@ -69,6 +73,11 @@ READINESS_COLUMNS = (
     ("config_valid", "config"),
     ("auxiliary_ready", "prompt assets"),
 )
+REQUIRED_MATRIX_COLUMNS = frozenset({
+    "experiment", "method", "cohort", "shots", "config", "ready",
+    "missing_feature_files", "missing_auxiliary_files",
+    *(column for column, _label in READINESS_COLUMNS),
+})
 
 
 # -----------------------------------------------------------------------------
@@ -78,25 +87,113 @@ def _truthy(value: Any) -> bool:
     return str(value).strip().lower() in {"true", "1", "yes"}
 
 
-def _count(value: Any) -> int:
+def _matrix_boolean(value: Any, field_name: str) -> bool:
+    """Parse a run-matrix boolean without treating typos as false."""
+    normalized = str(value or "").strip().lower()
+    if normalized in {"true", "1", "yes"}:
+        return True
+    if normalized in {"false", "0", "no", ""}:
+        return False
+    raise ValueError(
+        f"{field_name} must be true or false, got {value!r}")
+
+
+def _count(value: Any, field_name: str = "count") -> int:
+    """Parse a non-negative matrix count, rejecting corrupt cells."""
     try:
-        return int(str(value).strip() or 0)
-    except ValueError:
-        return 0
+        parsed = int(str(value or "").strip() or 0)
+    except (TypeError, ValueError) as error:
+        raise ValueError(
+            f"{field_name} must be a non-negative integer, got {value!r}") \
+            from error
+    if parsed < 0:
+        raise ValueError(
+            f"{field_name} must be a non-negative integer, got {parsed}")
+    return parsed
+
+
+def _validate_ready_row(
+    ready: bool, readiness: dict[str, bool], missing_features: int,
+    missing_auxiliary: int,
+) -> None:
+    """Reject a matrix row that claims readiness despite known blockers."""
+    if not ready:
+        return
+    contradictions = [
+        column for column, value in readiness.items() if not value]
+    if missing_features:
+        contradictions.append("missing_feature_files")
+    if missing_auxiliary:
+        contradictions.append("missing_auxiliary_files")
+    if contradictions:
+        raise ValueError(
+            "ready=true contradicts blocking fields: "
+            + ", ".join(contradictions))
+
+
+def _validate_matrix_header(fields: Sequence[str | None]) -> None:
+    """Require the coverage/readiness evidence planning relies upon."""
+    if not fields:
+        raise ValueError("run matrix has no header")
+    blank = [index for index, field in enumerate(fields)
+             if field is None or not field.strip()]
+    if blank:
+        raise ValueError(
+            f"run matrix has blank header fields at positions {blank}")
+    duplicates = sorted({
+        field for field in fields if fields.count(field) > 1})
+    if duplicates:
+        raise ValueError(
+            f"run matrix has duplicate columns: {', '.join(duplicates)}")
+    missing = sorted(REQUIRED_MATRIX_COLUMNS - set(fields))
+    if missing:
+        raise ValueError(
+            "run matrix is missing required columns: " + ", ".join(missing))
+
+
+def _benchmark_directory(benchmark: str) -> Path | None:
+    """Resolve only simple benchmark names below the repository registry."""
+    if re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_.-]*", benchmark) is None:
+        return None
+    return REPO / "benchmarks" / benchmark
+
+
+def _nonnegative_int(value: str) -> int:
+    try:
+        parsed = int(value)
+    except ValueError as error:
+        raise argparse.ArgumentTypeError("must be a non-negative integer") from error
+    if parsed < 0:
+        raise argparse.ArgumentTypeError("must be a non-negative integer")
+    return parsed
+
+
+def _positive_int(value: str) -> int:
+    parsed = _nonnegative_int(value)
+    if parsed == 0:
+        raise argparse.ArgumentTypeError("must be a positive integer")
+    return parsed
 
 
 def _load_config(path: Path) -> dict[str, Any]:
-    with open(path) as handle:
-        loaded = yaml.safe_load(handle)
-    return loaded if isinstance(loaded, dict) else {}
+    return load_yaml_config(path)
 
 
-def _fold_progress(cfg: dict[str, Any]) -> tuple[int, int, Path | None]:
+def _fold_progress(
+    cfg: dict[str, Any], method_name: str | None = None,
+) -> tuple[int, int, Path | None]:
     """Return (completed folds, total folds, results dir) for one run."""
     results_dir = cfg.get("results_dir")
-    k_start = int(cfg.get("k_start", 0) or 0)
-    k_end = int(cfg.get("k_end", cfg.get("k", 5)) or 5)
-    total = max(k_end - k_start, 0)
+    raw_start = cfg.get("k_start", 0)
+    raw_end = cfg["k_end"] if "k_end" in cfg else cfg.get("k", 5)
+    if (isinstance(raw_start, bool) or not isinstance(raw_start, int)
+            or isinstance(raw_end, bool) or not isinstance(raw_end, int)):
+        raise ValueError("k_start and k_end/k must be integer fold indices")
+    k_start = raw_start
+    k_end = raw_end
+    if k_start < 0 or k_end <= k_start:
+        raise ValueError(f"invalid fold range [{k_start}, {k_end})")
+    total = k_end - k_start
     if not results_dir:
         return 0, total, None
 
@@ -106,18 +203,27 @@ def _fold_progress(cfg: dict[str, Any]) -> tuple[int, int, Path | None]:
         return 0, total, path
     try:
         with open(metrics) as handle:
-            folds = json.load(handle).get("folds", [])
-    except (json.JSONDecodeError, OSError):
-        # A truncated metrics.json (preempted mid-write) means "start over"
-        # rather than "crash the launcher".
-        return 0, total, path
-
-    indices = {
-        entry["fold"] for entry in folds
-        if isinstance(entry, dict) and isinstance(entry.get("fold"), int)
-    }
-    completed = max(indices) + 1 - k_start if indices else len(folds)
-    return max(min(completed, total), 0), total, path
+            state = json.load(handle)
+    except (json.JSONDecodeError, OSError) as error:
+        raise ValueError(f"cannot read resume state {metrics}: {error}") from error
+    method = method_name or cfg.get("method")
+    if not isinstance(method, str) or not method.strip():
+        raise ValueError(
+            f"cannot validate resume state {metrics} without a method name")
+    try:
+        folds = validate_resume_state(
+            state, path / "config.json", method, cfg)
+    except RuntimeError as error:
+        raise ValueError(f"invalid resume state {metrics}: {error}") from error
+    indices = [entry["fold"] for entry in folds]
+    outside = sorted(
+        index for index in indices if index < k_start or index >= k_end)
+    if outside:
+        raise ValueError(
+            f"resume state has folds outside [{k_start}, {k_end}): {outside}")
+    # Count the actual set rather than inferring progress from max(index): a
+    # preempted or manually repaired run can contain holes such as {0, 2}.
+    return len(indices), total, path
 
 
 def _recorded_skip(results_dir: Path | None) -> str | None:
@@ -135,7 +241,7 @@ def _recorded_skip(results_dir: Path | None) -> str | None:
     return "; ".join(problems[:2]) if problems else "recorded in skipped.json"
 
 
-def _queued_job_names() -> dict[str, str]:
+def _queued_job_names() -> dict[str, str] | None:
     """Map job name -> job id for this user's pending and running jobs."""
     user = os.environ.get("USER") or os.environ.get("LOGNAME") or ""
     try:
@@ -143,12 +249,11 @@ def _queued_job_names() -> dict[str, str]:
             ["squeue", "-h", "-u", user, "--format=%i|%j"],
             capture_output=True, text=True, timeout=60, check=False)
     except (OSError, subprocess.SubprocessError) as error:
-        print(f"! cannot read the SLURM queue ({error}); "
-              "duplicate-submission protection is off", file=sys.stderr)
-        return {}
+        print(f"! cannot read the SLURM queue ({error})", file=sys.stderr)
+        return None
     if output.returncode != 0:
         print(f"! squeue failed: {output.stderr.strip()}", file=sys.stderr)
-        return {}
+        return None
 
     jobs: dict[str, str] = {}
     for line in output.stdout.splitlines():
@@ -246,8 +351,13 @@ def regenerate(benchmark: str, benchmark_dir: Path) -> str | None:
 def plan_benchmark(benchmark: str, args: argparse.Namespace,
                    queued: dict[str, str]) -> tuple[list[Run], list[str]]:
     """Classify every run of one benchmark. Never raises for a bad row."""
-    benchmark_dir = REPO / "benchmarks" / benchmark
+    benchmark_dir = _benchmark_directory(benchmark)
     notes: list[str] = []
+
+    if benchmark_dir is None:
+        return [], [
+            f"{benchmark}: invalid benchmark name; use a directory name "
+            "directly under benchmarks/"]
 
     if not benchmark_dir.is_dir():
         return [], [f"{benchmark}: directory does not exist"]
@@ -260,29 +370,78 @@ def plan_benchmark(benchmark: str, args: argparse.Namespace,
 
     try:
         with open(matrix_path, newline="") as handle:
-            rows = list(csv.DictReader(handle))
-    except OSError as error:
+            reader = csv.DictReader(handle)
+            _validate_matrix_header(list(reader.fieldnames or []))
+            rows = list(reader)
+    except (OSError, ValueError) as error:
         return [], [f"{benchmark}: cannot read run_matrix.csv ({error})"]
 
     runs: list[Run] = []
-    for row in rows:
+    for row_number, row in enumerate(rows, start=2):
+        raw_config = str(row.get("config") or "").strip()
+        config_error = None
+        try:
+            config_path = Path(expand_path(raw_config)) if raw_config else Path()
+            if raw_config and not config_path.is_absolute():
+                config_path = REPO / config_path
+        except (OSError, UnicodeError, ValueError) as error:
+            config_path = Path(raw_config) if raw_config else Path()
+            config_error = f"cannot resolve config path ({error})"
+        row_error = None
+        try:
+            if None in row or any(value is None for value in row.values()):
+                raise ValueError("row has the wrong number of fields")
+            ready = _matrix_boolean(row.get("ready"), "ready")
+            missing_features = _count(
+                row.get("missing_feature_files"), "missing_feature_files")
+            missing_auxiliary = _count(
+                row.get("missing_auxiliary_files"),
+                "missing_auxiliary_files")
+            readiness = {}
+            for column, _label in READINESS_COLUMNS:
+                if column in row:
+                    readiness[column] = _matrix_boolean(row[column], column)
+            _validate_ready_row(
+                ready, readiness, missing_features, missing_auxiliary)
+        except ValueError as error:
+            ready = False
+            missing_features = missing_auxiliary = 0
+            row_error = f"run matrix row {row_number}: {error}"
         run = Run(
             benchmark=benchmark,
             experiment=row.get("experiment") or row.get("method") or "?",
             method=row.get("method") or "",
             cohort=row.get("cohort") or "",
             shots=str(row.get("shots") or ""),
-            config=Path(row.get("config") or ""),
-            ready=_truthy(row.get("ready")),
-            missing_features=_count(row.get("missing_feature_files")),
-            missing_auxiliary=_count(row.get("missing_auxiliary_files")),
+            config=config_path,
+            ready=ready,
+            missing_features=missing_features,
+            missing_auxiliary=missing_auxiliary,
         )
 
         if not _selected(run, args):
             continue
 
-        if not run.method or not str(run.config):
+        if row_error:
+            run.state, run.reason = ERROR, row_error
+            runs.append(run)
+            continue
+
+        if not run.method or not raw_config:
             run.state, run.reason = ERROR, "run matrix row has no method or config"
+            runs.append(run)
+            continue
+
+        if (len(run.job_name) > 128
+                or re.fullmatch(r"[A-Za-z0-9_.-]+", run.job_name) is None):
+            run.state, run.reason = (
+                ERROR, f"invalid SLURM job name derived from row: "
+                f"{run.job_name!r}")
+            runs.append(run)
+            continue
+
+        if config_error:
+            run.state, run.reason = ERROR, config_error
             runs.append(run)
             continue
 
@@ -310,15 +469,25 @@ def plan_benchmark(benchmark: str, args: argparse.Namespace,
         # --- resume --------------------------------------------------------
         try:
             cfg = _load_config(run.config)
-        except (yaml.YAMLError, OSError) as error:
+        except (ValueError, OSError, yaml.YAMLError) as error:
             run.state, run.reason = ERROR, f"cannot parse config ({error})"
             runs.append(run)
             continue
 
-        done, total, results_dir = _fold_progress(cfg)
+        try:
+            if args.rerun:
+                done, total, _ = _fold_progress(
+                    {**cfg, "results_dir": None}, run.method)
+                configured_results = cfg.get("results_dir")
+                results_dir = (
+                    Path(configured_results) if configured_results else None)
+            else:
+                done, total, results_dir = _fold_progress(cfg, run.method)
+        except ValueError as error:
+            run.state, run.reason = ERROR, str(error)
+            runs.append(run)
+            continue
         run.folds_done, run.folds_total, run.results_dir = done, total, results_dir
-        if args.rerun:
-            run.folds_done = done = 0
 
         # A previous attempt already determined this configuration cannot run.
         # Honour that instead of resubmitting it every campaign.
@@ -360,6 +529,37 @@ def plan_benchmark(benchmark: str, args: argparse.Namespace,
     return runs, notes
 
 
+def _mark_plan_collisions(plan: Plan) -> None:
+    """Reject rows that could submit duplicate jobs or share output state."""
+    collisions: dict[int, list[str]] = {}
+
+    def record(groups: dict[str, list[Run]], description: str) -> None:
+        for key, runs in groups.items():
+            if len(runs) < 2:
+                continue
+            for run in runs:
+                collisions.setdefault(id(run), []).append(
+                    f"duplicate {description} {key!r}")
+
+    job_groups: dict[str, list[Run]] = {}
+    result_groups: dict[str, list[Run]] = {}
+    for run in plan.runs:
+        if run.state == ERROR:
+            continue
+        job_groups.setdefault(run.job_name, []).append(run)
+        if run.results_dir is not None:
+            key = str(run.results_dir.expanduser().resolve(strict=False))
+            result_groups.setdefault(key, []).append(run)
+    record(job_groups, "SLURM job name")
+    record(result_groups, "results directory")
+
+    for run in plan.runs:
+        reasons = collisions.get(id(run))
+        if reasons:
+            run.state = ERROR
+            run.reason = "; ".join(reasons)
+
+
 def _selected(run: Run, args: argparse.Namespace) -> bool:
     if args.cohort and run.cohort not in args.cohort:
         return False
@@ -390,6 +590,8 @@ def submit(run: Run, args: argparse.Namespace, log_dir: Path) -> tuple[bool, str
     if args.account:
         command.append(f"--account={args.account}")
     command += [str(JOB_SCRIPT), run.method, str(run.config), args.device]
+    if args.rerun:
+        command.append("--rerun")
 
     if args.dry_run:
         return True, "dry-run"
@@ -399,8 +601,13 @@ def submit(run: Run, args: argparse.Namespace, log_dir: Path) -> tuple[bool, str
     if result.returncode != 0:
         return False, (result.stderr.strip() or "sbatch failed").splitlines()[-1][:200]
 
-    # "Submitted batch job 12345"
-    job_id = result.stdout.strip().rsplit(" ", 1)[-1]
+    match = re.fullmatch(
+        r"Submitted batch job ([0-9]+)", result.stdout.strip())
+    if match is None:
+        return False, (
+            "sbatch returned success but its job ID could not be parsed: "
+            f"{result.stdout.strip()[:120]!r}")
+    job_id = match.group(1)
     return True, job_id
 
 
@@ -409,19 +616,59 @@ def submit(run: Run, args: argparse.Namespace, log_dir: Path) -> tuple[bool, str
 # -----------------------------------------------------------------------------
 def write_report(plan: Plan, path: Path) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    with open(path, "w", newline="") as handle:
-        writer = csv.writer(handle)
-        writer.writerow([
-            "benchmark", "experiment", "method", "cohort", "shots", "state",
-            "folds_done", "folds_total", "job_id", "reason", "config",
-            "results_dir",
-        ])
-        for run in plan.runs:
+    temporary = path.with_suffix(path.suffix + ".tmp")
+    try:
+        with open(temporary, "w", newline="") as handle:
+            writer = csv.writer(handle)
             writer.writerow([
-                run.benchmark, run.experiment, run.method, run.cohort,
-                run.shots, run.state, run.folds_done, run.folds_total,
-                run.job_id, run.reason, run.config, run.results_dir or "",
+                "benchmark", "experiment", "method", "cohort", "shots",
+                "state", "folds_done", "folds_total", "job_id", "reason",
+                "config", "results_dir",
             ])
+            for run in plan.runs:
+                writer.writerow([
+                    run.benchmark, run.experiment, run.method, run.cohort,
+                    run.shots, run.state, run.folds_done, run.folds_total,
+                    run.job_id, run.reason, run.config, run.results_dir or "",
+                ])
+            handle.flush()
+            os.fsync(handle.fileno())
+        os.replace(temporary, path)
+    finally:
+        temporary.unlink(missing_ok=True)
+
+
+def _report_destination_error(
+    plan: Plan, report: Path, benchmarks: Sequence[str] = (),
+) -> str | None:
+    """Return why a report path would overwrite campaign input or run state."""
+    destination = report.expanduser().resolve(strict=False)
+    protected: dict[Path, str] = {}
+    for benchmark in benchmarks:
+        benchmark_dir = _benchmark_directory(benchmark)
+        if benchmark_dir is None:
+            continue
+        for name, label in (("run_matrix.csv", "run matrix"),
+                            ("protocol.yaml", "benchmark protocol")):
+            path = benchmark_dir / name
+            protected[path.resolve(strict=False)] = f"{label} {path}"
+    for run in plan.runs:
+        protected[run.config.expanduser().resolve(strict=False)] = (
+            f"run config {run.config}")
+        benchmark_dir = _benchmark_directory(run.benchmark)
+        if benchmark_dir is not None:
+            matrix = benchmark_dir / "run_matrix.csv"
+            protected[matrix.resolve(strict=False)] = f"run matrix {matrix}"
+        if run.results_dir is not None:
+            for name in ("config.json", "metrics.json", "skipped.json"):
+                state = run.results_dir / name
+                protected[state.expanduser().resolve(strict=False)] = (
+                    f"run state {state}")
+    if destination in protected:
+        return f"refusing to overwrite {protected[destination]}"
+    if report.exists() and not report.is_file():
+        return f"report path exists but is not a regular file: {report}"
+    return None
 
 
 def summarize(plan: Plan, report_path: Path, dry_run: bool) -> None:
@@ -472,8 +719,9 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     selection.add_argument("--method", nargs="+", default=None)
     selection.add_argument("--experiment", nargs="+", default=None,
                            help="experiment/variant name, e.g. pathpt_keep")
-    selection.add_argument("--shots", nargs="+", type=int, default=None)
-    selection.add_argument("--limit", type=int, default=None,
+    selection.add_argument(
+        "--shots", nargs="+", type=_positive_int, default=None)
+    selection.add_argument("--limit", type=_nonnegative_int, default=None,
                            help="submit at most this many jobs this invocation")
 
     behaviour = parser.add_argument_group("behaviour")
@@ -487,7 +735,11 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     behaviour.add_argument("--force", action="store_true",
                            help="submit runs the matrix marks not ready "
                                 "(they are expected to fail; for debugging)")
-    behaviour.add_argument("--allow-missing-features", type=int, default=0,
+    behaviour.add_argument(
+        "--best-effort", action="store_true",
+        help="return success even when selected rows or submissions error")
+    behaviour.add_argument("--allow-missing-features", type=_nonnegative_int,
+                           default=0,
                            metavar="N",
                            help="submit an otherwise-ready run when at most N "
                                 "slide feature files are missing; the count is "
@@ -496,8 +748,8 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     slurm = parser.add_argument_group("slurm")
     slurm.add_argument("--account", default=os.environ.get("PGVL_ACCOUNT", "bhwm-delta-gpu"))
     slurm.add_argument("--partition", default=os.environ.get("PGVL_PARTITION", "gpuA100x4"))
-    slurm.add_argument("--gpus", default="1")
-    slurm.add_argument("--cpus", default="8")
+    slurm.add_argument("--gpus", type=_positive_int, default=1)
+    slurm.add_argument("--cpus", type=_positive_int, default=8)
     slurm.add_argument("--mem", default="64G")
     slurm.add_argument("--time", default="12:00:00")
     slurm.add_argument("--device", default="cuda:0")
@@ -510,23 +762,38 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
 
 def main(argv: Sequence[str] | None = None) -> int:
     args = parse_args(argv)
+    args.log_dir = args.log_dir.expanduser()
+    args.report = args.report.expanduser()
     plan = Plan()
 
     if not JOB_SCRIPT.exists():
         print(f"FATAL: job script not found: {JOB_SCRIPT}", file=sys.stderr)
         return 1
-    if not os.access(JOB_SCRIPT, os.X_OK):
+    if not args.dry_run and not os.access(JOB_SCRIPT, os.X_OK):
         JOB_SCRIPT.chmod(0o755)
 
     if args.regenerate:
         print("Regenerating benchmark artefacts")
         for benchmark in args.benchmarks:
-            note = regenerate(benchmark, REPO / "benchmarks" / benchmark)
+            benchmark_dir = _benchmark_directory(benchmark)
+            note = (
+                regenerate(benchmark, benchmark_dir)
+                if benchmark_dir is not None else
+                f"{benchmark}: invalid benchmark name; use a directory name "
+                "directly under benchmarks/")
             if note:
                 plan.notes.append(note)
                 print(f"  ! {note}")
 
     queued = _queued_job_names()
+    if queued is None:
+        if not args.dry_run and not args.force:
+            print(
+                "FATAL: queue state is unavailable; refusing to submit without "
+                "duplicate-job protection (use --force to override)",
+                file=sys.stderr)
+            return 1
+        queued = {}
     print(f"\nPlanning ({len(queued)} of your jobs already in the queue)")
     for benchmark in args.benchmarks:
         runs, notes = plan_benchmark(benchmark, args, queued)
@@ -538,7 +805,19 @@ def main(argv: Sequence[str] | None = None) -> int:
             ready = sum(run.state in {SUBMIT, RESUME} for run in runs)
             print(f"  {benchmark}: {len(runs)} runs, {ready} to submit")
 
-    args.log_dir.mkdir(parents=True, exist_ok=True)
+    _mark_plan_collisions(plan)
+
+    if not plan.runs and not plan.notes:
+        plan.notes.append("no run-matrix rows matched the requested selection")
+
+    if not args.dry_run:
+        try:
+            args.log_dir.mkdir(parents=True, exist_ok=True)
+        except OSError as error:
+            print(
+                f"FATAL: cannot prepare log directory {args.log_dir}: {error}",
+                file=sys.stderr)
+            return 1
     pending = [run for run in plan.runs if run.state in {SUBMIT, RESUME}]
     if args.limit is not None:
         held = pending[args.limit:]
@@ -547,12 +826,34 @@ def main(argv: Sequence[str] | None = None) -> int:
             run.state = SKIP
             run.reason = f"held back by --limit {args.limit}"
 
+    report_error = _report_destination_error(plan, args.report, args.benchmarks)
+    if report_error:
+        print(f"FATAL: {report_error}", file=sys.stderr)
+        return 1
+    if not args.dry_run:
+        # Prove the report destination is writable before the first external
+        # submission. The final report replaces this provisional plan after
+        # job IDs and any submission failures are known.
+        try:
+            write_report(plan, args.report)
+        except OSError as error:
+            print(
+                f"FATAL: cannot write campaign report {args.report}: {error}",
+                file=sys.stderr)
+            return 1
+
     if pending:
         print(f"\nSubmitting {len(pending)} jobs")
     for run in pending:
         ok, detail = submit(run, args, args.log_dir)
         if ok:
             run.job_id = detail
+            if not args.dry_run:
+                prior_reason = run.reason
+                run.state = QUEUED
+                run.reason = f"submitted as job {detail}"
+                if prior_reason:
+                    run.reason += f"; {prior_reason}"
             note = f" ({run.reason})" if run.reason else ""
             print(f"  [{detail}] {run.label}{note}")
         else:
@@ -560,9 +861,16 @@ def main(argv: Sequence[str] | None = None) -> int:
             run.state, run.reason = ERROR, f"sbatch rejected the job: {detail}"
             print(f"  ! {run.label}: {run.reason}", file=sys.stderr)
 
-    write_report(plan, args.report)
+    try:
+        write_report(plan, args.report)
+    except OSError as error:
+        print(
+            f"FATAL: cannot finalize campaign report {args.report}: {error}",
+            file=sys.stderr)
+        return 1
     summarize(plan, args.report, args.dry_run)
-    return 0
+    failed = bool(plan.by_state(ERROR) or plan.notes)
+    return 1 if failed and not args.best_effort else 0
 
 
 if __name__ == "__main__":

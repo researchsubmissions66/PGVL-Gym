@@ -8,6 +8,7 @@ benchmark table.
 
 | Artifact | Contents |
 | --- | --- |
+| `.run.lock` | Advisory process lock and last trainer PID; prevents concurrent writers in one experiment directory |
 | `config.json` | Effective configuration, including command-line seed override |
 | `fold<K>_best.pt` | Best validation checkpoint when checkpointing is active |
 | `fold<K>_predictions.csv` | Slide and case IDs, label, predicted class, and per-class probabilities when batch metadata is available |

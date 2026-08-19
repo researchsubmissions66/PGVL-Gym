@@ -13,80 +13,80 @@ feature_sources:
   conch_v1_5x:
     resolution: 5x
     backbone: conch
-    encoder_weights: /work/hdd/bhwm/.cache_huggingface/hub/models--MahmoodLab--conch/snapshots/f9ca9f877171a28ade80228fb195ac5d79003357/pytorch_model.bin
+    encoder_weights: ${PGVL_STORAGE_ROOT}/.cache_huggingface/hub/models--MahmoodLab--conch/snapshots/f9ca9f877171a28ade80228fb195ac5d79003357/pytorch_model.bin
     feature_key: features
     feature_dim: 512
     feature_space_id: hf:MahmoodLab/conch
-    path_template: /work/hdd/bhwm/trident_features/master_benchmark/5x_512px_0px_overlap/features_conch_v1/{slide_id}.h5
+    path_template: ${PGVL_STORAGE_ROOT}/trident_features/master_benchmark/5x_512px_0px_overlap/features_conch_v1/{slide_id}.h5
   conch_v1_10x:
     resolution: 10x
     backbone: conch
-    encoder_weights: /work/hdd/bhwm/.cache_huggingface/hub/models--MahmoodLab--conch/snapshots/f9ca9f877171a28ade80228fb195ac5d79003357/pytorch_model.bin
+    encoder_weights: ${PGVL_STORAGE_ROOT}/.cache_huggingface/hub/models--MahmoodLab--conch/snapshots/f9ca9f877171a28ade80228fb195ac5d79003357/pytorch_model.bin
     feature_key: features
     feature_dim: 512
     feature_space_id: hf:MahmoodLab/conch
-    path_template: /work/hdd/bhwm/trident_features/master_benchmark/10x_256px_0px_overlap/features_conch_v1/{slide_id}.h5
+    path_template: ${PGVL_STORAGE_ROOT}/trident_features/master_benchmark/10x_256px_0px_overlap/features_conch_v1/{slide_id}.h5
   conch_v1_20x:
     resolution: 20x
     backbone: conch
-    encoder_weights: /work/hdd/bhwm/.cache_huggingface/hub/models--MahmoodLab--conch/snapshots/f9ca9f877171a28ade80228fb195ac5d79003357/pytorch_model.bin
+    encoder_weights: ${PGVL_STORAGE_ROOT}/.cache_huggingface/hub/models--MahmoodLab--conch/snapshots/f9ca9f877171a28ade80228fb195ac5d79003357/pytorch_model.bin
     feature_key: features
     feature_dim: 512
     feature_space_id: hf:MahmoodLab/conch
-    path_template: /work/hdd/bhwm/trident_features/master_benchmark/20x_512px_0px_overlap/features_conch_v1/{slide_id}.h5
+    path_template: ${PGVL_STORAGE_ROOT}/trident_features/master_benchmark/20x_512px_0px_overlap/features_conch_v1/{slide_id}.h5
   keep_20x:
     resolution: 20x
     backbone: keep
-    encoder_weights: /work/hdd/bhwm/.cache_huggingface/hub/models--Astaxanthin--KEEP/snapshots/28a25d95cc6ba27a7e6fab3f144e13dbafd8b21e
+    encoder_weights: ${PGVL_STORAGE_ROOT}/.cache_huggingface/hub/models--Astaxanthin--KEEP/snapshots/28a25d95cc6ba27a7e6fab3f144e13dbafd8b21e
     feature_key: features
     feature_dim: 768
     feature_space_id: hf:Astaxanthin/KEEP
-    path_template: /work/hdd/bhwm/trident_features/master_benchmark/20x_256px_0px_overlap/features_keep/{slide_id}.h5
+    path_template: ${PGVL_STORAGE_ROOT}/trident_features/master_benchmark/20x_256px_0px_overlap/features_keep/{slide_id}.h5
   titan_slide_20x:
     input_kind: slide_embedding
     runtime_encoder: true
     resolution: 20x
     backbone: titan
-    encoder_weights: /work/hdd/bhwm/.cache_huggingface/hub/models--MahmoodLab--TITAN/snapshots/dac6773d9961cfc75503440676ff157a2c6e8d2e
+    encoder_weights: ${PGVL_STORAGE_ROOT}/.cache_huggingface/hub/models--MahmoodLab--TITAN/snapshots/dac6773d9961cfc75503440676ff157a2c6e8d2e
     feature_key: features
     feature_dim: 768
     feature_space_id: hf:MahmoodLab/TITAN@dac6773d9961cfc75503440676ff157a2c6e8d2e
-    path_template: /work/hdd/bhwm/trident_features/master_benchmark/20x_512px_0px_overlap/slide_features_titan/{slide_id}.h5
+    path_template: ${PGVL_STORAGE_ROOT}/trident_features/master_benchmark/20x_512px_0px_overlap/slide_features_titan/{slide_id}.h5
   clip_rn50_10x:
     resolution: 10x
     backbone: clip-rn50
-    encoder_weights: /u/dchanda/.cache/clip/RN50.pt
+    encoder_weights: ${PGVL_USER_ROOT}/.cache/clip/RN50.pt
     feature_key: features
     feature_dim: 1024
     feature_space_id: openai/clip-rn50@official
-    path_template: /work/hdd/bhwm/trident_features/master_benchmark/10x_224px_0px_overlap/features_clip_rn50/{slide_id}.h5
+    path_template: ${PGVL_STORAGE_ROOT}/trident_features/master_benchmark/10x_224px_0px_overlap/features_clip_rn50/{slide_id}.h5
   musk_10x:
     resolution: 10x
     backbone: musk
-    encoder_weights: /work/hdd/bhwm/.cache_huggingface/hub/models--xiangjx--musk/snapshots/de1ffed28608c197d2903f6fa42b491a3fbf0fb8/model.safetensors
+    encoder_weights: ${PGVL_STORAGE_ROOT}/.cache_huggingface/hub/models--xiangjx--musk/snapshots/de1ffed28608c197d2903f6fa42b491a3fbf0fb8/model.safetensors
     feature_key: features
     feature_dim: 1024
     feature_space_id: hf:xiangjx/musk
-    path_template: /work/hdd/bhwm/trident_features/master_benchmark/10x_384px_0px_overlap/features_musk/{slide_id}.h5
+    path_template: ${PGVL_STORAGE_ROOT}/trident_features/master_benchmark/10x_384px_0px_overlap/features_musk/{slide_id}.h5
   clip_rn50_5x:
     resolution: 5x
     backbone: clip-rn50
-    encoder_weights: /u/dchanda/.cache/clip/RN50.pt
+    encoder_weights: ${PGVL_USER_ROOT}/.cache/clip/RN50.pt
     feature_key: features
     feature_dim: 1024
     feature_space_id: openai/clip-rn50@official
-    path_template: /work/hdd/bhwm/trident_features/master_benchmark/5x_224px_0px_overlap/features_clip_rn50/{slide_id}.h5
+    path_template: ${PGVL_STORAGE_ROOT}/trident_features/master_benchmark/5x_224px_0px_overlap/features_clip_rn50/{slide_id}.h5
   clip_rn50_20x:
     resolution: 20x
     backbone: clip-rn50
-    encoder_weights: /u/dchanda/.cache/clip/RN50.pt
+    encoder_weights: ${PGVL_USER_ROOT}/.cache/clip/RN50.pt
     feature_key: features
     feature_dim: 1024
     feature_space_id: openai/clip-rn50@official
-    path_template: /work/hdd/bhwm/trident_features/master_benchmark/20x_224px_0px_overlap/features_clip_rn50/{slide_id}.h5
+    path_template: ${PGVL_STORAGE_ROOT}/trident_features/master_benchmark/20x_224px_0px_overlap/features_clip_rn50/{slide_id}.h5
 cohorts:
   brca:
-    metadata_csv: /u/dchanda/PGVL-Gym/metadata/tcga_brca.csv
+    metadata_csv: ${PGVL_REPO_ROOT}/metadata/tcga_brca.csv
     label_column: OncoTreeCode
     labels:
     - IDC
@@ -118,11 +118,15 @@ cohorts:
     # free text, not answers to these questions, so this is doubly generated.
     wsi_five_questions_json: text_prompts/wsi_five/clinical_questions/brca.json
     prompts:
+      # TOP's task-agnostic instance bank is copied from released code. TOP did
+      # not publish a BRCA bag initializer, so this extension deliberately uses
+      # learned random bag context plus the configured IDC/ILC classnames.
       top_instance: text_prompts/top/instance_prototypes.json
       vila_mil: text_prompts/focus/TCGA_BRCA_two_scale_text_prompt.csv
 experiments:
   pathpt:
     method: pathpt
+    training_mode: upstream_patch_ssl
     features:
       bag: conch_v1_10x
     epochs: 20
@@ -132,7 +136,7 @@ experiments:
       bag: conch_v1_10x
     prompt_encoder: &id001
       name: conch
-      weights: /work/hdd/bhwm/.cache_huggingface/hub/models--MahmoodLab--conch/snapshots/f9ca9f877171a28ade80228fb195ac5d79003357/pytorch_model.bin
+      weights: ${PGVL_STORAGE_ROOT}/.cache_huggingface/hub/models--MahmoodLab--conch/snapshots/f9ca9f877171a28ade80228fb195ac5d79003357/pytorch_model.bin
       feature_space_id: hf:MahmoodLab/conch
     epochs: 200
   muse_keep:
@@ -144,13 +148,6 @@ experiments:
   focus:
     method: focus
     features:
-      low: conch_v1_10x
-      high: conch_v1_20x
-    epochs: 200
-  focus_5x20x:
-    method: focus
-    features:
-      low: conch_v1_5x
       high: conch_v1_20x
     epochs: 200
   mscpt:
@@ -167,6 +164,7 @@ experiments:
     epochs: 50
   pathpt_keep:
     method: pathpt
+    training_mode: upstream_patch_ssl
     features:
       bag: keep_20x
     epochs: 20
@@ -176,7 +174,7 @@ experiments:
       bag: titan_slide_20x
     prompt_encoder:
       name: titan
-      weights: /work/hdd/bhwm/.cache_huggingface/hub/models--MahmoodLab--TITAN/snapshots/dac6773d9961cfc75503440676ff157a2c6e8d2e
+      weights: ${PGVL_STORAGE_ROOT}/.cache_huggingface/hub/models--MahmoodLab--TITAN/snapshots/dac6773d9961cfc75503440676ff157a2c6e8d2e
       model_id: MahmoodLab/TITAN
       revision: dac6773d9961cfc75503440676ff157a2c6e8d2e
       feature_space_id: hf:MahmoodLab/TITAN@dac6773d9961cfc75503440676ff157a2c6e8d2e
@@ -191,6 +189,7 @@ experiments:
     epochs: 8000
   pathpt_musk:
     method: pathpt
+    training_mode: upstream_patch_ssl
     features:
       bag: musk_10x
     epochs: 20
@@ -201,7 +200,7 @@ experiments:
     epochs: 200
     prompt_encoder:
       name: conch
-      weights: /work/hdd/bhwm/.cache_huggingface/hub/models--MahmoodLab--conch/snapshots/f9ca9f877171a28ade80228fb195ac5d79003357/pytorch_model.bin
+      weights: ${PGVL_STORAGE_ROOT}/.cache_huggingface/hub/models--MahmoodLab--conch/snapshots/f9ca9f877171a28ade80228fb195ac5d79003357/pytorch_model.bin
       feature_space_id: hf:MahmoodLab/conch
   vila_mil:
     method: vila_mil
@@ -222,6 +221,15 @@ experiments:
   # patches. The patch grid therefore differs, so a 10x tile here covers a
   # different tissue area than theirs and the instance counts do not match
   # Table I. The method is reproduced; the numbers are not directly comparable.
+  # SLIP routes a patch bag through a vocabulary of tissue phenotypes, so it
+  # needs a single-scale bag in a paired space its contract allows. CLIP RN50 is
+  # native for SLIP and BRCA has full 960/960 coverage, so this costs no
+  # extraction. Its recipe is lr 2e-3 / 10 epochs, set by the generator.
+  slip:
+    method: slip
+    features:
+      bag: clip_rn50_10x
+    epochs: 10
   cod_mil:
     method: cod_mil
     features:

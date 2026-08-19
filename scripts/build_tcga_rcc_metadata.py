@@ -30,6 +30,8 @@ from collections import Counter
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(REPO))
+from common.configuration import expand_path  # noqa: E402
 DESTINATION = REPO / "metadata" / "tcga_rcc.csv"
 DEFAULT_CACHE = REPO / "metadata" / ".gdc_rcc_manifest.json"
 
@@ -48,7 +50,8 @@ PROJECTS = {
 
 # Where the RCC slides are currently stored. Recorded as provenance only; the
 # benchmark protocol resolves feature paths itself.
-FEATURE_ROOT = "/work/hdd/bhwm/dchanda/TCGA-RCC-Unified/20x_256px_0px_overlap"
+FEATURE_ROOT = expand_path(
+    "${PGVL_STORAGE_ROOT}/dchanda/TCGA-RCC-Unified/20x_256px_0px_overlap")
 
 COLUMNS = [
     "filename", "filepath", "label", "subclass", "patient_id", "magnification",

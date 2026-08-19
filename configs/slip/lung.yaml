@@ -7,6 +7,9 @@ backbone: "CLIP"
 n_classes: 2
 classnames: ["lung adenocarcinoma", "lung squamous cell carcinoma"]
 label_dict: {"LUAD": 0, "LUSC": 1}
+tissue_classnames_path: "${PGVL_REPO_ROOT}/text_prompts/slip/TCGA_prompt_bank.json"
+prompt_provenance: "upstream"
+prompt_source: "slip_upstream_complete_prompt_bank"
 
 shots: 1
 k: 5

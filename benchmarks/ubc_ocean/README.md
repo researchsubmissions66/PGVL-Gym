@@ -16,7 +16,7 @@ The protocol fixes the same comparison controls as every other cohort:
 
 Canonical five-class order `CC, EC, HGSC, LGSC, MC`. The annotation table is
 built by `scripts/build_ubc_ocean_metadata.py` from the read-only release table
-at `/work/hdd/bhwm/metadata/RAW_DATA_Cleaned/UBC-OCEAN/metadata.csv`:
+at `${PGVL_STORAGE_ROOT}/metadata/RAW_DATA_Cleaned/UBC-OCEAN/metadata.csv`:
 
 | | slides | CC | EC | HGSC | LGSC | MC |
 |---|---:|---:|---:|---:|---:|---:|
@@ -35,17 +35,17 @@ slide-level and case-level evaluation coincide here.
 
 ## Feature coverage
 
-Features live under `/work/hdd/bhwm/UBC-OCEAN/<resolution>/features_<encoder>/`.
+Features live under `${PGVL_STORAGE_ROOT}/UBC-OCEAN/<resolution>/features_<encoder>/`.
 Coverage is uneven, and the run matrix reflects it rather than hiding it:
 
 | feature source | slides with features | experiments that need it |
 |---|---:|---|
-| `conch_v1_5x` | 513 / 513 | `focus_5x20x`, `mscpt_5x20x` |
-| `conch_v1_20x` | 513 / 513 | `focus_5x20x`, `mscpt_5x20x`, `focus`, `mscpt` |
+| `conch_v1_5x` | 513 / 513 | `mscpt_5x20x` |
+| `conch_v1_20x` | 513 / 513 | `mscpt_5x20x`, `focus`, `mscpt` |
 | `conch_v1_10x` | **1 / 513** | `pathpt`, `muse`, `focus`, `mscpt` |
 | `keep_20x` | **1 / 513** | `pathpt_keep`, `muse_keep` |
 
-Only `focus_5x20x` and `mscpt_5x20x` are runnable today. The other six
+Only `focus` and `mscpt_5x20x` are runnable today. The other six
 experiments need CONCH re-extracted at 10x and KEEP at 20x; both directories
 exist but contain a single slide, which is an interrupted extraction rather than
 a missing one.

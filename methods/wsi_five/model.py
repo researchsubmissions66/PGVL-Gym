@@ -29,7 +29,9 @@ Deviations from the release are listed in ``docs/design-decisions.md``.
 from __future__ import annotations
 
 import json
+import math
 import pathlib
+import random
 from typing import Any, Sequence
 
 import torch
@@ -61,7 +63,7 @@ class WSIFiVEModel(nn.Module):
     """Reproduce FiVE's patch-fusion and BioClinicalBERT prompt interaction.
 
     Args:
-        classnames: Diagnostic class names, embedded as the comparison text.
+        classnames: Fallback class names for the explicit simplified mode.
         clinicalbert_path: Local BioClinicalBERT directory or model id.
         feature_dim: Width of the precomputed patch features (512 upstream).
         num_frames: Maximum patches per slide; sizes the fusion transformer.
@@ -79,8 +81,18 @@ class WSIFiVEModel(nn.Module):
                  logit_scale: float = 300.0,
                  prompt_list: Sequence[str] | None = None):
         super().__init__()
-        self.classnames = list(classnames)
+        self.classnames = [str(name).strip() for name in classnames]
+        if not self.classnames or any(not name for name in self.classnames):
+            raise ValueError("WSI-FiVE classnames must be non-empty strings")
+        if feature_dim <= 0 or num_frames <= 0:
+            raise ValueError("WSI-FiVE feature_dim and num_frames must be positive")
+        if context_length <= 0 or learnable_prompts <= 0:
+            raise ValueError(
+                "WSI-FiVE prompt dimensions must be positive")
+        if not math.isfinite(float(logit_scale)) or float(logit_scale) <= 0:
+            raise ValueError("WSI-FiVE logit_scale must be finite and positive")
         self.feature_dim = int(feature_dim)
+        self.context_length = int(context_length)
         self.logit_scale = float(logit_scale)
         self.prompt_list = self._resolve_questions(prompt_list)
 
@@ -118,8 +130,16 @@ class WSIFiVEModel(nn.Module):
                          if isinstance(payload, dict) else payload)
             if not questions:
                 raise ValueError(f"{prompt_list} declares no questions")
-            return [str(item) for item in questions]
-        return [str(item) for item in prompt_list]
+        else:
+            questions = prompt_list
+        if (not isinstance(questions, (list, tuple)) or not questions
+                or any(not isinstance(item, str) for item in questions)):
+            raise ValueError(
+                "WSI-FiVE clinical questions must be a non-empty string list")
+        resolved = [item.strip() for item in questions]
+        if any(not item for item in resolved):
+            raise ValueError("WSI-FiVE clinical questions must be non-empty strings")
+        return resolved
 
     # ------------------------------------------------------------------
     @property
@@ -128,14 +148,42 @@ class WSIFiVEModel(nn.Module):
 
     def _tokenize(self, texts: Sequence[str]) -> dict[str, torch.Tensor]:
         tokens = self.text.tokenizer(
-            list(texts), padding=True, truncation=True, max_length=256,
+            list(texts), padding="max_length", truncation=True,
+            max_length=self.context_length,
             return_tensors="pt")
         return {key: value.to(self.device) for key, value in tokens.items()}
 
     def encode_text(self, texts: Sequence[str]) -> torch.Tensor:
         """Encode strings through the LoRA-adapted BioClinicalBERT tower."""
+        if not texts:
+            raise ValueError("WSI-FiVE cannot encode an empty text bank")
         tokens = self._tokenize(texts)
         return self.text(tokens["input_ids"], tokens["attention_mask"])
+
+    def encode_text_part(
+        self, texts: Sequence[str], sample_size: int = 96,
+    ) -> torch.Tensor:
+        """Match upstream's bounded-gradient encoding of a large answer bank."""
+        if sample_size <= 0:
+            raise ValueError("WSI-FiVE text gradient sample size must be positive")
+        values = list(texts)
+        if len(values) <= sample_size:
+            return self.encode_text(values)
+        gradient_indices = sorted(random.sample(range(len(values)), sample_size))
+        gradient_set = set(gradient_indices)
+        frozen_indices = [
+            index for index in range(len(values)) if index not in gradient_set]
+        with_gradient = self.encode_text(
+            [values[index] for index in gradient_indices])
+        with torch.no_grad():
+            without_gradient = self.encode_text(
+                [values[index] for index in frozen_indices])
+        encoded = torch.zeros(
+            (len(values), with_gradient.shape[1]),
+            device=with_gradient.device, dtype=with_gradient.dtype)
+        encoded[gradient_indices] = with_gradient
+        encoded[frozen_indices] = without_gradient
+        return encoded
 
     def encode_prompt_embed(self, prompt_embed: torch.Tensor) -> torch.Tensor:
         """Encode learnable soft prompts through BERT's own embedding stack.
@@ -166,9 +214,13 @@ class WSIFiVEModel(nn.Module):
         return self.text.projection_head(encoded.mean(dim=1))
 
     # ------------------------------------------------------------------
-    def forward(self, features: torch.Tensor,
-                patch_info: dict[str, Any]) -> torch.Tensor:
-        """Return class logits for one slide bag.
+    def encode_slide(
+        self,
+        features: torch.Tensor,
+        patch_info: dict[str, Any],
+        question_indices: Sequence[int] | None = None,
+    ) -> torch.Tensor:
+        """Aggregate a slide using fixed questions and learned soft prompts.
 
         Args:
             features: ``[batch, patches, feature_dim]`` precomputed patch bag.
@@ -186,13 +238,55 @@ class WSIFiVEModel(nn.Module):
             if key not in patch_info:
                 raise KeyError(f"WSI-FiVE patch_info is missing '{key}'")
 
-        question_features = self.encode_text(self.prompt_list)
+        if question_indices is None:
+            questions = self.prompt_list
+        else:
+            indices = list(question_indices)
+            if (not indices or len(set(indices)) != len(indices)
+                    or any(isinstance(index, bool) or not isinstance(index, int)
+                           or index < 0 or index >= len(self.prompt_list)
+                           for index in indices)):
+                raise ValueError(
+                    "WSI-FiVE question indices must be unique in-range integers")
+            questions = [self.prompt_list[index] for index in indices]
+        question_features = self.encode_text(questions)
         learned_features = self.encode_prompt_embed(self.prompt_learn_param)
         prompts = torch.cat([question_features, learned_features], dim=0)
         prompts = F.normalize(prompts, dim=-1)
 
         slide = self.mit(features.float(), prompts, patch_info)
-        slide = F.normalize(slide, dim=-1)
+        return F.normalize(slide, dim=-1)
 
-        class_features = F.normalize(self.encode_text(self.classnames), dim=-1)
-        return self.logit_scale * slide @ class_features.t()
+    def compare(
+        self,
+        slide: torch.Tensor,
+        texts: Sequence[str],
+        *,
+        partial_text_gradients: bool = False,
+        text_gradient_sample_size: int = 96,
+    ) -> torch.Tensor:
+        """Compare normalized slide embeddings with one explicit text bank."""
+        encoded = (
+            self.encode_text_part(texts, text_gradient_sample_size)
+            if partial_text_gradients else self.encode_text(texts))
+        text_features = F.normalize(encoded, dim=-1)
+        return self.logit_scale * slide @ text_features.t()
+
+    def forward(
+        self,
+        features: torch.Tensor,
+        patch_info: dict[str, Any],
+        comparison_texts: Sequence[str] | None = None,
+        *,
+        question_indices: Sequence[int] | None = None,
+        partial_text_gradients: bool = False,
+        text_gradient_sample_size: int = 96,
+    ) -> torch.Tensor:
+        """Return logits against an explicit answer or evaluation prompt bank."""
+        slide = self.encode_slide(features, patch_info, question_indices)
+        return self.compare(
+            slide,
+            self.classnames if comparison_texts is None else comparison_texts,
+            partial_text_gradients=partial_text_gradients,
+            text_gradient_sample_size=text_gradient_sample_size,
+        )

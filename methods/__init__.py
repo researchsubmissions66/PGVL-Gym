@@ -11,6 +11,36 @@ from .base import BaseMethod
 from common.backbones import MethodBackboneContract
 
 
+_CANONICAL_METHODS = (
+    "composite", "focus", "vila_mil", "cod_mil", "maple", "mscpt",
+    "pathpt", "top", "slip", "wsi_five", "muse", "convlm", "sldpc",
+)
+
+_METHOD_ALIASES = {
+    **{name: name for name in _CANONICAL_METHODS},
+    "vilamil": "vila_mil",
+    "vila": "vila_mil",
+    "codmil": "cod_mil",
+    "wsifive": "wsi_five",
+    "five": "wsi_five",
+}
+
+
+def canonical_method_name(name: str) -> str:
+    """Return the canonical registry name for a method or supported alias."""
+    original = name
+    if not isinstance(name, str) or not name.strip():
+        raise KeyError(f"Invalid method name {original!r}")
+    normalized = name.strip().lower().replace("-", "_")
+    try:
+        return _METHOD_ALIASES[normalized]
+    except KeyError:
+        raise KeyError(
+            f"Unknown method '{original}'. Available: "
+            f"{', '.join(_CANONICAL_METHODS)}."
+        ) from None
+
+
 def get_method(name: str) -> Type[BaseMethod]:
     """Resolve a method name or supported alias to its adapter class.
 
@@ -26,7 +56,7 @@ def get_method(name: str) -> Type[BaseMethod]:
     Raises:
         KeyError: If ``name`` is not registered.
     """
-    name = name.lower().replace("-", "_")
+    name = canonical_method_name(name)
 
     if name == "composite":
         from .composite.adapter import CompositeMethod
@@ -36,11 +66,11 @@ def get_method(name: str) -> Type[BaseMethod]:
         from .focus.adapter import FOCUSMethod
         return FOCUSMethod
 
-    if name in {"vila_mil", "vilamil", "vila"}:
+    if name == "vila_mil":
         from .vila_mil.adapter import ViLaMILMethod
         return ViLaMILMethod
 
-    if name in {"cod_mil", "codmil"}:
+    if name == "cod_mil":
         from .cod_mil.adapter import CoDMILMethod
         return CoDMILMethod
 
@@ -64,7 +94,7 @@ def get_method(name: str) -> Type[BaseMethod]:
         from .slip.adapter import SLIPMethod
         return SLIPMethod
 
-    if name in {"wsi_five", "wsifive", "five"}:
+    if name == "wsi_five":
         from .wsi_five.adapter import WSIFiVEMethod
         return WSIFiVEMethod
 
@@ -80,17 +110,12 @@ def get_method(name: str) -> Type[BaseMethod]:
         from .sldpc.adapter import SLDPCMethod
         return SLDPCMethod
 
-    raise KeyError(
-        f"Unknown method '{name}'. "
-        f"Available: focus, vila_mil, cod_mil, maple, mscpt, "
-        f"pathpt, top, slip, wsi_five, muse, convlm, sldpc.")
+    raise AssertionError(f"Method registry is incomplete for {name!r}")
 
 
 def list_methods() -> list[str]:
     """Return canonical method names in stable registry order."""
-    return ["composite", "focus", "vila_mil", "cod_mil", "maple",
-            "mscpt", "pathpt", "top", "slip", "wsi_five", "muse",
-            "convlm", "sldpc"]
+    return list(_CANONICAL_METHODS)
 
 
 def get_backbone_contracts() -> dict[str, MethodBackboneContract]:

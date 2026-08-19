@@ -1,12 +1,12 @@
 {
-  "matrix": "/u/dchanda/PGVL-Gym/benchmarks/tcga_rcc/run_matrix.csv",
+  "matrix": "${PGVL_REPO_ROOT}/benchmarks/tcga_rcc/run_matrix.csv",
   "cohort": "rcc",
   "device": "cpu",
   "results": [
     {
       "experiment": "focus",
       "method": "focus",
-      "config": "/u/dchanda/PGVL-Gym/benchmarks/tcga_rcc/configs/focus/rcc_4shot.yaml",
+      "config": "${PGVL_REPO_ROOT}/benchmarks/tcga_rcc/configs/focus/rcc_4shot.yaml",
       "device": "cpu",
       "status": "passed",
       "stage": "complete",
@@ -21,7 +21,7 @@
     {
       "experiment": "focus_5x20x",
       "method": "focus",
-      "config": "/u/dchanda/PGVL-Gym/benchmarks/tcga_rcc/configs/focus_5x20x/rcc_4shot.yaml",
+      "config": "${PGVL_REPO_ROOT}/benchmarks/tcga_rcc/configs/focus_5x20x/rcc_4shot.yaml",
       "device": "cpu",
       "status": "passed",
       "stage": "complete",
@@ -36,7 +36,7 @@
     {
       "experiment": "mscpt",
       "method": "mscpt",
-      "config": "/u/dchanda/PGVL-Gym/benchmarks/tcga_rcc/configs/mscpt/rcc_4shot.yaml",
+      "config": "${PGVL_REPO_ROOT}/benchmarks/tcga_rcc/configs/mscpt/rcc_4shot.yaml",
       "device": "cpu",
       "status": "passed",
       "stage": "complete",
@@ -51,7 +51,7 @@
     {
       "experiment": "mscpt_5x20x",
       "method": "mscpt",
-      "config": "/u/dchanda/PGVL-Gym/benchmarks/tcga_rcc/configs/mscpt_5x20x/rcc_4shot.yaml",
+      "config": "${PGVL_REPO_ROOT}/benchmarks/tcga_rcc/configs/mscpt_5x20x/rcc_4shot.yaml",
       "device": "cpu",
       "status": "passed",
       "stage": "complete",
@@ -66,7 +66,7 @@
     {
       "experiment": "pathpt",
       "method": "pathpt",
-      "config": "/u/dchanda/PGVL-Gym/benchmarks/tcga_rcc/configs/pathpt/rcc_4shot.yaml",
+      "config": "${PGVL_REPO_ROOT}/benchmarks/tcga_rcc/configs/pathpt/rcc_4shot.yaml",
       "device": "cpu",
       "status": "passed",
       "stage": "complete",
@@ -81,7 +81,7 @@
     {
       "experiment": "pathpt_keep",
       "method": "pathpt",
-      "config": "/u/dchanda/PGVL-Gym/benchmarks/tcga_rcc/configs/pathpt_keep/rcc_4shot.yaml",
+      "config": "${PGVL_REPO_ROOT}/benchmarks/tcga_rcc/configs/pathpt_keep/rcc_4shot.yaml",
       "device": "cpu",
       "status": "passed",
       "stage": "complete",
@@ -96,7 +96,7 @@
     {
       "experiment": "sldpc",
       "method": "sldpc",
-      "config": "/u/dchanda/PGVL-Gym/benchmarks/tcga_rcc/configs/sldpc/rcc_4shot.yaml",
+      "config": "${PGVL_REPO_ROOT}/benchmarks/tcga_rcc/configs/sldpc/rcc_4shot.yaml",
       "device": "cpu",
       "status": "passed",
       "stage": "complete",

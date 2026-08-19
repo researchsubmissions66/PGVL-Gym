@@ -1,27 +1,28 @@
 # ConVLM / zero-shot TCGA-NSCLC example.
-# This is intentionally a raw-patch configuration: ConVLM's published model
-# trains on images and cannot consume CLAM feature bags.
+# ConVLM consumes the release's offline patch embeddings (UNI upstream), not
+# RGB tiles. Each split CSV may name an exact bag in `feature_path`; otherwise
+# the loader resolves `<data_folder_s>/<slide_id>.pt`.
 method: "convlm"
 n_classes: 2
 classnames: ["lung adenocarcinoma", "lung squamous cell carcinoma"]
 label_dict: {"LUAD": 0, "LUSC": 1}
 seen_class_indices: [0]  # train.csv contains LUAD; test.csv may contain LUSC
 
-image_root: "path/to/TCGA_Lung/patches"
-image_column: "image_path"
-label_column: "label"
+data_folder_s: "path/to/TCGA_Lung/uni_features"
+feature_path_column: "feature_path"
+feature_key: "features"
+feature_dim: 1024
 split_dir: "splits/ConVLM_TCGA_Lung_zsl"
 # [LUAD, LUSC] QuiltNet embeddings generated from the task's Quilt-LLaVA
 # attribute descriptions. These data-specific descriptions are not released.
 attribute_embeddings: "path/to/convlm_lung_quiltnet_attributes.pt"
 
-image_size: 448
-patch_size: 16
 embed_dim: 768
 depth: 12
 num_heads: 12
 keep_rate: 0.7
-batch_size: 16
+max_patches: 4096
+batch_size: 1
 num_workers: 4
 epochs: 40
 lr: 1.0e-4

@@ -21,11 +21,11 @@ from typing import Any
 
 import pandas as pd
 import torch
-import yaml
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT))
+from common.configuration import expand_path, load_yaml_config  # noqa: E402
 # One run matrix per cohort benchmark; --matrix selects which one to smoke test.
 DEFAULT_MATRIX = REPO_ROOT / "benchmarks" / "tcga_brca" / "run_matrix.csv"
 
@@ -99,8 +99,7 @@ def _smoke_overrides(cfg: dict[str, Any]) -> dict[str, Any]:
 def smoke_one(config_path: Path, device: str) -> dict[str, Any]:
     started = time.monotonic()
     resolved_device = torch.device(device)
-    with config_path.open(encoding="utf-8") as handle:
-        cfg = _smoke_overrides(yaml.safe_load(handle))
+    cfg = _smoke_overrides(load_yaml_config(config_path))
     method_name = str(cfg["method"])
     result: dict[str, Any] = {
         "experiment": cfg.get("experiment", method_name),
@@ -180,7 +179,7 @@ def _representative_configs(
     subset = subset.sort_values(["experiment", "shots"])
     subset = subset.drop_duplicates("experiment", keep="first")
     return [
-        (str(row.experiment), Path(str(row.config)).resolve())
+        (str(row.experiment), Path(expand_path(str(row.config))).resolve())
         for row in subset.itertuples()
     ]
 

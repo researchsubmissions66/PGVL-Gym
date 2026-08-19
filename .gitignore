@@ -17,8 +17,14 @@ ckpts/
 *.pt
 *.pth
 *.h5
+# Small, reproducible CoD-MIL bank bound to its published source CSV. Other
+# model/feature tensors remain ignored.
+!text_prompts/cod_mil/rcc_text_prompt_features_clip_rn50_verified.pt
 
 # Data
+.env
+.env.*
+!.env.example
 data/
 features/
 splits/*.csv

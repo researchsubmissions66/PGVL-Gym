@@ -7,6 +7,9 @@ backbone: "CLIP"
 n_classes: 3
 classnames: ["clear cell renal cell carcinoma", "papillary renal cell carcinoma", "chromophobe renal cell carcinoma"]
 label_dict: {"CCRCC": 0, "PRCC": 1, "CHRCC": 2}
+tissue_classnames_path: "${PGVL_REPO_ROOT}/text_prompts/slip/tcga_rcc_tissues.json"
+prompt_provenance: "generated"
+prompt_source: "slip_generated_task_extension_prompt_bank"
 
 shots: 1
 k: 5

@@ -25,12 +25,37 @@ will pick it up.
 """
 from __future__ import annotations
 from abc import ABC, abstractmethod
+from copy import deepcopy
 from typing import Any, Dict, Optional
 
 import torch
 import torch.nn as nn
 
 from common.backbones import EncoderBundle, MethodBackboneContract
+
+
+def probabilities_to_logits(probabilities: torch.Tensor) -> torch.Tensor:
+    """Convert normalized class probabilities to a valid logits contract.
+
+    Several vendored methods return ``(Y_prob, Y_hat, loss)`` because their
+    original training scripts consume probabilities directly.  The unified
+    evaluator, however, must receive pre-softmax scores.  Log-probabilities are
+    equivalent logits: applying softmax once recovers the original values.
+    """
+    if probabilities.ndim == 1:
+        probabilities = probabilities.unsqueeze(0)
+    if probabilities.ndim != 2:
+        raise ValueError(
+            "class probabilities must have shape [batch, classes], got "
+            f"{tuple(probabilities.shape)}")
+    detached = probabilities.detach()
+    if not torch.isfinite(detached).all() or (detached < 0).any():
+        raise ValueError("class probabilities must be finite and non-negative")
+    row_sums = detached.sum(dim=-1)
+    if not torch.allclose(
+            row_sums, torch.ones_like(row_sums), atol=1e-4, rtol=1e-4):
+        raise ValueError("class probabilities must sum to one")
+    return probabilities.clamp_min(1e-12).log()
 
 
 # -----------------------------------------------------------------------------
@@ -48,9 +73,9 @@ class BaseMethod(ABC):
     pseudo labels) should live as attributes on `self`.
 
     Args:
-        cfg: Validated run configuration. Adapters may read method-specific
-            fields but should preserve common fields such as ``n_classes`` and
-            ``feature_dim``.
+        cfg: Validated run configuration. Each adapter receives a private copy
+            so method-specific defaults cannot alter the persisted run identity
+            or leak into another cross-validation fold.
         device: PyTorch device used for model parameters and input batches.
     """
 
@@ -58,9 +83,15 @@ class BaseMethod(ABC):
     backbone_contract: Optional[MethodBackboneContract] = None
 
     def __init__(self, cfg: Dict[str, Any], device: str = "cuda"):
-        self.cfg = cfg
+        # A few vendored adapters fill in derived defaults while constructing
+        # their model.  Keeping those writes private is essential: train.py has
+        # already snapshotted and fingerprinted the resolved run config, and a
+        # later mutation would otherwise make an interrupted run impossible to
+        # resume.  A deep copy also prevents nested recipe dictionaries from
+        # carrying state between fold-specific adapter instances.
+        self.cfg = deepcopy(cfg)
         self.device = device
-        self.backbone_name = (self.backbone_contract.validate_config(cfg)
+        self.backbone_name = (self.backbone_contract.validate_config(self.cfg)
                               if self.backbone_contract is not None else None)
 
     @classmethod
@@ -150,8 +181,36 @@ class BaseMethod(ABC):
         return torch.optim.lr_scheduler.ReduceLROnPlateau(
             optimizer, "min", factor=0.1, patience=10)
 
+    def prepare_fold(
+        self, fold: int, model: nn.Module, train_loader: Any,
+    ) -> None:
+        """Prepare training-split-only state after model/data construction.
+
+        Methods such as PathPT use this boundary to select prompts without
+        seeing validation or test slides. The default is deliberately a no-op.
+        """
+
+    def on_train_epoch_start(self, epoch: int, model: nn.Module) -> None:
+        """Handle the boundary immediately before an epoch's first batch."""
+
     def on_epoch_end(self, epoch: int, metrics: Dict[str, float]) -> None:
         """Handle an optional callback after a full train/validation epoch."""
 
+    def on_validation_end(
+        self, epoch: int, metrics: Dict[str, float],
+    ) -> None:
+        """Handle a completed validation pass, including epoch ``-1``.
+
+        The default forwards to the historical ``on_epoch_end`` hook. Adapters
+        which accumulate validation predictions therefore get a clear boundary
+        for the optional initial evaluation as well as every trained epoch.
+        """
+        self.on_epoch_end(epoch, metrics)
+
     def on_fold_end(self, fold: int, metrics: Dict[str, float]) -> None:
         """Handle an optional callback after a cross-validation fold."""
+
+    def on_checkpoint_loaded(
+        self, model: nn.Module, checkpoint_kind: str, fold: int,
+    ) -> None:
+        """Restore adapter state not represented by ``model.state_dict()``."""

@@ -8,6 +8,7 @@ The original code uses PyTorch-Lightning. We bypass Lightning here and
 drive the model from our unified loop.
 """
 from __future__ import annotations
+from pathlib import Path
 from types import SimpleNamespace
 import torch
 import torch.nn as nn
@@ -18,17 +19,31 @@ from common.backbones import (
 
 
 def _build_args(cfg):
+    gpt_dir, dataset_name = _description_location(cfg)
     return SimpleNamespace(
         n_classes=cfg["n_classes"],
         n_tpro=cfg.get("n_tpro", 2),
         n_vpro=cfg.get("n_vpro", 2),
         n_set=cfg.get("n_set", 5),
         base_model=cfg.get("backbone", "plip"),
-        dataset_name=cfg.get("dataset_name", "UBC-OCEAN"),
-        gpt_dir=cfg.get("gpt_dir", "./train_data/gpt"),
+        dataset_name=dataset_name,
+        gpt_dir=gpt_dir,
         num_k=cfg.get("num_k", 100),
         target_size=cfg.get("target_size", 224),
     )
+
+
+def _description_location(cfg):
+    """Resolve MSCPT's native ``gpt/description/<task>.json`` convention."""
+    explicit = cfg.get("description_prompt_path")
+    if explicit:
+        path = Path(explicit)
+        if path.parent.name != "description":
+            raise ValueError(
+                "description_prompt_path must be inside a description directory")
+        return str(path.parent.parent), path.stem
+    return (cfg.get("gpt_dir", "./train_data/gpt"),
+            cfg.get("dataset_name", "UBC-OCEAN"))
 
 
 class MSCPTMethod(BaseMethod):
@@ -46,6 +61,7 @@ class MSCPTMethod(BaseMethod):
 
     def build_model(self) -> nn.Module:
         backbone = self.backbone_name
+        gpt_dir, dataset_name = _description_location(self.cfg)
         encoder = self.load_encoder(weights_path=self.cfg.get("backbone_weights"))
         if backbone == "conch":
             from .mscpt_model.mscpt_conch import MscptConch as _Cls
@@ -59,11 +75,12 @@ class MSCPTMethod(BaseMethod):
             base_model=native_name,
             base_pretrain_path=self.cfg.get("backbone_weights", ""),
             trainer_perc=self.cfg.get("precision", "fp16"),
-            dataset_name=self.cfg.get("dataset_name", "RCC"),
-            gpt_dir=self.cfg.get("gpt_dir", "./train_data/gpt"),
+            dataset_name=dataset_name,
+            gpt_dir=gpt_dir,
             label_dicts=label_dicts, n_set=self.cfg.get("n_set", 5),
             n_tpro=self.cfg.get("n_tpro", 2), n_vpro=self.cfg.get("n_vpro", 2),
-            n_high=self.cfg.get("n_high", 10), n_topk=self.cfg.get("num_k", 5),
+            n_high=self.cfg.get("n_high", 10), n_topk=self.cfg.get("num_k", 100),
+            high_patch_topk=self.cfg.get("high_patch_topk", 5),
             clip_model=encoder.raw_model, tokenizer=encoder.raw_tokenizer)
         if self.cfg.get("input_mode") == "precomputed_shared_features":
             # The benchmark supplies both scales after the paired visual
@@ -74,6 +91,17 @@ class MSCPTMethod(BaseMethod):
                 module.requires_grad_(False)
         return model.to(self.device)
 
+    @staticmethod
+    def _batch_logits(logits: torch.Tensor) -> torch.Tensor:
+        """Restore the batch axis dropped by MSCPT's native top-k mean."""
+        if logits.ndim == 1:
+            return logits.unsqueeze(0)
+        if logits.ndim != 2:
+            raise ValueError(
+                "MSCPT logits must have shape [classes] or [batch, classes], "
+                f"got {tuple(logits.shape)}")
+        return logits
+
     def train_step(self, batch, model, optimizer, loss_fn):
         # MSCPT batches: (lo_feats, hi_feats, label) where lo/hi are the
         # two scales; some configs also pass selected-5x patches.
@@ -83,10 +111,12 @@ class MSCPTMethod(BaseMethod):
 
         optimizer.zero_grad()
         out = model((feats_hi, feats_lo), train=True)
-        logits = out[0] if isinstance(out, tuple) else out
+        logits = self._batch_logits(out[0] if isinstance(out, tuple) else out)
         loss = loss_fn(logits, label)
         if isinstance(out, tuple):
-            loss = sum(loss_fn(branch, label) for branch in out[:3])
+            loss = sum(
+                loss_fn(self._batch_logits(branch), label)
+                for branch in out[:3])
         loss.backward()
         optimizer.step()
         return {"loss": loss.item(), "logits": logits.detach(), "label": label}
@@ -97,6 +127,6 @@ class MSCPTMethod(BaseMethod):
         feats_hi = batch[1].to(self.device) if len(batch) > 2 else feats_lo
         label = batch[-1].to(self.device)
         out = model((feats_hi, feats_lo), train=False)
-        logits = out[0] if isinstance(out, tuple) else out
+        logits = self._batch_logits(out[0] if isinstance(out, tuple) else out)
         loss = loss_fn(logits, label).item() if loss_fn is not None else 0.0
         return {"loss": loss, "logits": logits, "label": label}

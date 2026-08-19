@@ -14,6 +14,11 @@
 set -uo pipefail
 
 REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+if [[ -f "${REPO}/.env" ]]; then
+    set -a
+    source "${REPO}/.env"
+    set +a
+fi
 
 # Set PGVL_CONDA_ENV to the environment built from environment.yml once it
 # exists; scripts/pgvl_job.sh activates it on the compute node.

@@ -1,12 +1,12 @@
 {
-  "matrix": "/u/dchanda/PGVL-Gym/benchmarks/ubc_ocean/run_matrix.csv",
+  "matrix": "${PGVL_REPO_ROOT}/benchmarks/ubc_ocean/run_matrix.csv",
   "cohort": "ubc_ocean",
   "device": "cpu",
   "results": [
     {
       "experiment": "focus",
       "method": "focus",
-      "config": "/u/dchanda/PGVL-Gym/benchmarks/ubc_ocean/configs/focus/ubc_ocean_4shot.yaml",
+      "config": "${PGVL_REPO_ROOT}/benchmarks/ubc_ocean/configs/focus/ubc_ocean_4shot.yaml",
       "device": "cpu",
       "status": "passed",
       "stage": "complete",
@@ -21,7 +21,7 @@
     {
       "experiment": "focus_5x20x",
       "method": "focus",
-      "config": "/u/dchanda/PGVL-Gym/benchmarks/ubc_ocean/configs/focus_5x20x/ubc_ocean_4shot.yaml",
+      "config": "${PGVL_REPO_ROOT}/benchmarks/ubc_ocean/configs/focus_5x20x/ubc_ocean_4shot.yaml",
       "device": "cpu",
       "status": "passed",
       "stage": "complete",
@@ -36,7 +36,7 @@
     {
       "experiment": "mscpt",
       "method": "mscpt",
-      "config": "/u/dchanda/PGVL-Gym/benchmarks/ubc_ocean/configs/mscpt/ubc_ocean_4shot.yaml",
+      "config": "${PGVL_REPO_ROOT}/benchmarks/ubc_ocean/configs/mscpt/ubc_ocean_4shot.yaml",
       "device": "cpu",
       "status": "passed",
       "stage": "complete",
@@ -51,7 +51,7 @@
     {
       "experiment": "mscpt_5x20x",
       "method": "mscpt",
-      "config": "/u/dchanda/PGVL-Gym/benchmarks/ubc_ocean/configs/mscpt_5x20x/ubc_ocean_4shot.yaml",
+      "config": "${PGVL_REPO_ROOT}/benchmarks/ubc_ocean/configs/mscpt_5x20x/ubc_ocean_4shot.yaml",
       "device": "cpu",
       "status": "passed",
       "stage": "complete",
@@ -66,7 +66,7 @@
     {
       "experiment": "muse",
       "method": "muse",
-      "config": "/u/dchanda/PGVL-Gym/benchmarks/ubc_ocean/configs/muse/ubc_ocean_4shot.yaml",
+      "config": "${PGVL_REPO_ROOT}/benchmarks/ubc_ocean/configs/muse/ubc_ocean_4shot.yaml",
       "device": "cpu",
       "status": "passed",
       "stage": "complete",
@@ -81,7 +81,7 @@
     {
       "experiment": "muse_keep",
       "method": "muse",
-      "config": "/u/dchanda/PGVL-Gym/benchmarks/ubc_ocean/configs/muse_keep/ubc_ocean_4shot.yaml",
+      "config": "${PGVL_REPO_ROOT}/benchmarks/ubc_ocean/configs/muse_keep/ubc_ocean_4shot.yaml",
       "device": "cpu",
       "status": "passed",
       "stage": "complete",
@@ -96,7 +96,7 @@
     {
       "experiment": "pathpt",
       "method": "pathpt",
-      "config": "/u/dchanda/PGVL-Gym/benchmarks/ubc_ocean/configs/pathpt/ubc_ocean_4shot.yaml",
+      "config": "${PGVL_REPO_ROOT}/benchmarks/ubc_ocean/configs/pathpt/ubc_ocean_4shot.yaml",
       "device": "cpu",
       "status": "passed",
       "stage": "complete",
@@ -111,13 +111,13 @@
     {
       "experiment": "pathpt_keep",
       "method": "pathpt",
-      "config": "/u/dchanda/PGVL-Gym/benchmarks/ubc_ocean/configs/pathpt_keep/ubc_ocean_4shot.yaml",
+      "config": "${PGVL_REPO_ROOT}/benchmarks/ubc_ocean/configs/pathpt_keep/ubc_ocean_4shot.yaml",
       "device": "cpu",
       "status": "failed",
       "stage": "model_build",
       "error_type": "TypeError",
       "error": "RenameLayerScale.__init__() got an unexpected keyword argument 'device'",
-      "traceback": "Traceback (most recent call last):\n  File \"/u/dchanda/PGVL-Gym/scripts/smoke_test.py\", line 125, in smoke_one\n    model = method.build_model()\n  File \"/u/dchanda/PGVL-Gym/methods/pathpt/adapter.py\", line 42, in build_model\n    encoder = self.load_encoder(weights_path=self.cfg.get(\"backbone_weights\"))\n  File \"/u/dchanda/PGVL-Gym/methods/base.py\", line 101, in load_encoder\n    bundle = build_encoder(self.backbone_name, weights_path=weights_path,\n  File \"/u/dchanda/PGVL-Gym/common/backbones/factory.py\", line 622, in build_encoder\n    model, tokenizer, preprocess = _load_builtin(canonical, weights_path, device)\n  File \"/u/dchanda/PGVL-Gym/common/backbones/factory.py\", line 569, in _load_builtin\n    model = AutoModel.from_pretrained(repo, trust_remote_code=True).to(device)\n  File \"/work/hdd/bhwm/dchanda/envs/pgvl-gym/lib/python3.10/site-packages/transformers/models/auto/auto_factory.py\", line 597, in from_pretrained\n    return model_class.from_pretrained(\n  File \"/work/hdd/bhwm/dchanda/envs/pgvl-gym/lib/python3.10/site-packages/transformers/modeling_utils.py\", line 277, in _wrapper\n    return func(*args, **kwargs)\n  File \"/work/hdd/bhwm/dchanda/envs/pgvl-gym/lib/python3.10/site-packages/transformers/modeling_utils.py\", line 4971, in from_pretrained\n    model = cls(config, *model_args, **model_kwargs)\n  File \"/work/hdd/bhwm/.cache_huggingface/modules/transformers_modules/_28a25d95cc6ba27a7e6fab3f144e13dbafd8b21e/modeling_keep.py\", line 48, in __init__\n    self.visual = timm.create_model(\n  File \"/work/hdd/bhwm/dchanda/envs/pgvl-gym/lib/python3.10/site-packages/timm/models/_factory.py\", line 138, in create_model\n    model = create_fn(\n  File \"/work/hdd/bhwm/dchanda/envs/pgvl-gym/lib/python3.10/site-packages/timm/models/vision_transformer.py\", line 3242, in vit_large_patch16_224\n    model = _create_vision_transformer('vit_large_patch16_224', pretrained=pretrained, **dict(model_args, **kwargs))\n  File \"/work/hdd/bhwm/dchanda/envs/pgvl-gym/lib/python3.10/site-packages/timm/models/vision_transformer.py\", line 3093, in _create_vision_transformer\n    return build_model_with_cfg(\n  File \"/work/hdd/bhwm/dchanda/envs/pgvl-gym/lib/python3.10/site-packages/timm/models/_builder.py\", line 445, in build_model_with_cfg\n    model = model_cls(**kwargs)\n  File \"/work/hdd/bhwm/dchanda/envs/pgvl-gym/lib/python3.10/site-packages/timm/models/vision_transformer.py\", line 855, in __init__\n    self.blocks = nn.Sequential(*[\n  File \"/work/hdd/bhwm/dchanda/envs/pgvl-gym/lib/python3.10/site-packages/timm/models/vision_transformer.py\", line 856, in <listcomp>\n    block_fn(\n  File \"/work/hdd/bhwm/dchanda/envs/pgvl-gym/lib/python3.10/site-packages/timm/models/vision_transformer.py\", line 190, in __init__\n    self.ls1 = LayerScale(dim, init_values=init_values, **dd) if init_values else nn.Identity()\nTypeError: RenameLayerScale.__init__() got an unexpected keyword argument 'device'\n",
+      "traceback": "Traceback (most recent call last):\n  File \"${PGVL_REPO_ROOT}/scripts/smoke_test.py\", line 125, in smoke_one\n    model = method.build_model()\n  File \"${PGVL_REPO_ROOT}/methods/pathpt/adapter.py\", line 42, in build_model\n    encoder = self.load_encoder(weights_path=self.cfg.get(\"backbone_weights\"))\n  File \"${PGVL_REPO_ROOT}/methods/base.py\", line 101, in load_encoder\n    bundle = build_encoder(self.backbone_name, weights_path=weights_path,\n  File \"${PGVL_REPO_ROOT}/common/backbones/factory.py\", line 622, in build_encoder\n    model, tokenizer, preprocess = _load_builtin(canonical, weights_path, device)\n  File \"${PGVL_REPO_ROOT}/common/backbones/factory.py\", line 569, in _load_builtin\n    model = AutoModel.from_pretrained(repo, trust_remote_code=True).to(device)\n  File \"${PGVL_STORAGE_ROOT}/dchanda/envs/pgvl-gym/lib/python3.10/site-packages/transformers/models/auto/auto_factory.py\", line 597, in from_pretrained\n    return model_class.from_pretrained(\n  File \"${PGVL_STORAGE_ROOT}/dchanda/envs/pgvl-gym/lib/python3.10/site-packages/transformers/modeling_utils.py\", line 277, in _wrapper\n    return func(*args, **kwargs)\n  File \"${PGVL_STORAGE_ROOT}/dchanda/envs/pgvl-gym/lib/python3.10/site-packages/transformers/modeling_utils.py\", line 4971, in from_pretrained\n    model = cls(config, *model_args, **model_kwargs)\n  File \"${PGVL_STORAGE_ROOT}/.cache_huggingface/modules/transformers_modules/_28a25d95cc6ba27a7e6fab3f144e13dbafd8b21e/modeling_keep.py\", line 48, in __init__\n    self.visual = timm.create_model(\n  File \"${PGVL_STORAGE_ROOT}/dchanda/envs/pgvl-gym/lib/python3.10/site-packages/timm/models/_factory.py\", line 138, in create_model\n    model = create_fn(\n  File \"${PGVL_STORAGE_ROOT}/dchanda/envs/pgvl-gym/lib/python3.10/site-packages/timm/models/vision_transformer.py\", line 3242, in vit_large_patch16_224\n    model = _create_vision_transformer('vit_large_patch16_224', pretrained=pretrained, **dict(model_args, **kwargs))\n  File \"${PGVL_STORAGE_ROOT}/dchanda/envs/pgvl-gym/lib/python3.10/site-packages/timm/models/vision_transformer.py\", line 3093, in _create_vision_transformer\n    return build_model_with_cfg(\n  File \"${PGVL_STORAGE_ROOT}/dchanda/envs/pgvl-gym/lib/python3.10/site-packages/timm/models/_builder.py\", line 445, in build_model_with_cfg\n    model = model_cls(**kwargs)\n  File \"${PGVL_STORAGE_ROOT}/dchanda/envs/pgvl-gym/lib/python3.10/site-packages/timm/models/vision_transformer.py\", line 855, in __init__\n    self.blocks = nn.Sequential(*[\n  File \"${PGVL_STORAGE_ROOT}/dchanda/envs/pgvl-gym/lib/python3.10/site-packages/timm/models/vision_transformer.py\", line 856, in <listcomp>\n    block_fn(\n  File \"${PGVL_STORAGE_ROOT}/dchanda/envs/pgvl-gym/lib/python3.10/site-packages/timm/models/vision_transformer.py\", line 190, in __init__\n    self.ls1 = LayerScale(dim, init_values=init_values, **dd) if init_values else nn.Identity()\nTypeError: RenameLayerScale.__init__() got an unexpected keyword argument 'device'\n",
       "seconds": 28.17
     }
   ]

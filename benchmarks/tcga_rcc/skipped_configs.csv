@@ -1,7 +1,7 @@
 experiment,method,cohort,shots,reason
-muse,muse,rcc,4,FileNotFoundError: MUSE prompt CSV for clear cell renal cell carcinoma does not exist: /u/dchanda/PGVL-Gym/benchmarks/tcga_rcc/da
-muse,muse,rcc,8,FileNotFoundError: MUSE prompt CSV for clear cell renal cell carcinoma does not exist: /u/dchanda/PGVL-Gym/benchmarks/tcga_rcc/da
-muse,muse,rcc,16,FileNotFoundError: MUSE prompt CSV for clear cell renal cell carcinoma does not exist: /u/dchanda/PGVL-Gym/benchmarks/tcga_rcc/da
-muse_keep,muse,rcc,4,FileNotFoundError: MUSE prompt CSV for clear cell renal cell carcinoma does not exist: /u/dchanda/PGVL-Gym/benchmarks/tcga_rcc/da
-muse_keep,muse,rcc,8,FileNotFoundError: MUSE prompt CSV for clear cell renal cell carcinoma does not exist: /u/dchanda/PGVL-Gym/benchmarks/tcga_rcc/da
-muse_keep,muse,rcc,16,FileNotFoundError: MUSE prompt CSV for clear cell renal cell carcinoma does not exist: /u/dchanda/PGVL-Gym/benchmarks/tcga_rcc/da
+muse,muse,rcc,4,FileNotFoundError: MUSE prompt CSV for clear cell renal cell carcinoma does not exist: ${PGVL_REPO_ROOT}/benchmarks/tcga_rcc/da
+muse,muse,rcc,8,FileNotFoundError: MUSE prompt CSV for clear cell renal cell carcinoma does not exist: ${PGVL_REPO_ROOT}/benchmarks/tcga_rcc/da
+muse,muse,rcc,16,FileNotFoundError: MUSE prompt CSV for clear cell renal cell carcinoma does not exist: ${PGVL_REPO_ROOT}/benchmarks/tcga_rcc/da
+muse_keep,muse,rcc,4,FileNotFoundError: MUSE prompt CSV for clear cell renal cell carcinoma does not exist: ${PGVL_REPO_ROOT}/benchmarks/tcga_rcc/da
+muse_keep,muse,rcc,8,FileNotFoundError: MUSE prompt CSV for clear cell renal cell carcinoma does not exist: ${PGVL_REPO_ROOT}/benchmarks/tcga_rcc/da
+muse_keep,muse,rcc,16,FileNotFoundError: MUSE prompt CSV for clear cell renal cell carcinoma does not exist: ${PGVL_REPO_ROOT}/benchmarks/tcga_rcc/da

@@ -1,0 +1,102 @@
+{
+  "_provenance": "upstream",
+  "_metadata": {
+    "source_repository": "https://github.com/LTS5/SLIP",
+    "source_commit": "9351c4480ec8d7a8216316a1861025b4f086ac78",
+    "source_file": "datasets/prompt.py",
+    "source_dataset_key": "PatchGastricADC22",
+    "source_url": "https://github.com/LTS5/SLIP/blob/9351c4480ec8d7a8216316a1861025b4f086ac78/datasets/prompt.py#L3-L55",
+    "copied_from_upstream": true,
+    "role": "complete_slip_prompt_bank",
+    "prompt_bank_sha256": "afb84abcf1d4c141c462f3b7043c998167c96637c80a5c148269cc3dfc3bec32",
+    "encoding_semantics": "Each tissue entry is a two-text ensemble. SLIP encodes the short name and long description separately, normalizes each, averages them, and renormalizes."
+  },
+  "templates": [
+    "whole slide image showing {}"
+  ],
+  "slide_classnames": [
+    [
+      "well differentiated tubular adenocarcinoma"
+    ],
+    [
+      "moderately differentiated tubular adenocarcinoma"
+    ],
+    [
+      "poorly differentiated adenocarcinoma"
+    ]
+  ],
+  "tissue_classnames": [
+    [
+      "Normal Gastric Mucosa",
+      "Healthy gastric lining composed of surface epithelial cells, mucous cells, chief cells, and parietal cells"
+    ],
+    [
+      "Gastric Adenocarcinoma",
+      "Cancerous epithelial cells forming glands or tubular structures within the gastric mucosa"
+    ],
+    [
+      "Inflammatory Infiltrate",
+      "Presence of inflammatory cells (such as lymphocytes, plasma cells, and macrophages) within the tumor stroma or surrounding tissue"
+    ],
+    [
+      "Desmoplastic Stroma",
+      "Dense fibrous tissue surrounding the tumor cells, often indicating an aggressive tumor phenotype"
+    ],
+    [
+      "Necrotic Areas",
+      "Regions of tissue death within the tumor mass, which can indicate rapid tumor growth or inadequate blood supply"
+    ],
+    [
+      "Ulceration",
+      "Loss of epithelial lining with exposure of the underlying tissue, often seen in more advanced stages of adenocarcinoma"
+    ],
+    [
+      "Lymphovascular Invasion",
+      "Invasion of cancer cells into lymphatic or blood vessels, which may appear as tumor cells within vascular lumens"
+    ],
+    [
+      "Perineural Invasion",
+      "Invasion of cancer cells into nerves, typically observed as tumor cells surrounding nerve bundles"
+    ],
+    [
+      "Metastatic Deposits",
+      "Presence of tumor cells in regional lymph nodes or distant organs, indicating advanced disease stage"
+    ],
+    [
+      "Focal Dysplasia",
+      "Areas of abnormal cellular growth and differentiation, which may precede the development of adenocarcinoma"
+    ],
+    [
+      "Surface Epithelial Changes",
+      "Alterations in the surface epithelium such as hyperplasia, dysplasia, or metaplasia, which can be precursors to adenocarcinoma"
+    ],
+    [
+      "Submucosal Invasion",
+      "Invasion of tumor cells beyond the mucosal layer into the submucosa of the stomach wall"
+    ],
+    [
+      "Muscularis Propria Invasion",
+      "Invasion of tumor cells into the muscular layer of the stomach wall"
+    ],
+    [
+      "Lymph Node Architecture",
+      "Examination of lymph node architecture for evidence of tumor involvement, such as effacement of normal nodal architecture by tumor cells"
+    ],
+    [
+      "Lymph Node Metastasis",
+      "Presence of tumor cells within lymph node sinuses or parenchyma, indicating spread from the primary tumor"
+    ],
+    [
+      "Intramucosal Carcinoma",
+      "Adenocarcinoma confined to the mucosal layer without invasion into deeper layers of the stomach wall"
+    ],
+    [
+      "Subserosal Invasion",
+      "Invasion of tumor cells into the subserosal layer of the stomach wall, beyond the serosa"
+    ],
+    [
+      "Serosal Involvement",
+      "Invasion of tumor cells through the serosal layer, potentially leading to peritoneal spread"
+    ]
+  ]
+}

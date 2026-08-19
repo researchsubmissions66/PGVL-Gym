@@ -32,6 +32,7 @@ class SLIPMethod(BaseMethod):
 
     def build_model(self) -> nn.Module:
         from .methods.slidecoop import SLIP
+        from common.prompts.slip import load_slip_prompt_bank
 
         # Keep SLIP's native family-specific prompt classes; the bundle only
         # standardizes loading, dimensions, and compatibility validation.
@@ -41,15 +42,49 @@ class SLIPMethod(BaseMethod):
         encoder = self.load_encoder(
             weights_path=self.cfg.get("backbone_weights")).freeze()
 
-        templates = self.cfg.get("text_templates", ["a photo of a {}."])
-        tissues = self.cfg.get("tissue_classnames", self.cfg["classnames"])
+        templates = self.cfg.get("text_templates", ["{}"])
+        slide_classnames = self.cfg.get(
+            "slip_slide_classnames", self.cfg["classnames"])
+        tissues = self.cfg.get("tissue_classnames")
+        prompt_path = self.cfg.get("tissue_classnames_path")
+        if prompt_path:
+            label_dict = self.cfg.get("label_dict")
+            labels = None
+            if isinstance(label_dict, dict):
+                labels = [label for label, _ in sorted(
+                    label_dict.items(), key=lambda item: item[1])]
+            bank = load_slip_prompt_bank(
+                prompt_path,
+                fallback_slide_classnames=self.cfg["classnames"],
+                labels=labels,
+            )
+            declared_provenance = self.cfg.get("prompt_provenance")
+            if (declared_provenance
+                    and declared_provenance != bank.provenance):
+                raise ValueError(
+                    f"{prompt_path}: prompt_provenance "
+                    f"{declared_provenance!r} contradicts bank origin "
+                    f"{bank.provenance!r}")
+            resolved = bank.config_values()
+            for key in ("text_templates", "slip_slide_classnames",
+                        "tissue_classnames"):
+                if key in self.cfg and self.cfg[key] != resolved[key]:
+                    raise ValueError(
+                        f"{prompt_path}: configured {key} has drifted from "
+                        "the SLIP prompt bank")
+            templates = resolved["text_templates"]
+            slide_classnames = resolved["slip_slide_classnames"]
+            tissues = resolved["tissue_classnames"]
+        if tissues is None:
+            raise ValueError(
+                "SLIP requires tissue_classnames_path or tissue_classnames")
         tissues = [item if isinstance(item, (list, tuple)) else [item]
                    for item in tissues]
         model = SLIP(
             model=encoder.raw_model,
             tokenizer=encoder.raw_tokenizer,
             templates=templates,
-            slide_classnames=self.cfg["classnames"],
+            slide_classnames=slide_classnames,
             tissue_classnames=tissues,
             experiment_dir=self.cfg.get("results_dir", "./results/slip"),
             context_size=self.cfg.get("context_size", 1),
@@ -76,14 +111,13 @@ class SLIPMethod(BaseMethod):
 
     @torch.no_grad()
     def eval_step(self, batch, model, loss_fn=None):
-        feats = batch[0].to(self.device).squeeze(0)
-        label = batch[-1].to(self.device).view(-1)
-        # The unified loop does not call SLIP's legacy ``test`` helper that
-        # materializes ``slide_weights``. Recompute weights from the current
-        # prompt parameters so validation follows the trained model.
-        out = model(feats, eval=False)
-        logits = out[0] if isinstance(out, tuple) else out
-        if logits.dim() == 1:
-            logits = logits.unsqueeze(0)
-        loss = 0.0  # SLIP eval uses argmax on cross-correlation
-        return {"loss": loss, "logits": logits, "label": label}
+        feats = batch[0]
+        label = batch[-1]
+        # Reuse SLIP's native contrastive objective so validation and early
+        # stopping do not see a fabricated constant-zero loss.
+        loss, logits = model.compute_loss(feats, label)
+        return {
+            "loss": loss.item(),
+            "logits": logits,
+            "label": label.to(self.device).view(-1),
+        }

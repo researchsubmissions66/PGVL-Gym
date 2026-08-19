@@ -4,6 +4,8 @@
 method: "cod_mil"
 backbone: "clip-rn50"
 feature_dim: 1024
+feature_space_id: "openai/clip-rn50@official"
+text_feature_space_id: "openai/clip-rn50@official"
 n_classes: 2
 classnames: ["lung adenocarcinoma", "lung squamous cell carcinoma"]
 label_dict: {"LUAD": 0, "LUSC": 1}
@@ -25,9 +27,11 @@ dataset_csv:    "splits/TCGA_Lung/dataset.csv"
 data_folder_s:  "path/to/TCGA_Lung/feats_5x"
 data_folder_l:  "path/to/TCGA_Lung/feats_20x"
 split_dir:      "splits/task_tcga_lung_subtyping"
-# No upstream Lung prompt embeddings are published. Supply matching CLIP-RN50
-# embeddings and maps before running this config.
+# No upstream Lung prompt embeddings are published. Encode the chain and
+# normal-tissue bank once at runtime with the matching RN50 text tower.
 text_prompt_path: "text_prompts/cod_mil/lung_chain_of_diagnosis.json"
 text_prompt_features: null
+prompt_encoding: "runtime_cached"
+backbone_weights: "${PGVL_USER_ROOT}/.cache/clip/RN50.pt"
 cross_mag_map_dir: "maps/TCGA_Lung_10x_to_20x"
 results_dir:    "results/cod_mil_lung"

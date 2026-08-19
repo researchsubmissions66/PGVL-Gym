@@ -1,0 +1,28 @@
+{
+  "_provenance": "upstream",
+  "_metadata": {
+    "source_repository": "https://github.com/miccaiif/TOP",
+    "source_commit": "8356b0dd1786d35e6d6d617d2b253c949769ba39",
+    "source_file": "train_TCGAFeat_MIL_CLIP.py",
+    "source_symbol": "bagPrompt_ctx_init",
+    "source_url": "https://github.com/miccaiif/TOP/blob/8356b0dd1786d35e6d6d617d2b253c949769ba39/train_TCGAFeat_MIL_CLIP.py#L500-L506",
+    "copied_from_upstream": true,
+    "role": "bag_level_ctx_init",
+    "task": "TCGA-NSCLC",
+    "usage": "standard_upstream_recipe",
+    "contains_learnable_slots": true,
+    "learnable_slot_count": 10,
+    "label_order": [
+      "LUAD",
+      "LUSC"
+    ],
+    "upstream_classnames": [
+      "Lung Adenocarcinoma",
+      "Lung Squamous Cell Carcinoma"
+    ]
+  },
+  "ctx_init": {
+    "LUAD": "Examine the lung tissue image, looking for gland patterns and mucin (Lung Adenocarcinoma). * * * * * * * * * *",
+    "LUSC": "Examine the lung tissue image, looking for irregular cells and keratinization (Lung Squamous Cell Carcinoma). * * * * * * * * * *"
+  }
+}

@@ -6,7 +6,7 @@ only their public, non-model assets into the layout used by this repository:
 * CoD-MIL RCC prompt CSV and CLIP text embeddings;
 * MAPLE Lung/RCC attribute JSONs (plus a flattened composite-compatible view);
 * MSCPT GPT description JSONs;
-* SLIP tissue lists converted from its Python constant to JSON; and
+* complete SLIP prompt banks converted from its Python constant to JSON; and
 * WSI-FiVE report-preprocessing files, including ``TCGA_Reports.csv``;
 * MUSE's released class-description CSVs; and
 * SLDPC's zero-shot prompt YAMLs.
@@ -78,10 +78,9 @@ def import_cod_mil(source_root: Path, overwrite: bool, dry_run: bool) -> None:
     target = REPO_ROOT / "text_prompts" / "cod_mil"
     copy_file(prompt_dir / "text_prompt_kidney_v2.csv",
               target / "rcc_chain_of_diagnosis.csv", overwrite, dry_run)
-    # Named for the CLIP variant that produced the embeddings, not just "clip":
-    # the registry distinguishes clip-rn50 from clip-vitb, and the cohort
-    # protocols reference this exact filename. A bare "clip" name here would
-    # leave `cod_prompt_features` dangling after a clean re-import.
+    # Preserve the released tensor under its upstream identity for auditing.
+    # It has three extra leading rows and is deliberately *not* selected by the
+    # RCC protocol; build_cod_mil_prompt_features.py creates the verified bank.
     copy_file(prompt_dir / "text_prompt_feature_kidney_v2_clip.pt",
               target / "rcc_text_prompt_features_clip_rn50.pt", overwrite, dry_run)
     copy_file(prompt_dir / "text_prompt_feature_kidney_v2_plip.pt",
@@ -151,12 +150,29 @@ def import_slip(source_root: Path, overwrite: bool, dry_run: bool) -> None:
     prompts = load_slip_prompts(source_root / "slip" / "datasets" / "prompt.py")
     target = REPO_ROOT / "text_prompts" / "slip"
     for dataset, data in prompts.items():
-        # The composite prompt module accepts a simple list of strings.  Keep
-        # each tissue name and its description together so no information is
-        # lost during conversion.
-        tissues = [f"{name}: {description}"
-                   for name, description in data["tissue_classnames"]]
-        write_json(tissues, target / f"{dataset}_tissues.json", overwrite, dry_run)
+        # Keep all three upstream roles and the nested text ensembles intact.
+        # SLIP embeds each tissue name and description separately before
+        # averaging; joining the pair into one sentence changes every routing
+        # vector even when no words are lost.
+        payload = {
+            "_provenance": "upstream",
+            "_metadata": {
+                "source_repository": "https://github.com/LTS5/SLIP",
+                "source_file": "datasets/prompt.py",
+                "source_dataset_key": dataset,
+                "copied_from_upstream": True,
+                "role": "complete_slip_prompt_bank",
+            },
+            "templates": data["templates"],
+            "slide_classnames": data["slide_classnames"],
+            "tissue_classnames": data["tissue_classnames"],
+        }
+        write_json(
+            payload,
+            target / f"{dataset}_prompt_bank.json",
+            overwrite,
+            dry_run,
+        )
 
 
 def import_wsi_five(source_root: Path, overwrite: bool, dry_run: bool) -> None:

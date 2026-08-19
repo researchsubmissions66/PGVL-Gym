@@ -32,6 +32,12 @@ class PromptLearnerPLIP(nn.Module):
         ctx_init = cfg.ctx_init
         ctx_dim = cfg.token_embedding_size
         model = model.to(self.device)
+        token_embedding = getattr(
+            model.text_model.embeddings, "token_embedding", None)
+        if token_embedding is None or not callable(token_embedding):
+            raise TypeError(
+                "PathPT PLIP requires the backbone's pretrained text token "
+                "embedding")
 
         print("Initializing a generic context")
         if ctx_init:
@@ -40,9 +46,7 @@ class PromptLearnerPLIP(nn.Module):
             # prompt = tokenizer([ctx_init],max_length=256,padding='max_length',truncation=True, return_tensors='pt')
             prompt = tokenizer([ctx_init]*n_cls,add_special_tokens=True,max_length=77,pad_to_max_length=True,return_tensors='pt')
             with torch.no_grad(): # freeze model parameters here
-                config = model.text_model.config
-                embed_token = nn.Embedding(config.vocab_size, config.hidden_size).to(device)
-                embedding = embed_token(prompt['input_ids'].to(device))
+                embedding = token_embedding(prompt['input_ids'].to(device))
             # ctx_vectors = embedding[0, 1 : 1 + n_ctx, :] # [cls] is in the first place
             ctx_vectors = embedding[:, 1 : 1 + n_ctx, :] # [cls] is in the first place
             prompt_prefix = ctx_init
@@ -65,7 +69,7 @@ class PromptLearnerPLIP(nn.Module):
             tokenized_prompts = tokenizer(cls_prompts,add_special_tokens=True,max_length=77,pad_to_max_length=True,return_tensors='pt').to(device) # (n_classname, 256)
             tokenized_prompts_lst.append(tokenized_prompts)
             with torch.no_grad(): # freeze model parameters here
-                embedding = embed_token(tokenized_prompts['input_ids'].to(device)) # (n_classname, 256, 768)
+                embedding = token_embedding(tokenized_prompts['input_ids'].to(device)) # (n_classname, 256, 768)
             embeddings.append(embedding)
             
         # These token vectors will be saved when in save_model(),
@@ -147,7 +151,12 @@ class PPTPLIP(nn.Module):
             #     nn.Linear(self.vfeat_dim, len(classnames_lst))
             # )
             # self.mlp = MultiKernelConv1DTrans(in_channels=self.vfeat_dim, out_channels=768, cls_num = len(classnames_lst))
-            self.mlp = ConvTransAttentionAgg(dim=self.vfeat_dim, cls_num = len(classnames_lst)-1)
+            # The upstream subtyping script prepends a synthetic ``Normal``
+            # prompt and therefore subtracts one here. Unified configs contain
+            # exactly the task classes, so the classifier must retain all of
+            # them.
+            self.mlp = ConvTransAttentionAgg(
+                dim=self.vfeat_dim, cls_num=len(classnames_lst))
         elif self.vision_grad:
             self.mlp = MultiKernelConv1DTrans(in_channels=self.vfeat_dim, out_channels=self.vfeat_dim, cls_num=len(classnames_lst)-1)
 
@@ -157,7 +166,7 @@ class PPTPLIP(nn.Module):
         if self.vision_only:
             image_features = image_features.requires_grad_(True)
             # print(image_features.requires_grad)
-            image_logits = self.mlp(image_features.squeeze())
+            image_logits = self.mlp(image_features)
             # print(image_logits.requires_grad)
             
             return image_logits, None

@@ -1,12 +1,12 @@
 {
-  "matrix": "/u/dchanda/PGVL-Gym/benchmarks/tcga_nsclc/run_matrix.csv",
+  "matrix": "${PGVL_REPO_ROOT}/benchmarks/tcga_nsclc/run_matrix.csv",
   "cohort": "nsclc",
   "device": "cpu",
   "results": [
     {
       "experiment": "focus",
       "method": "focus",
-      "config": "/u/dchanda/PGVL-Gym/benchmarks/tcga_nsclc/configs/focus/nsclc_4shot.yaml",
+      "config": "${PGVL_REPO_ROOT}/benchmarks/tcga_nsclc/configs/focus/nsclc_4shot.yaml",
       "device": "cpu",
       "status": "passed",
       "stage": "complete",
@@ -21,7 +21,7 @@
     {
       "experiment": "focus_5x20x",
       "method": "focus",
-      "config": "/u/dchanda/PGVL-Gym/benchmarks/tcga_nsclc/configs/focus_5x20x/nsclc_4shot.yaml",
+      "config": "${PGVL_REPO_ROOT}/benchmarks/tcga_nsclc/configs/focus_5x20x/nsclc_4shot.yaml",
       "device": "cpu",
       "status": "passed",
       "stage": "complete",
@@ -36,7 +36,7 @@
     {
       "experiment": "mscpt",
       "method": "mscpt",
-      "config": "/u/dchanda/PGVL-Gym/benchmarks/tcga_nsclc/configs/mscpt/nsclc_4shot.yaml",
+      "config": "${PGVL_REPO_ROOT}/benchmarks/tcga_nsclc/configs/mscpt/nsclc_4shot.yaml",
       "device": "cpu",
       "status": "passed",
       "stage": "complete",
@@ -51,7 +51,7 @@
     {
       "experiment": "mscpt_5x20x",
       "method": "mscpt",
-      "config": "/u/dchanda/PGVL-Gym/benchmarks/tcga_nsclc/configs/mscpt_5x20x/nsclc_4shot.yaml",
+      "config": "${PGVL_REPO_ROOT}/benchmarks/tcga_nsclc/configs/mscpt_5x20x/nsclc_4shot.yaml",
       "device": "cpu",
       "status": "passed",
       "stage": "complete",
@@ -66,7 +66,7 @@
     {
       "experiment": "muse",
       "method": "muse",
-      "config": "/u/dchanda/PGVL-Gym/benchmarks/tcga_nsclc/configs/muse/nsclc_4shot.yaml",
+      "config": "${PGVL_REPO_ROOT}/benchmarks/tcga_nsclc/configs/muse/nsclc_4shot.yaml",
       "device": "cpu",
       "status": "passed",
       "stage": "complete",
@@ -80,7 +80,7 @@
     },
     {
       "experiment": "muse_keep",
-      "config": "/u/dchanda/PGVL-Gym/benchmarks/tcga_nsclc/configs/muse_keep/nsclc_4shot.yaml",
+      "config": "${PGVL_REPO_ROOT}/benchmarks/tcga_nsclc/configs/muse_keep/nsclc_4shot.yaml",
       "device": "cpu",
       "status": "failed",
       "stage": "subprocess",
@@ -90,7 +90,7 @@
     {
       "experiment": "pathpt",
       "method": "pathpt",
-      "config": "/u/dchanda/PGVL-Gym/benchmarks/tcga_nsclc/configs/pathpt/nsclc_4shot.yaml",
+      "config": "${PGVL_REPO_ROOT}/benchmarks/tcga_nsclc/configs/pathpt/nsclc_4shot.yaml",
       "device": "cpu",
       "status": "passed",
       "stage": "complete",
@@ -105,7 +105,7 @@
     {
       "experiment": "pathpt_keep",
       "method": "pathpt",
-      "config": "/u/dchanda/PGVL-Gym/benchmarks/tcga_nsclc/configs/pathpt_keep/nsclc_4shot.yaml",
+      "config": "${PGVL_REPO_ROOT}/benchmarks/tcga_nsclc/configs/pathpt_keep/nsclc_4shot.yaml",
       "device": "cpu",
       "status": "passed",
       "stage": "complete",
@@ -119,7 +119,7 @@
     },
     {
       "experiment": "sldpc",
-      "config": "/u/dchanda/PGVL-Gym/benchmarks/tcga_nsclc/configs/sldpc/nsclc_4shot.yaml",
+      "config": "${PGVL_REPO_ROOT}/benchmarks/tcga_nsclc/configs/sldpc/nsclc_4shot.yaml",
       "device": "cpu",
       "status": "timeout",
       "stage": "subprocess",

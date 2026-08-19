@@ -229,7 +229,14 @@ class ConvAttentionAgg(nn.Module):
         output3 = self.active(self.norm(output3.permute(0, 2, 1)))
         output = output1 + output2 + output3 + x
         
-        output = output.squeeze()
+        if output.shape[0] != 1:
+            raise ValueError(
+                "ConvAttentionAgg requires batch_size=1 for variable-length "
+                f"bags, got batch dimension {output.shape[0]}")
+        # Remove only the synthetic bag batch axis. A bare squeeze collapses
+        # the patch axis as well for one-patch bags and turns the attention
+        # input into a rank-1 tensor.
+        output = output.squeeze(0)
         # x: [N, 768]
         attn_weights = self.attn(output)  # [N, 1]
         slide_emb = torch.sum(attn_weights * output, dim=0, keepdim=True)  # [1, 768]
@@ -293,7 +300,12 @@ class ConvTransAttentionAgg(nn.Module):
         output = self.translayer(output)
         output = self.norm(output)
         
-        output = output.squeeze()
+        if output.shape[0] != 1:
+            raise ValueError(
+                "ConvTransAttentionAgg requires batch_size=1 for "
+                f"variable-length bags, got batch dimension {output.shape[0]}")
+        # Preserve a singleton patch axis; attention still expects [N, D].
+        output = output.squeeze(0)
         # x: [N, 768]
         attn_weights = self.attn(output)  # [N, 1]
         slide_emb = torch.sum(attn_weights * output, dim=0, keepdim=True)  # [1, 768]
