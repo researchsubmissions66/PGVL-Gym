@@ -165,6 +165,36 @@
         "text_prompts/wsi_five/clinical_questions/ubc_ocean.json"
       ],
       "note": "NSCLC native mode uses the released six questions, authors' per-case answers, and verbatim LUAD/LUSC evaluation descriptions. Each training candidate bank is derived only from that fold's training cases. BRCA, RCC, and UBC-OCEAN question sets are local task extensions and cannot reproduce the released lung supervision condition; simplified modes use their questions with classname comparison and never consume report text."
+    },
+    "muse": {
+      "upstream_repository": "https://github.com/JiahaoXu-god/CVPR2026_MUSE",
+      "upstream_commit": "9f2ec37bad5a10bb79616900ec017830b0bdfa0a",
+      "copied_from_upstream": [
+        "text_prompts/muse/camelyon_all/generated_new_0.csv",
+        "text_prompts/muse/camelyon_all/generated_new_1.csv",
+        "text_prompts/muse/tcga_brca/generated_new_0.csv",
+        "text_prompts/muse/tcga_brca/generated_new_1.csv",
+        "text_prompts/muse/tcga_nsclc/generated_new_0.csv",
+        "text_prompts/muse/tcga_nsclc/generated_new_1.csv"
+      ],
+      "generated_or_rewritten": [
+        "benchmarks/tcga_rcc/data/rcc/muse_prompts/generated_new_0.csv",
+        "benchmarks/tcga_rcc/data/rcc/muse_prompts/generated_new_1.csv",
+        "benchmarks/tcga_rcc/data/rcc/muse_prompts/generated_new_2.csv",
+        "benchmarks/ubc_ocean/data/ubc_ocean/prompts/muse/generated_new_0.csv",
+        "benchmarks/ubc_ocean/data/ubc_ocean/prompts/muse/generated_new_1.csv",
+        "benchmarks/ubc_ocean/data/ubc_ocean/prompts/muse/generated_new_2.csv",
+        "benchmarks/ubc_ocean/data/ubc_ocean/prompts/muse/generated_new_3.csv",
+        "benchmarks/ubc_ocean/data/ubc_ocean/prompts/muse/generated_new_4.csv"
+      ],
+      "selected_prompt_banks": {
+        "CAMELYON16": "exact upstream camelyon_all two-class bank; 300 descriptions per class",
+        "TCGA-NSCLC": "exact upstream tcga_nsclc two-class bank; 300 descriptions per class",
+        "TCGA-BRCA": "exact upstream tcga_brca two-class bank; 300 descriptions per class",
+        "TCGA-RCC": "generated MUSE-schema task extension from the released MSCPT RCC descriptions; 40 descriptions per class",
+        "UBC-OCEAN": "generated MUSE-schema task extension from the released MSCPT UBC-OCEAN descriptions; 40 descriptions per class"
+      },
+      "note": "MUSE publishes banks only for CAMELYON, TCGA-NSCLC, and TCGA-BRCA. The six selected CSVs for those tasks are byte-exact copies. RCC and UBC-OCEAN reuse text released by MSCPT, but their selection and MUSE CSV conversion are local, so they are generated MUSE task extensions rather than upstream MUSE conditions."
     }
   },
   "repository_assets": {
@@ -254,6 +284,94 @@
         "big_mag": 10
       },
       "note": "MSCPT publishes no CAMELYON16 description bank. This is a local task extension and is not prompt-faithful to an upstream MSCPT experiment."
+    },
+    "benchmarks/tcga_rcc/data/rcc/muse_prompts/generated_new_0.csv": {
+      "provenance": "generated",
+      "copied_from_upstream": false,
+      "source": "train_data/gpt/description/RCC.json",
+      "source_method": "MSCPT",
+      "upstream_muse_counterpart": null,
+      "classname": "clear cell renal cell carcinoma",
+      "class_index": 0,
+      "rows": 40,
+      "sha256": "4a0da0e64acf4226e3f04005bb2fa655b5d8ce085a435d51cad183c58a7281d8"
+    },
+    "benchmarks/tcga_rcc/data/rcc/muse_prompts/generated_new_1.csv": {
+      "provenance": "generated",
+      "copied_from_upstream": false,
+      "source": "train_data/gpt/description/RCC.json",
+      "source_method": "MSCPT",
+      "upstream_muse_counterpart": null,
+      "classname": "papillary renal cell carcinoma",
+      "class_index": 1,
+      "rows": 40,
+      "sha256": "944096ad0a381ea426e7e454d35c6c1e072debb705d5521ffd5e431ba9874473"
+    },
+    "benchmarks/tcga_rcc/data/rcc/muse_prompts/generated_new_2.csv": {
+      "provenance": "generated",
+      "copied_from_upstream": false,
+      "source": "train_data/gpt/description/RCC.json",
+      "source_method": "MSCPT",
+      "upstream_muse_counterpart": null,
+      "classname": "chromophobe renal cell carcinoma",
+      "class_index": 2,
+      "rows": 40,
+      "sha256": "b36597f39fd6e2d2d993f0953a112a59d31ca1ba817dcd08a8faf1daa0b9de20"
+    },
+    "benchmarks/ubc_ocean/data/ubc_ocean/prompts/muse/generated_new_0.csv": {
+      "provenance": "generated",
+      "copied_from_upstream": false,
+      "source": "benchmarks/ubc_ocean/prompts/ubc_ocean.yaml",
+      "source_descriptions": "train_data/gpt/description/UBC-OCEAN.json",
+      "upstream_muse_counterpart": null,
+      "classname": "ovarian clear cell carcinoma",
+      "class_index": 0,
+      "rows": 40,
+      "sha256": "3090c047bb3020fde59ee1da5919c1a0b5ce4b7f0aab239565d06dfc97d69ecc"
+    },
+    "benchmarks/ubc_ocean/data/ubc_ocean/prompts/muse/generated_new_1.csv": {
+      "provenance": "generated",
+      "copied_from_upstream": false,
+      "source": "benchmarks/ubc_ocean/prompts/ubc_ocean.yaml",
+      "source_descriptions": "train_data/gpt/description/UBC-OCEAN.json",
+      "upstream_muse_counterpart": null,
+      "classname": "ovarian endometrioid carcinoma",
+      "class_index": 1,
+      "rows": 40,
+      "sha256": "334c71a24c5ee33682da37f23e0f362e7aacfbeb86918756654e769cae5a5dfb"
+    },
+    "benchmarks/ubc_ocean/data/ubc_ocean/prompts/muse/generated_new_2.csv": {
+      "provenance": "generated",
+      "copied_from_upstream": false,
+      "source": "benchmarks/ubc_ocean/prompts/ubc_ocean.yaml",
+      "source_descriptions": "train_data/gpt/description/UBC-OCEAN.json",
+      "upstream_muse_counterpart": null,
+      "classname": "ovarian high-grade serous carcinoma",
+      "class_index": 2,
+      "rows": 40,
+      "sha256": "88271c06354aab652c145564b04ddef336cab84615af65523ead0c971bddd280"
+    },
+    "benchmarks/ubc_ocean/data/ubc_ocean/prompts/muse/generated_new_3.csv": {
+      "provenance": "generated",
+      "copied_from_upstream": false,
+      "source": "benchmarks/ubc_ocean/prompts/ubc_ocean.yaml",
+      "source_descriptions": "train_data/gpt/description/UBC-OCEAN.json",
+      "upstream_muse_counterpart": null,
+      "classname": "ovarian low-grade serous carcinoma",
+      "class_index": 3,
+      "rows": 40,
+      "sha256": "33dfbfc5f8834676df1f863170b83e69ad6ab147bc984edd1328bc367a897317"
+    },
+    "benchmarks/ubc_ocean/data/ubc_ocean/prompts/muse/generated_new_4.csv": {
+      "provenance": "generated",
+      "copied_from_upstream": false,
+      "source": "benchmarks/ubc_ocean/prompts/ubc_ocean.yaml",
+      "source_descriptions": "train_data/gpt/description/UBC-OCEAN.json",
+      "upstream_muse_counterpart": null,
+      "classname": "ovarian mucinous carcinoma",
+      "class_index": 4,
+      "rows": 40,
+      "sha256": "0d58d410f934008122e87eaad442bfbeca527f9ef96fb48c0bad9c8fbe40f92b"
     }
   },
   "assets": {
@@ -372,27 +490,57 @@
     },
     "muse/camelyon_all/generated_new_0.csv": {
       "provenance": "upstream",
-      "source": "JiahaoXu-god/CVPR2026_MUSE text_prompt/<task>/"
+      "copied_from_upstream": true,
+      "source": "https://github.com/JiahaoXu-god/CVPR2026_MUSE/blob/9f2ec37bad5a10bb79616900ec017830b0bdfa0a/text_prompt/camelyon_all/generated_new_0.csv",
+      "classname": "normal lymph node",
+      "class_index": 0,
+      "rows": 300,
+      "sha256": "671647d7aefb14c2d043c4ecba2845a771779451bca1476a850a72d3e7266e26"
     },
     "muse/camelyon_all/generated_new_1.csv": {
       "provenance": "upstream",
-      "source": "JiahaoXu-god/CVPR2026_MUSE text_prompt/<task>/"
+      "copied_from_upstream": true,
+      "source": "https://github.com/JiahaoXu-god/CVPR2026_MUSE/blob/9f2ec37bad5a10bb79616900ec017830b0bdfa0a/text_prompt/camelyon_all/generated_new_1.csv",
+      "classname": "metastatic lymph node",
+      "class_index": 1,
+      "rows": 300,
+      "sha256": "2a5d1b6b7e57912d68cdac161b181def80e06681905197d192717b93011e36c2"
     },
     "muse/tcga_brca/generated_new_0.csv": {
       "provenance": "upstream",
-      "source": "JiahaoXu-god/CVPR2026_MUSE text_prompt/<task>/"
+      "copied_from_upstream": true,
+      "source": "https://github.com/JiahaoXu-god/CVPR2026_MUSE/blob/9f2ec37bad5a10bb79616900ec017830b0bdfa0a/text_prompt/tcga_brca/generated_new_0.csv",
+      "classname": "invasive ductal carcinoma",
+      "class_index": 0,
+      "rows": 300,
+      "sha256": "3b611e4e14a1e37cd56a78f052bf1d0d922b238ae8cc62f9df4044f67d4497c4"
     },
     "muse/tcga_brca/generated_new_1.csv": {
       "provenance": "upstream",
-      "source": "JiahaoXu-god/CVPR2026_MUSE text_prompt/<task>/"
+      "copied_from_upstream": true,
+      "source": "https://github.com/JiahaoXu-god/CVPR2026_MUSE/blob/9f2ec37bad5a10bb79616900ec017830b0bdfa0a/text_prompt/tcga_brca/generated_new_1.csv",
+      "classname": "invasive lobular carcinoma",
+      "class_index": 1,
+      "rows": 300,
+      "sha256": "523749fddaa4267dc889b130bff71f831c1c6944513d8c5c96c7dd829b4094cb"
     },
     "muse/tcga_nsclc/generated_new_0.csv": {
       "provenance": "upstream",
-      "source": "JiahaoXu-god/CVPR2026_MUSE text_prompt/<task>/"
+      "copied_from_upstream": true,
+      "source": "https://github.com/JiahaoXu-god/CVPR2026_MUSE/blob/9f2ec37bad5a10bb79616900ec017830b0bdfa0a/text_prompt/tcga_nsclc/generated_new_0.csv",
+      "classname": "lung adenocarcinoma",
+      "class_index": 0,
+      "rows": 300,
+      "sha256": "d014961af20a572d44016c076c01c43600a7ae37c657eec8e641288e80375ba4"
     },
     "muse/tcga_nsclc/generated_new_1.csv": {
       "provenance": "upstream",
-      "source": "JiahaoXu-god/CVPR2026_MUSE text_prompt/<task>/"
+      "copied_from_upstream": true,
+      "source": "https://github.com/JiahaoXu-god/CVPR2026_MUSE/blob/9f2ec37bad5a10bb79616900ec017830b0bdfa0a/text_prompt/tcga_nsclc/generated_new_1.csv",
+      "classname": "lung squamous cell carcinoma",
+      "class_index": 1,
+      "rows": 300,
+      "sha256": "e59cc3b4816ff286c2b49095f4e7a060a6e2b8ddc917a06660588439bf3aeada"
     },
     "sldpc/camelyon16.yaml": {
       "provenance": "upstream",

@@ -492,16 +492,30 @@ reproducibility limitation and must be reported, but it is separate from the
 offline visual-feature boundary. No active benchmark protocol currently
 enables ConVLM by default.
 
-### MUSE — no upstream prompts for RCC or UBC-OCEAN
+### MUSE — upstream and generated prompt banks
 
-Upstream covers `camelyon_all`, `tcga_brca`, `tcga_nsclc` — all imported. Its
-`kidney` folder is **IgA nephropathy grading**, a different disease and task from
-renal cell carcinoma subtyping; "carcinoma" appears zero times across its six
-files. It is not a substitute for RCC.
+The release at commit `9f2ec37bad5a10bb79616900ec017830b0bdfa0a`
+covers `camelyon_all`, `tcga_brca`, and `tcga_nsclc`. All six selected CSVs are
+byte-exact imports with 300 indexed descriptions per class. Their SHA-256,
+classname, and class index are pinned in `text_prompts/PROVENANCE.json`.
 
-RCC's MUSE banks are compiled from the same GPT descriptions MSCPT uses and
-report `prompt_provenance: generated`. A MUSE result on RCC is not paper-faithful
-and must not be tabled beside BRCA/NSCLC MUSE, which read the authors' own CSVs.
+Its `kidney` folder is **IgA nephropathy grading**, a different disease and
+task from renal cell carcinoma subtyping; "carcinoma" appears zero times
+across its six files. It is not a substitute for RCC. The release contains no
+UBC-OCEAN bank either.
+
+RCC and UBC-OCEAN MUSE banks are local conversions of description text released
+for MSCPT. Reusing released text from a different method does not create an
+upstream MUSE condition: all eight CSVs report `prompt_provenance: generated`
+and `prompt_source: muse_generated_task_extension_csvs`. A result on either
+task is not prompt-faithful to MUSE and must not be tabled as though it were.
+
+MUSE's CSV shape is part of the runtime contract. The shared loader and doctor
+require the exact `,0` header, sequential zero-based row indices, one non-empty
+description per row, exact classname coverage, and audited class-to-file
+binding. Registered assets additionally enforce their row counts and SHA-256.
+Released duplicate descriptions are intentionally retained because changing
+their multiplicity changes the authors' stochastic sampling distribution.
 
 ### PathPT — recipe locked across backbones
 

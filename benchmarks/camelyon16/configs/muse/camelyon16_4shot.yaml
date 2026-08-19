@@ -64,7 +64,7 @@ text_batch_size: 64
 prompt_csvs:
   normal lymph node: ${PGVL_REPO_ROOT}/text_prompts/muse/camelyon_all/generated_new_0.csv
   metastatic lymph node: ${PGVL_REPO_ROOT}/text_prompts/muse/camelyon_all/generated_new_1.csv
-prompt_source: muse_description_csvs
+prompt_source: muse_upstream_description_csvs
 conch_ckpt: ${PGVL_STORAGE_ROOT}/.cache_huggingface/hub/models--MahmoodLab--conch/blobs/40a9644b9ba0e83a74576e0a5e5f7313599fa9c9cdaf3c20f8a3e271b0e9ae7c
 data_folder_s: ${PGVL_STORAGE_ROOT}/CAMELYON16/10x_256px_0px_overlap/features_conch_v1
 feature_path_column: feature__conch_v1_10x

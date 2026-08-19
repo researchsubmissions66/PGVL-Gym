@@ -306,7 +306,11 @@ def compile_task_prompt_assets(
 
     return {
         "canonical": str(canonical_path),
-        "provenance": profile["provenance"],
+        # Every emitted method file is a locally selected/reformatted task
+        # extension. Keep the profile's text source separately so a released
+        # MSCPT description bank cannot masquerade as a released MUSE bank.
+        "provenance": "generated",
+        "source_profile_provenance": profile["provenance"],
         "context": profile["context"],
         "focus": str(focus_path),
         "vila_mil": str(focus_path),

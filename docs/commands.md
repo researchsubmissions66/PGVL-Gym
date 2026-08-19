@@ -68,7 +68,8 @@ The doctor identifies:
   cross-scale maps, and encoder assets;
 - malformed FOCUS/ViLa-MIL prompt tables and MAPLE, MSCPT, TOP, SLIP,
   CoD-MIL, MUSE, ConVLM, or SLDPC prompt graphs/banks, including
-  class-order/cardinality drift;
+  class-order/cardinality drift and registered MUSE row-count/hash/class-file
+  mismatches;
 - incompatible variable-length bag batch sizes and invalid batch-failure
   thresholds, optimizer values, epochs, staged-training controls, class schemas,
   and sampling limits;

@@ -1065,11 +1065,19 @@ def _prompt_asset(
             f"prompt_precedence must be 'upstream' or 'generated', "
             f"got {precedence!r}")
 
-    upstream: str | None = None
+    upstream: Any = None
     if legacy_key and cohort_cfg.get(legacy_key) is not None:
-        candidate = _absolute_repo_path(cohort_cfg[legacy_key])
-        if Path(candidate).exists():
-            upstream = str(candidate)
+        raw_candidate = cohort_cfg[legacy_key]
+        if isinstance(raw_candidate, (list, tuple)):
+            candidates = [
+                _absolute_repo_path(value) for value in raw_candidate
+            ]
+            if candidates and all(path.exists() for path in candidates):
+                upstream = [str(path) for path in candidates]
+        else:
+            candidate = _absolute_repo_path(raw_candidate)
+            if candidate.exists():
+                upstream = str(candidate)
 
     order = ((upstream, generated.get(method)) if precedence == "upstream"
              else (generated.get(method), upstream))
@@ -1114,7 +1122,7 @@ def _prompt_provenance(cohort_cfg: dict[str, Any], method: str) -> str:
     # is a selection mechanism, not evidence that its text is upstream. This
     # matters for local task extensions as well as copied assets selected via a
     # ``prompts:`` entry.
-    if method in {"focus", "vila_mil", "mscpt", "maple", "slip"}:
+    if method in {"focus", "vila_mil", "mscpt", "maple", "slip", "muse"}:
         asset = _prompt_asset(
             cohort_cfg, method, _UPSTREAM_PROMPT_KEYS[method])
         origin = _recorded_prompt_origin(asset)
@@ -1167,6 +1175,12 @@ def _recorded_prompt_origin(value: Any) -> str | None:
     selection (explicit versus fallback) is already represented by the protocol
     and ``prompt_source`` and must not overwrite that scientific provenance.
     """
+    if isinstance(value, (list, tuple)):
+        origins = {
+            origin for item in value
+            if (origin := _recorded_prompt_origin(item)) is not None
+        }
+        return next(iter(origins)) if len(origins) == 1 else None
     if not isinstance(value, (str, Path)):
         return None
     path = _absolute_repo_path(str(value)).resolve()
@@ -1394,7 +1408,10 @@ def _method_config(
             "dropout": 0.25,
             "text_batch_size": 64,
             "prompt_csvs": dict(zip(cohort_cfg["classnames"], prompt_paths)),
-            "prompt_source": "muse_description_csvs",
+            "prompt_source": (
+                "muse_upstream_description_csvs"
+                if cfg["prompt_provenance"] == "upstream"
+                else "muse_generated_task_extension_csvs"),
             "conch_ckpt": (
                 prompt_weights if prompt_spec.name == "conch" else None),
             "data_folder_s": _feature_root(bindings["bag"]["config"], cohort),

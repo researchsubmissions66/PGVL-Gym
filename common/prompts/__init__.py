@@ -12,6 +12,12 @@ from .cod_mil import (
 )
 from .compiler import compile_task_prompt_assets, load_prompt_profile
 from .maple import MAPLEPromptBank, load_maple_prompt_bank
+from .muse import (
+    MUSEPromptBank,
+    MUSEPromptCSV,
+    load_muse_prompt_bank,
+    load_muse_prompt_csv,
+)
 from .slip import SLIPPromptBank, load_slip_prompt_bank
 
 __all__ = [
@@ -20,6 +26,8 @@ __all__ = [
     "expected_row_roles", "file_sha256", "load_prompt_bank_csv",
     "load_prompt_profile", "prompt_bank_sha256", "prompt_feature_metadata",
     "MAPLEPromptBank", "load_maple_prompt_bank",
+    "MUSEPromptBank", "MUSEPromptCSV", "load_muse_prompt_bank",
+    "load_muse_prompt_csv",
     "SLIPPromptBank", "load_slip_prompt_bank",
     "validate_prompt_feature_metadata",
 ]

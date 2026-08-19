@@ -1101,7 +1101,7 @@ def test_preflight_rejects_unbound_cod_prompt_tensor_and_accepts_verified_bank(
 
 def test_preflight_rejects_empty_muse_description_csv(tmp_path: Path):
     prompt = tmp_path / "empty.csv"
-    prompt.write_text(",0\n0,short\n")
+    prompt.write_text(",0\n0,\n")
 
     report = preflight({
         "method": "muse",
@@ -1109,7 +1109,7 @@ def test_preflight_rejects_empty_muse_description_csv(tmp_path: Path):
         "classnames": ["A"],
     }, checks={"prompts"})
 
-    assert any("contains no descriptions" in item
+    assert any("empty description" in item
                for item in report.problems)
 
 

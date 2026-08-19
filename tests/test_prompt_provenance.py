@@ -139,6 +139,71 @@ def test_maple_provenance_uses_content_origin():
     assert _prompt_provenance(generated, "maple") == "generated"
 
 
+def test_muse_manifest_separates_exact_banks_and_task_extensions():
+    manifest = json.loads(
+        (REPO_ROOT / "text_prompts" / "PROVENANCE.json").read_text())
+    summary = manifest["method_summaries"]["muse"]
+    assets = manifest["assets"]
+    repository_assets = manifest["repository_assets"]
+
+    assert len(summary["copied_from_upstream"]) == 6
+    assert len(summary["generated_or_rewritten"]) == 8
+    for key in summary["copied_from_upstream"]:
+        record = assets[key.removeprefix("text_prompts/")]
+        assert record["provenance"] == "upstream"
+        assert record["copied_from_upstream"] is True
+        assert record["rows"] == 300
+        assert hashlib.sha256((REPO_ROOT / key).read_bytes()).hexdigest() == \
+            record["sha256"]
+    for key in summary["generated_or_rewritten"]:
+        record = repository_assets[key]
+        assert record["provenance"] == "generated"
+        assert record["copied_from_upstream"] is False
+        assert record["upstream_muse_counterpart"] is None
+        assert record["rows"] == 40
+
+
+def test_muse_provenance_uses_content_origin_for_csv_lists():
+    upstream = {
+        "muse_prompt_csvs": [
+            "text_prompts/muse/tcga_nsclc/generated_new_0.csv",
+            "text_prompts/muse/tcga_nsclc/generated_new_1.csv",
+        ],
+    }
+    generated = {
+        "muse_prompt_csvs": [
+            "benchmarks/ubc_ocean/data/ubc_ocean/prompts/muse/"
+            "generated_new_0.csv",
+            "benchmarks/ubc_ocean/data/ubc_ocean/prompts/muse/"
+            "generated_new_1.csv",
+        ],
+    }
+
+    assert _prompt_provenance(upstream, "muse") == "upstream"
+    assert _prompt_provenance(generated, "muse") == "generated"
+
+
+def test_checked_in_muse_configs_report_method_specific_origin():
+    expected = {
+        "camelyon16": "upstream",
+        "tcga_brca": "upstream",
+        "tcga_nsclc": "upstream",
+        "tcga_rcc": "generated",
+        "ubc_ocean": "generated",
+    }
+    for cohort, origin in expected.items():
+        paths = sorted((REPO_ROOT / "benchmarks" / cohort / "configs").glob(
+            "muse*/*.yaml"))
+        assert paths
+        source = (
+            "muse_upstream_description_csvs" if origin == "upstream"
+            else "muse_generated_task_extension_csvs")
+        for path in paths:
+            contents = path.read_text()
+            assert f"prompt_provenance: {origin}\n" in contents
+            assert f"prompt_source: {source}\n" in contents
+
+
 def test_slip_manifest_separates_complete_banks_from_task_extensions():
     manifest = json.loads(
         (REPO_ROOT / "text_prompts" / "PROVENANCE.json").read_text())

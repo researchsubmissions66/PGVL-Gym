@@ -162,6 +162,15 @@ that otherwise associates attribute text with the wrong logits. This deviation
 is disclosed in the provenance ledger and
 [`docs/design-decisions.md`](docs/design-decisions.md#maple-prompt-origins-and-ordering).
 
+MUSE's CAMELYON, TCGA-NSCLC, and TCGA-BRCA knowledge banks are byte-exact
+copies of the authors' six 300-description CSVs. MUSE released no RCC or
+UBC-OCEAN bank; those benchmark conditions are explicitly labeled generated
+MUSE-schema extensions even though their underlying descriptions came from
+released MSCPT assets. The doctor validates the native `,0` header, sequential
+row indices, class-to-file binding, row counts, hashes, and declared
+provenance. See
+[`docs/design-decisions.md`](docs/design-decisions.md#muse--upstream-and-generated-prompt-banks).
+
 ## 4. Run a configuration
 
 ```bash

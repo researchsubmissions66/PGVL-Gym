@@ -381,6 +381,8 @@ def test_canonical_prompt_profile_compiles_every_method_schema(tmp_path: Path):
         "slip", "sldpc", "convlm",
     })
     assert "wsi_five_default_report" not in assets
+    assert assets["provenance"] == "generated"
+    assert assets["source_profile_provenance"] == "user_defined"
     assert pd.read_csv(assets["focus"])["class_name"].tolist() == ["A", "B"]
     assert list(json.loads(Path(assets["cod_mil"]).read_text())) == [
         "class alpha", "class beta"]

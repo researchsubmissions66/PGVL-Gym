@@ -344,19 +344,25 @@ def _read_prompt_json(
 
 
 def _prompt_manifest_record(path: Path) -> dict[str, Any]:
-    """Return audited metadata for a text_prompts asset, if registered."""
+    """Return audited metadata for any registered repository prompt asset."""
     prompt_root = (REPO_ROOT / "text_prompts").resolve()
-    try:
-        key = str(path.resolve().relative_to(prompt_root))
-    except ValueError:
-        return {}
     try:
         with (prompt_root / "PROVENANCE.json").open(encoding="utf-8") as handle:
             manifest = json.load(handle)
     except (OSError, UnicodeError, ValueError):
         return {}
-    record = manifest.get("assets", {}).get(key, {}) \
-        if isinstance(manifest, dict) else {}
+    if not isinstance(manifest, dict):
+        return {}
+    resolved = path.resolve()
+    try:
+        key = str(resolved.relative_to(prompt_root))
+        record = manifest.get("assets", {}).get(key, {})
+    except ValueError:
+        try:
+            key = str(resolved.relative_to(REPO_ROOT.resolve()))
+            record = manifest.get("repository_assets", {}).get(key, {})
+        except ValueError:
+            return {}
     return record if isinstance(record, dict) else {}
 
 
@@ -858,33 +864,55 @@ def _check_cod_prompt_schema(
 def _check_muse_prompt_schema(
     cfg: dict[str, Any], report: "PreflightReport",
 ) -> None:
-    """Validate every class-specific MUSE description CSV."""
+    """Validate MUSE CSV structure, class binding, hashes, and provenance."""
     prompt_csvs = cfg.get("prompt_csvs")
     if not isinstance(prompt_csvs, dict):
         return
-    for classname, value in prompt_csvs.items():
-        if not _exists(value):
-            continue
-        path = Path(expand_path(value))
-        try:
-            with path.open(encoding="utf-8", newline="") as handle:
-                rows = list(csv.reader(handle))
-        except (OSError, UnicodeError, csv.Error) as error:
-            report.problems.append(
-                f"cannot read MUSE prompt CSV {path}: {error}")
-            continue
-        descriptions = []
-        for row in rows:
-            values = [cell.strip() for cell in row if cell.strip()]
-            if not values or values == ["0"]:
-                continue
-            text = max(values, key=len)
-            if len(text) > 8:
-                descriptions.append(text)
-        if not descriptions:
-            report.problems.append(
-                f"{path}: MUSE prompt CSV for {classname!r} contains no "
-                "descriptions")
+    classnames = cfg.get("classnames")
+    if not _valid_prompt_list(classnames):
+        report.problems.append(
+            "MUSE requires ordered classnames to validate prompt/class binding")
+        return
+    expanded = {
+        str(classname): Path(expand_path(value))
+        for classname, value in prompt_csvs.items()
+    }
+    records = {
+        str(path): _prompt_manifest_record(path)
+        for path in expanded.values()
+    }
+    try:
+        from common.prompts.muse import load_muse_prompt_bank
+        load_muse_prompt_bank(
+            expanded, classnames=classnames, records=records)
+    except (OSError, UnicodeError, ValueError, TypeError) as error:
+        report.problems.append(str(error))
+        return
+
+    origins = {
+        record.get("provenance") for record in records.values()
+        if record.get("provenance") in {"upstream", "generated", "derived"}
+    }
+    if len(origins) > 1:
+        report.problems.append(
+            "MUSE prompt_csvs mix incompatible provenance categories: "
+            + ", ".join(sorted(origins)))
+        return
+    origin = next(iter(origins), None)
+    declared = cfg.get("prompt_provenance")
+    if declared and origin and declared != origin:
+        report.problems.append(
+            "MUSE prompt_provenance contradicts the active bank: "
+            f"declared {declared!r}, expected {origin!r}")
+    expected_source = {
+        "upstream": "muse_upstream_description_csvs",
+        "generated": "muse_generated_task_extension_csvs",
+    }.get(origin)
+    declared_source = cfg.get("prompt_source")
+    if declared_source and expected_source and declared_source != expected_source:
+        report.problems.append(
+            "MUSE prompt_source contradicts the active bank: "
+            f"declared {declared_source!r}, expected {expected_source!r}")
 
 
 def _check_convlm_prompt_schema(

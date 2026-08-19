@@ -1,9 +1,6 @@
 """Adapter and text-prior loading for MUSE."""
 from __future__ import annotations
 
-import csv
-from pathlib import Path
-
 import torch
 import torch.nn as nn
 
@@ -11,25 +8,7 @@ from methods.base import BaseMethod
 from common.backbones import (
     BackboneCapability as Cap, BackboneCompatibilityError, FeatureLevel,
     MethodBackboneContract, SwapPolicy, get_spec)
-
-
-def _csv_descriptions(path: str | Path) -> list[str]:
-    """Read MUSE's index-plus-description CSVs, including their blank header."""
-    with Path(path).open(encoding="utf-8", newline="") as handle:
-        rows = list(csv.reader(handle))
-    descriptions = []
-    for row in rows:
-        # The MUSE release uses `,0` as the header and keeps the narrative
-        # in the longest non-empty cell of each subsequent row.
-        values = [str(value).strip() for value in row if str(value).strip()]
-        if not values or values == ["0"]:
-            continue
-        text = max(values, key=len)
-        if len(text) > 8:
-            descriptions.append(text)
-    if not descriptions:
-        raise ValueError(f"No descriptions found in MUSE prompt CSV: {path}")
-    return descriptions
+from common.prompts import load_muse_prompt_bank
 
 
 class MUSEMethod(BaseMethod):
@@ -75,10 +54,9 @@ class MUSEMethod(BaseMethod):
                 raise KeyError(
                     "MUSE requires either prompt_features or prompt_csvs. Run "
                     "scripts/import_upstream_assets.py --download to obtain the official CSVs.")
-            if not isinstance(prompt_csvs, dict):
-                raise TypeError("prompt_csvs must map each classname to its published MUSE CSV")
-            all_descriptions = [_csv_descriptions(prompt_csvs[name])
-                                for name in self.cfg["classnames"]]
+            prompt_bank = load_muse_prompt_bank(
+                prompt_csvs, classnames=self.cfg["classnames"])
+            all_descriptions = prompt_bank.descriptions
             weights_path = self.cfg.get("backbone_weights")
             encoder = self.load_encoder(weights_path=weights_path).freeze()
             vectors = []

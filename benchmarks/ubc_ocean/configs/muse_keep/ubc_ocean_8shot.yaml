@@ -43,7 +43,7 @@ feature_dim: 768
 method: muse
 experiment: muse_keep
 epochs: 200
-prompt_provenance: released_ubc_multiscale_descriptions_with_declared_aliases
+prompt_provenance: generated
 results_dir: ${PGVL_REPO_ROOT}/results/ubc_ocean_benchmark/muse_keep/ubc_ocean/8shot
 prompt_feature_space_id: hf:MahmoodLab/conch
 patch_encoder:
@@ -73,7 +73,7 @@ prompt_csvs:
   ovarian high-grade serous carcinoma: ${PGVL_REPO_ROOT}/benchmarks/ubc_ocean/data/ubc_ocean/prompts/muse/generated_new_2.csv
   ovarian low-grade serous carcinoma: ${PGVL_REPO_ROOT}/benchmarks/ubc_ocean/data/ubc_ocean/prompts/muse/generated_new_3.csv
   ovarian mucinous carcinoma: ${PGVL_REPO_ROOT}/benchmarks/ubc_ocean/data/ubc_ocean/prompts/muse/generated_new_4.csv
-prompt_source: muse_description_csvs
+prompt_source: muse_generated_task_extension_csvs
 conch_ckpt: ${PGVL_STORAGE_ROOT}/.cache_huggingface/hub/models--MahmoodLab--conch/blobs/40a9644b9ba0e83a74576e0a5e5f7313599fa9c9cdaf3c20f8a3e271b0e9ae7c
 data_folder_s: ${PGVL_STORAGE_ROOT}/UBC-OCEAN/20x_256px_0px_overlap/features_keep
 feature_path_column: feature__keep_20x

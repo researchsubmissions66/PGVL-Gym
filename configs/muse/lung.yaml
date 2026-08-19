@@ -52,6 +52,8 @@ text_batch_size: 64
 prompt_csvs:
   "lung adenocarcinoma": "text_prompts/muse/tcga_nsclc/generated_new_0.csv"
   "lung squamous cell carcinoma": "text_prompts/muse/tcga_nsclc/generated_new_1.csv"
+prompt_provenance: "upstream"
+prompt_source: "muse_upstream_description_csvs"
 dataset_csv: "splits/TCGA_Lung/dataset.csv"
 data_folder_s: "path/to/TCGA_Lung/conch_features/pt_files"
 split_dir: "splits/TCGA_Lung_16shots_5folds"

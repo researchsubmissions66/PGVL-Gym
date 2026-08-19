@@ -151,13 +151,20 @@ cohorts:
       slip: text_prompts/slip/ubc_ocean_tissues.json
       sldpc: text_prompts/sldpc/ubc_ocean.yaml
       muse:                       # a method may name several files
-        - text_prompts/muse/ubc_ocean/generated_new_0.csv
-        - text_prompts/muse/ubc_ocean/generated_new_1.csv
+        - benchmarks/ubc_ocean/data/ubc_ocean/prompts/muse/generated_new_0.csv
+        - benchmarks/ubc_ocean/data/ubc_ocean/prompts/muse/generated_new_1.csv
+        - benchmarks/ubc_ocean/data/ubc_ocean/prompts/muse/generated_new_2.csv
+        - benchmarks/ubc_ocean/data/ubc_ocean/prompts/muse/generated_new_3.csv
+        - benchmarks/ubc_ocean/data/ubc_ocean/prompts/muse/generated_new_4.csv
 ```
 
 Paths are repository-relative or absolute. A named file that does not exist is
 an error, never a silent fallback: a prompt the author asked for and did not get
 would change what the model reads without saying so.
+
+`prompt_provenance` describes the selected method condition, not merely the
+origin of some words inside it. Thus UBC-OCEAN's CSVs are `generated` for MUSE
+even though their descriptions originate in an upstream MSCPT bank.
 
 A method with no entry falls back, in order:
 
