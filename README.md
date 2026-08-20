@@ -5,12 +5,55 @@
 <h1 align="center">PGVL-Gym</h1>
 
 <p align="center">
+  <strong>A generalized framework for fair, reproducible evaluation of<br>whole-slide pathology vision-language models.</strong>
+</p>
+
+<p align="center">
   <a href="https://researchsubmissions66.github.io/PGVL-Gym/project/"><img src="https://img.shields.io/badge/Project-Website-6b21a8?style=for-the-badge" alt="Project website"></a>
   <a href="https://researchsubmissions66.github.io/PGVL-Gym/"><img src="https://img.shields.io/badge/Documentation-6b21a8?style=for-the-badge" alt="Documentation"></a>
   <a href="https://github.com/researchsubmissions66/PGVL-Gym"><img src="https://img.shields.io/badge/Source-1e1b4b?style=for-the-badge&logo=github" alt="Source"></a>
 </p>
 
 ---
+
+## 🔭 Overview
+
+**PGVL-Gym** is a registry-based benchmark that runs recent few-shot and
+zero-shot whole-slide-image (WSI) vision-language methods through one explicit
+experiment contract. It preserves each paper's model-specific architecture
+while standardizing protocols, feature provenance, folds, shots, seeds, and
+reporting.
+
+Systematic protocols cover TCGA NSCLC, BRCA and RCC plus
+[UBC-OCEAN](benchmarks/ubc_ocean/README.md) and
+[CAMELYON16](benchmarks/camelyon16/README.md).
+
+## 📁 Benchmark layout
+
+Each cohort owns one benchmark directory under `benchmarks/`, holding its
+`protocol.yaml` and everything generated from it (manifests, splits, configs,
+`run_matrix.csv`, readiness reports). Cohorts are kept separate so one whose
+data is not ready cannot hold back the ones that are:
+
+| Benchmark | Task |
+| --------- | ---- |
+| `benchmarks/tcga_nsclc` | LUAD vs LUSC |
+| `benchmarks/tcga_brca`  | IDC vs ILC |
+| `benchmarks/tcga_rcc`   | RCC subtyping |
+| `benchmarks/ubc_ocean`  | five-class ovarian carcinoma subtyping |
+| `benchmarks/camelyon16` | lymph-node metastasis detection |
+
+## 📚 Documentation website
+
+The documentation site combines curated guides with API reference generated
+directly from the stable Python docstrings:
+
+```bash
+python -m pip install -r requirements-docs.txt
+python scripts/check_docstrings.py
+python -m mkdocs build --strict
+```
+
 
 PGVL-Gym is a reproducible benchmark for few-shot and zero-shot whole-slide
 pathology vision-language methods. It standardizes datasets, feature
@@ -314,18 +357,21 @@ Run tests with `pytest -q`. Contribution and extension guidance lives in
 
 ## 🙏 Acknowledgments
 
+This codebase consolidates code from the following repositories.
+All copyright remains with the original authors.
+
 | Repository | Method/Role | License |
 | --- | --- | --- |
 | [dddavid4real/FOCUS](https://github.com/dddavid4real/focus) | FOCUS | 🔒 [Apache-2.0](https://opensource.org/licenses/Apache-2.0) |
-| [Jiangbo-Shi/ViLa-MIL](https://github.com/Jiangbo-Shi/ViLa-MIL) | ViLa-MIL | 🔒 [CC-BY-NC-ND-4.0](https://creativecommons.org/licenses/by-nc-nd/4.0/) (Assumed) |
-| [Jiangbo-Shi/CoD-MIL](https://github.com/Jiangbo-Shi/CoD-MIL) | CoD-MIL | 🔒 [CC-BY-NC-ND-4.0](https://creativecommons.org/licenses/by-nc-nd/4.0/) (Assumed) |
-| [JJ-ZHOU-Code/MAPLE](https://github.com/JJ-ZHOU-Code/MAPLE) | MAPLE | 🔒 [CC-BY-NC-ND-4.0](https://creativecommons.org/licenses/by-nc-nd/4.0/) (Assumed) |
-| [Hanminghao/MSCPT](https://github.com/Hanminghao/MSCPT) | MSCPT | 🔒 [CC-BY-NC-ND-4.0](https://creativecommons.org/licenses/by-nc-nd/4.0/) (Assumed) |
+| [Jiangbo-Shi/ViLa-MIL](https://github.com/Jiangbo-Shi/ViLa-MIL) | ViLa-MIL | 🔒 [CC-BY-NC-ND-4.0](https://creativecommons.org/licenses/by-nc-nd/4.0/) * |
+| [Jiangbo-Shi/CoD-MIL](https://github.com/Jiangbo-Shi/CoD-MIL) | CoD-MIL | 🔒 [CC-BY-NC-ND-4.0](https://creativecommons.org/licenses/by-nc-nd/4.0/) * |
+| [JJ-ZHOU-Code/MAPLE](https://github.com/JJ-ZHOU-Code/MAPLE) | MAPLE | 🔒 [CC-BY-NC-ND-4.0](https://creativecommons.org/licenses/by-nc-nd/4.0/) * |
+| [Hanminghao/MSCPT](https://github.com/Hanminghao/MSCPT) | MSCPT | 🔒 [CC-BY-NC-ND-4.0](https://creativecommons.org/licenses/by-nc-nd/4.0/) * |
 | [MAGIC-AI4Med/PathPT](https://github.com/MAGIC-AI4Med/PathPT) | PathPT | 🔒 [MIT](https://opensource.org/licenses/MIT) |
-| [miccaiif/TOP](https://github.com/miccaiif/TOP) | TOP | 🔒 [CC-BY-NC-ND-4.0](https://creativecommons.org/licenses/by-nc-nd/4.0/) (Assumed) |
-| [LTS5/SLIP](https://github.com/LTS5/SLIP) | SLIP | 🔒 [CC-BY-NC-ND-4.0](https://creativecommons.org/licenses/by-nc-nd/4.0/) (Assumed) |
-| [ls1rius/WSI_FiVE](https://github.com/ls1rius/WSI_FiVE) | WSI-FiVE | 🔒 [CC-BY-NC-ND-4.0](https://creativecommons.org/licenses/by-nc-nd/4.0/) (Assumed) |
-| [JiahaoXu-god/CVPR2026_MUSE](https://github.com/JiahaoXu-god/CVPR2026_MUSE) | MUSE | 🔒 [CC-BY-NC-ND-4.0](https://creativecommons.org/licenses/by-nc-nd/4.0/) (Assumed) |
+| [miccaiif/TOP](https://github.com/miccaiif/TOP) | TOP | 🔒 [CC-BY-NC-ND-4.0](https://creativecommons.org/licenses/by-nc-nd/4.0/) * |
+| [LTS5/SLIP](https://github.com/LTS5/SLIP) | SLIP | 🔒 [CC-BY-NC-ND-4.0](https://creativecommons.org/licenses/by-nc-nd/4.0/) * |
+| [ls1rius/WSI_FiVE](https://github.com/ls1rius/WSI_FiVE) | WSI-FiVE | 🔒 [CC-BY-NC-ND-4.0](https://creativecommons.org/licenses/by-nc-nd/4.0/) * |
+| [JiahaoXu-god/CVPR2026_MUSE](https://github.com/JiahaoXu-god/CVPR2026_MUSE) | MUSE | 🔒 [CC-BY-NC-ND-4.0](https://creativecommons.org/licenses/by-nc-nd/4.0/) * |
 | [BasitAlawode/ConVLM](https://github.com/BasitAlawode/ConVLM) | ConVLM | 🔒 [MIT](https://opensource.org/licenses/MIT) |
 | [linlu2022/SLDPC](https://github.com/linlu2022/SLDPC) | SLDPC | 🔒 [Apache-2.0](https://opensource.org/licenses/Apache-2.0) |
 
@@ -333,3 +379,4 @@ Run tests with `pytest -q`. Contribution and extension guidance lives in
 | --- | --- | --- |
 | [mahmoodlab/CLAM](https://github.com/mahmoodlab/CLAM) | CLAM Scaffold | 🔒 [GPL-3.0](https://opensource.org/licenses/GPL-3.0) |
 | [KaiyangZhou/CoOp](https://github.com/KaiyangZhou/CoOp) | CoOp Blocks | 🔒 [MIT](https://opensource.org/licenses/MIT) |
+\n\n* Assumed license based on the repository contents or context.\n
