@@ -11,16 +11,18 @@ The TCGA protocol covers:
 - BRCA: invasive ductal vs. invasive lobular carcinoma;
 - RCC: clear-cell, papillary, and chromophobe renal cell carcinoma.
 
-It generates 180 validated configs: 20 experiment variants, three cohorts,
-and 4/8/16-shot settings. See the repository's
+It generates 96 validated configs across the cohort-specific protocol matrices:
+14 BRCA, 10 NSCLC, and 8 RCC experiment variants, each at 4/8/16 shots. See the repository's
 `benchmarks/tcga_brca/README.md` for cohort construction, feature coverage, and
 readiness details.
 
 ## Additional tasks
 
 The additional-task protocol covers CAMELYON16 and UBC-OCEAN with the same
-fold, shot, encoder, prompt, and feature-provenance machinery. It generates 120
-validated configs. See `benchmarks/tcga_brca/README.md` for task-specific
+fold, shot, encoder, prompt, and feature-provenance machinery. It generates 42
+validated configs: 7 experiment variants per task at 4/8/16 shots. Together,
+the five current protocol matrices generate 138 configs. See
+`benchmarks/tcga_brca/README.md` for task-specific
 metadata expectations.
 
 ## Fair-comparison controls

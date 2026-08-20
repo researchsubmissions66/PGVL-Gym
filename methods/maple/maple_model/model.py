@@ -2,7 +2,6 @@ import torch
 from torch import nn
 import json
 import os
-from torch_geometric.nn import GCNConv
 import torch.nn.functional as F
 import numpy as np
 from transformers import AutoTokenizer

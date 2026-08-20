@@ -1,4 +1,4 @@
-# PGVL-Gym
+# 🏋️ PGVL-Gym
 
 PGVL-Gym is a reproducible benchmark for few-shot and zero-shot whole-slide
 pathology vision-language methods. It standardizes datasets, feature
@@ -12,7 +12,7 @@ The normal workflow is:
 configure local paths → generate run YAMLs → preflight → train → aggregate
 ```
 
-## 1. Install the environment
+## 📦 1. Install the environment
 
 The supported Python range is 3.10–3.11. Create the base environment with
 Conda:
@@ -35,7 +35,7 @@ Available extras are listed in `pyproject.toml`. Foundation-model checkpoints
 are not downloaded automatically; benchmark runs are designed for local or
 offline model caches.
 
-## 2. Configure machine-local paths
+## ⚙️ 2. Configure machine-local paths
 
 Copy the environment template and edit the ignored local file:
 
@@ -57,7 +57,7 @@ environment variables take precedence, which is useful on a cluster.
 
 Do not commit `.env`; it is intentionally ignored.
 
-## 3. Generate experiment YAMLs
+## 🧬 3. Generate experiment YAMLs
 
 Each cohort has one source-of-truth protocol:
 
@@ -197,7 +197,7 @@ adapter is also disclosed as a reconstruction because the released training
 path consumes RGB images. See
 [`docs/design-decisions.md`](docs/design-decisions.md#convlm--missing-upstream-attributes-and-a-local-feature-bag-reconstruction).
 
-## 4. Run a configuration
+## 🚀 4. Run a configuration
 
 ```bash
 python train.py \
@@ -344,7 +344,7 @@ recorded at pinned commit `07344c9ac6eef919fcd1440877ea796feef7445a` in
 runtime and the doctor reject any byte, ordering, schema, or provenance drift
 across the question, answer, and evaluation roles.
 
-## Example run YAML
+## 📄 Example run YAML
 
 Generated YAMLs are preferred, but this shows the core contract:
 
@@ -389,7 +389,7 @@ results_dir: ${PGVL_REPO_ROOT}/results/focus/brca/4shot
 Feature provenance and dimensions are part of the experiment identity. Do not
 change a generated YAML in place and reuse its results directory.
 
-## Register a backbone
+## 🔗 Register a backbone
 
 A backbone registration declares its real capabilities and returns an
 `EncoderBundle`. Registration does not automatically make every method
@@ -439,7 +439,7 @@ python scripts/list_backbone_compatibility.py --method pathpt --json
 See `docs/BACKBONE_INTERFACES.md` for capability definitions and method swap
 boundaries.
 
-## Repository map
+## 🗺️ Repository map
 
 ```text
 train.py                  unified training and reporting
@@ -454,3 +454,25 @@ docs/                     detailed design and method documentation
 
 Run tests with `pytest -q`. Contribution and extension guidance lives in
 `CONTRIBUTING.md` and `docs/extending.md`.
+
+## 🙏 Acknowledgments
+
+| Repository | Method/Role | License |
+| --- | --- | --- |
+| [dddavid4real/FOCUS](https://github.com/dddavid4real/focus) | FOCUS | 🔒 [Apache-2.0](https://opensource.org/licenses/Apache-2.0) |
+| [Jiangbo-Shi/ViLa-MIL](https://github.com/Jiangbo-Shi/ViLa-MIL) | ViLa-MIL | 🔒 [CC-BY-NC-ND-4.0](https://creativecommons.org/licenses/by-nc-nd/4.0/) (Assumed) |
+| [Jiangbo-Shi/CoD-MIL](https://github.com/Jiangbo-Shi/CoD-MIL) | CoD-MIL | 🔒 [CC-BY-NC-ND-4.0](https://creativecommons.org/licenses/by-nc-nd/4.0/) (Assumed) |
+| [JJ-ZHOU-Code/MAPLE](https://github.com/JJ-ZHOU-Code/MAPLE) | MAPLE | 🔒 [CC-BY-NC-ND-4.0](https://creativecommons.org/licenses/by-nc-nd/4.0/) (Assumed) |
+| [Hanminghao/MSCPT](https://github.com/Hanminghao/MSCPT) | MSCPT | 🔒 [CC-BY-NC-ND-4.0](https://creativecommons.org/licenses/by-nc-nd/4.0/) (Assumed) |
+| [MAGIC-AI4Med/PathPT](https://github.com/MAGIC-AI4Med/PathPT) | PathPT | 🔒 [MIT](https://opensource.org/licenses/MIT) |
+| [miccaiif/TOP](https://github.com/miccaiif/TOP) | TOP | 🔒 [CC-BY-NC-ND-4.0](https://creativecommons.org/licenses/by-nc-nd/4.0/) (Assumed) |
+| [LTS5/SLIP](https://github.com/LTS5/SLIP) | SLIP | 🔒 [CC-BY-NC-ND-4.0](https://creativecommons.org/licenses/by-nc-nd/4.0/) (Assumed) |
+| [ls1rius/WSI_FiVE](https://github.com/ls1rius/WSI_FiVE) | WSI-FiVE | 🔒 [CC-BY-NC-ND-4.0](https://creativecommons.org/licenses/by-nc-nd/4.0/) (Assumed) |
+| [JiahaoXu-god/CVPR2026_MUSE](https://github.com/JiahaoXu-god/CVPR2026_MUSE) | MUSE | 🔒 [CC-BY-NC-ND-4.0](https://creativecommons.org/licenses/by-nc-nd/4.0/) (Assumed) |
+| [BasitAlawode/ConVLM](https://github.com/BasitAlawode/ConVLM) | ConVLM | 🔒 [MIT](https://opensource.org/licenses/MIT) |
+| [linlu2022/SLDPC](https://github.com/linlu2022/SLDPC) | SLDPC | 🔒 [Apache-2.0](https://opensource.org/licenses/Apache-2.0) |
+
+| Repository | Method/Role | License |
+| --- | --- | --- |
+| [mahmoodlab/CLAM](https://github.com/mahmoodlab/CLAM) | CLAM Scaffold | 🔒 [GPL-3.0](https://opensource.org/licenses/GPL-3.0) |
+| [KaiyangZhou/CoOp](https://github.com/KaiyangZhou/CoOp) | CoOp Blocks | 🔒 [MIT](https://opensource.org/licenses/MIT) |
