@@ -1,4 +1,16 @@
-# 🏋️ PGVL-Gym
+<p align="center">
+  <img src="docs/assets/logo_gym_no_text.png" alt="PGVL-Gym Logo" width="560">
+</p>
+
+<h1 align="center">PGVL-Gym</h1>
+
+<p align="center">
+  <a href="https://researchsubmissions66.github.io/PGVL-Gym/project/"><img src="https://img.shields.io/badge/Project-Website-6b21a8?style=for-the-badge" alt="Project website"></a>
+  <a href="https://researchsubmissions66.github.io/PGVL-Gym/"><img src="https://img.shields.io/badge/Documentation-6b21a8?style=for-the-badge" alt="Documentation"></a>
+  <a href="https://github.com/researchsubmissions66/PGVL-Gym"><img src="https://img.shields.io/badge/Source-1e1b4b?style=for-the-badge&logo=github" alt="Source"></a>
+</p>
+
+---
 
 PGVL-Gym is a reproducible benchmark for few-shot and zero-shot whole-slide
 pathology vision-language methods. It standardizes datasets, feature
@@ -101,30 +113,16 @@ python scripts/preflight.py --system
 python scripts/preflight.py run.yaml --strict --json
 ```
 
-The preflight command is a read-only doctor: failures include suggested fixes.
-Normal mode does not construct a model or load a feature tensor; explicit
-`--deep` mode opens feature payloads to verify keys, shapes, widths, and finite
-values. Shared pickle stores are also checked for key/ID alignment, duplicate
-normalized IDs, and coverage of every slide in the manifest. It checks configured assets for
-missing, empty, unreadable, unresolved, and wrong-type paths; verifies that the results
-directory is safe and writable or creatable; rejects malformed manifests and
-duplicate slide rows or feature aliases; measures individual and joint feature coverage; validates
-fold CSV structure and identities; and detects slide or patient leakage between
-train, validation, and test partitions. Method-aware checks also catch omitted
-feature, prompt, report, map, and encoder inputs before model construction, and
-validate FOCUS and ViLa-MIL's native positional low-then-high prompt banks,
-and the MAPLE, MSCPT, PathPT, TOP, SLIP, and CoD-MIL
-schemas, WSI-FiVE's six-question/structured-answer/evaluation banks,
-plus the MUSE and ConVLM prompt banks. For SLDPC it hashes the ordered class
-tokens actually embedded by Stage 1/2 separately from any optional TITAN
-zero-shot synonym YAML, rather than accepting a merely present JSON, YAML, or
-CSV or attributing an unused bank to training. Flat `splits_<fold>.csv` and upstream
-`fold<fold>.csv` tables are checked against the same phase/label contract used
-at runtime; one unscoped phase table cannot be silently reused across folds.
-It rejects non-unit batches for variable-length bag methods, invalid optimizer
-or staged-training values, and invalid batch-failure tolerances as configuration
-errors. Runtime checks also validate CoD-MIL correspondence-map shape, integer
-type, coverage, and index bounds.
+The preflight command is a read-only doctor. Failures include suggested fixes. Normal mode does not construct a model or load a feature tensor.
+
+**Key Checks:**
+- **Feature Payloads (via `--deep`):** Verifies keys, shapes, widths, and finite values.
+- **Data Integrity:** Checks shared pickle stores for key/ID alignment, duplicate IDs, and coverage.
+- **Asset Validation:** Scans for missing, empty, unreadable, or wrong-type paths.
+- **Safety:** Verifies that the results directory is safe and writable.
+- **Leakage Prevention:** Detects slide or patient leakage between train, validation, and test partitions.
+- **Method-Specific Schemas:** Validates prompt banks across all methods (FOCUS, ViLa-MIL, MAPLE, MSCPT, PathPT, TOP, SLIP, CoD-MIL, WSI-FiVE, MUSE, ConVLM, SLDPC).
+- **Configuration & Runtime:** Rejects non-unit batches for variable-length methods, unscoped phase tables, and invalid staged-training values. Validates CoD-MIL map shapes and bounds.
 
 Useful doctor modes are:
 
@@ -147,55 +145,15 @@ exit one, and invalid command arguments exit two. See
 [Commands and run lifecycle](docs/commands.md#diagnose-a-run-with-the-doctor)
 for the full interface and JSON contract.
 
-Prompt provenance is tracked by method and by role in
-[`text_prompts/PROVENANCE.json`](text_prompts/PROVENANCE.json). In particular,
-TOP's standard NSCLC declaration uses the released 26-instance code bank and
-the exact released lung bag initializers; its longer supplementary lung
-descriptions are preserved as an explicitly unwired alternative. TOP tasks for
-which the authors published no bag initializer are labeled
-`upstream_instance_with_random_classname_bag`, rather than being presented as a
-fully upstream prompt condition. The doctor validates TOP prompt structure,
-ordered labels, learnable-slot counts, role/usage declarations, and both file
-and semantic prompt-bank hashes. Runtime, benchmark generation, and the doctor
-share that loader and derive `prompt_provenance`/`prompt_source` from the active
-instance and bag roles, so a supplementary or modified bank cannot retain the
-standard upstream identity.
+### 📝 Prompt Provenance
 
-SLIP's TCGA-NSCLC condition now uses the complete released bank: the exact
-template, slide-class groups, and all 17 nested tissue name/description pairs.
-The older flattened `Name: description` conversions are unwired because SLIP
-embeds and averages the two texts separately. CAMELYON16, TCGA-BRCA, TCGA-RCC,
-and UBC-OCEAN use clearly labeled generated task extensions in the same runtime
-shape. The exact copied/generated inventory is recorded in
-[`text_prompts/PROVENANCE.json`](text_prompts/PROVENANCE.json).
+Prompt provenance is tracked by method and by role in [`text_prompts/PROVENANCE.json`](text_prompts/PROVENANCE.json).
 
-MAPLE's Lung, RCC, and BRCA attribute graphs are byte-exact upstream copies;
-UBC-OCEAN and CAMELYON16 are labeled task extensions because MAPLE released no
-banks for them. MAPLE class mappings are order-sensitive, so the doctor and
-runtime reject reordered keys and verify the pinned upstream hashes. The local
-runtime also corrects the released entity-major/class-major reshape mismatch
-that otherwise associates attribute text with the wrong logits. This deviation
-is disclosed in the provenance ledger and
-[`docs/design-decisions.md`](docs/design-decisions.md#maple-prompt-origins-and-ordering).
-
-MUSE's CAMELYON, TCGA-NSCLC, and TCGA-BRCA knowledge banks are byte-exact
-copies of the authors' six 300-description CSVs. MUSE released no RCC or
-UBC-OCEAN bank; those benchmark conditions are explicitly labeled generated
-MUSE-schema extensions even though their underlying descriptions came from
-released MSCPT assets. The doctor validates the native `,0` header, sequential
-row indices, class-to-file binding, row counts, hashes, and declared
-provenance. See
-[`docs/design-decisions.md`](docs/design-decisions.md#muse--upstream-and-generated-prompt-banks).
-
-ConVLM publishes neither the `att_splits.mat` consumed by training nor a usable
-attribute-bank builder. Consequently, none of the five checked-in ConVLM JSON
-banks is described as upstream: all are generated, hashed, class-order-bound,
-and unwired by default. The doctor rejects prompt provenance drift and anonymous
-attribute tensors; encoded banks must include their source-prompt digest,
-encoder feature-space ID, and checkpoint hash. The local precomputed-patch-bag
-adapter is also disclosed as a reconstruction because the released training
-path consumes RGB images. See
-[`docs/design-decisions.md`](docs/design-decisions.md#convlm--missing-upstream-attributes-and-a-local-feature-bag-reconstruction).
+- **TOP:** Standard NSCLC uses the released 26-instance code bank and lung bag initializers. Unwired alternatives are explicitly labeled. The doctor validates prompt structure, ordered labels, and hashes.
+- **SLIP:** TCGA-NSCLC uses the complete released bank. Missing cohort banks are clearly labeled as generated task extensions.
+- **MAPLE:** Lung, RCC, and BRCA use byte-exact upstream copies. The local runtime corrects a released reshape mismatch.
+- **MUSE:** CAMELYON, TCGA-NSCLC, and TCGA-BRCA use byte-exact copies. RCC and UBC-OCEAN are labeled as generated MUSE-schema extensions.
+- **ConVLM:** Due to missing upstream attribute builders, all JSON banks are generated, hashed, and unwired by default. The local patch-bag adapter is disclosed as a reconstruction.
 
 ## 🚀 4. Run a configuration
 
@@ -214,135 +172,34 @@ For a campaign:
 ./launch_pgvl.sh
 ```
 
-Dry-run planning intentionally does not import Torch, h5py, or method models,
-so it can inspect the campaign from a login-node bootstrap Python. Real
-submission requires `PGVL_CONDA_ENV`; the compute wrapper activates that exact
-environment and the launcher refuses to fall back to a partial site module.
+### 📋 Campaign Planning & Execution
 
-The launcher refreshes feature readiness, skips unavailable assets, avoids queued/completed runs, and
-resumes only when the saved method and executable resolved config match. It
-validates the same fingerprint as `train.py`, counts exact completed fold
-indices (including states with holes), and requires finite validation loss plus
-a valid test result for each completed fold. It reports corrupt, duplicate, or
-out-of-range resume state instead of marking it done.
-`train.py` also requires the CLI method and YAML `method` to resolve to the
-same registered adapter; a mismatch exits as a configuration error before it
-creates output files.
-It likewise rejects an invalid/unavailable `--device` or an out-of-range CUDA
-index before creating run state.
-`--rerun` is a real from-scratch run: the trainer archives existing metrics,
-config, checkpoints, prediction CSVs, and TensorBoard state before fold 0.
-Campaign row, regeneration, and submission errors produce a non-zero exit after
-the full report is written;
-`--best-effort` is the explicit automation override.
-The launcher proves the log/report destinations are writable before the first
-submission and refuses a report path that would overwrite campaign inputs or
-run state.
-Malformed matrix booleans/counts, duplicate SLURM job names, and shared results
-directories are errors rather than implicit skips or duplicate submissions.
-The launcher also rejects incomplete/duplicate matrix headers and a `ready=true`
-row whose component readiness evidence or missing-asset counts contradict it.
-Best/final checkpoints, metrics, config snapshots, and prediction CSVs are
-replaced atomically, so a preemption cannot leave a partial canonical artifact.
-Epoch losses are sample-weighted, so a shorter final batch cannot receive the
-same influence as a full batch.
-Each fold also receives a fresh adapter and a private config copy. Prompt banks,
-staged-training state, optimizer references, and derived adapter defaults
-therefore cannot leak across folds or change the saved resume fingerprint.
-Each results directory is also protected by a process lock, so duplicate
-launches cannot write checkpoints, TensorBoard events, or metrics concurrently.
-Result aggregation revalidates that fingerprint before reading any fold and
-uses the same population-standard-deviation convention as the trainer.
+Dry-run planning inspects the campaign directly from a bootstrap Python without importing heavy libraries. Real submissions require `PGVL_CONDA_ENV`.
+
+**Launcher & Trainer Features:**
+- **Smart Resumption:** Skips unavailable assets, avoids queued runs, and resumes only on exact config fingerprint matches.
+- **State Validation:** Requires finite validation loss and valid test results for each fold. Corrupt or out-of-range states are rejected.
+- **Safety First:** Proves log destinations are writable, locks results directories, and replaces checkpoints atomically to prevent partial writes.
+- **Isolation:** Each fold receives a fresh adapter and private config copy, preventing state leakage.
+- **Strict Checks:** Rejects mismatched adapters, invalid devices, duplicate job names, and contradictory readiness headers.
+
+Use `--rerun` for a clean slate run (archives existing state) and `--best-effort` for explicit automation override.
 
 Generated results also carry `implementation_provenance` and
 `upstream_fidelity`. These are independent of `encoder_provenance`: a backbone
 can be natively supported while the local objective remains partial. Set
 `require_upstream_fidelity: true` to make the doctor reject partial adapters.
 
-FOCUS now uses byte-exact upstream prompt CSVs for CAMELYON16, TCGA-NSCLC, and
-UBC-OCEAN, pinned to commit `66c4015d5ba09657f4c8183bc06947faecd5b01f`.
-TCGA-BRCA and TCGA-RCC remain generated because FOCUS released no
-matching banks. FOCUS's actual format is headerless and positional—not the
-earlier local named table—and runtime and doctor checks enforce its file-class
-binding, provenance, file hash, and ordered prompt-bank hash. UBC's released
-class order is explicitly reordered to the benchmark label order. The exact
-upstream UBC quoting defect is preserved and disclosed in the provenance file.
+### 🧩 Method Details & Upstream Fidelity
 
-ViLa-MIL is kept separate from FOCUS even though both native loaders use the
-same positional schema and two magnifications.
-The exact headerless upstream Lung and RCC CSVs are copied from commit
-`68a11cf0d5cf092dd980f0da1cb38ccac8747a82`; BRCA, UBC-OCEAN, and CAMELYON16
-are generated task extensions in the same native low-then-high layout. The
-released RCC spelling `CRCC` is preserved and explicitly bound by position to
-the benchmark label `CHRCC`. Runtime and doctor checks enforce file order,
-format, provenance, and both file and class-bound prompt hashes.
-
-MSCPT uses copied upstream banks for TCGA-NSCLC, TCGA-RCC, and UBC-OCEAN,
-while the TCGA-BRCA IDC/ILC and CAMELYON16 banks are local task extensions and
-report `prompt_provenance: generated`. The original `Lung.json` is preserved,
-but provenance records the nine LUSC entries that describe
-adenocarcinoma-associated morphology; this known upstream content issue must be
-disclosed with NSCLC results. MSCPT's released `BRCA.json` is retained as an
-upstream asset but is not substituted because it represents a different
-High/Low recurrence/grade task.
-
-PathPT generated benchmark configs now use
-`training_mode: upstream_patch_ssl`: prompts are selected on the training fold only, a
-synthetic `Normal` patch class is added for subtype tasks, patch supervision
-uses the vendored `PatchSSLoss`, and evaluation uses the released patch-voting
-rule. `simplified_slide_ce` remains available only to reproduce older local
-runs. BRCA and UBC-OCEAN use PathPT's upstream 22-template synonym banks;
-NSCLC and RCC use explicitly generated extensions. CAMELYON uses the upstream
-Normal/Tumor bank but is marked partial because binary slide classification is
-an adaptation of PathPT's tumour-subtyping protocol. Its upstream malformed
-concatenated Normal synonym is preserved and disclosed in
-`text_prompts/PROVENANCE.json`.
-
-SLIP preserves prompt-bank structure as well as wording. TCGA-NSCLC uses the
-pinned upstream TCGA bank verbatim; its tissue short names and descriptions are
-encoded independently and averaged exactly as released. The four benchmark
-cohorts for which SLIP published no matching bank use generated extensions and
-report `prompt_provenance: generated`. Legacy flattened upstream conversions
-remain available only for audit and are marked `derived`, not upstream.
-
-MAPLE uses exact released prompt graphs for TCGA-NSCLC, TCGA-RCC, and
-TCGA-BRCA. Its UBC example now selects an explicit generated extension rather
-than the previously missing `UBC_attributes.json`. Prompt dictionary order is
-validated against classifier order because MAPLE turns insertion order directly
-into logit order; the corrected runtime also preserves the entity-major order
-in which the prompt learner emits class attributes.
-
-CoD-MIL treats the unchanged upstream RCC CSV as its canonical ordered prompt
-bank. The released CLIP-RN50 tensor is retained for audit only because it has 30
-rows against the CSV's 27 and shifts the model's positional prompt groups. RCC
-therefore selects a verified 27-row RN50 re-encoding whose payload records the
-source text, hashes, feature space, and row roles; the compiler, doctor, and
-runtime reject unbound legacy tensors. This does not lock the bank to CLIP:
-`scripts/build_cod_mil_prompt_features.py` also supports upstream's PLIP and
-QuiltNet families, provided prompt and patch features use the same encoder
-space. Those width-parameterized paths are labelled partial implementation
-extensions because upstream model code hardcodes RN50's width. Full provenance
-is recorded in `text_prompts/PROVENANCE.json` and the reasoning is documented
-in `docs/design-decisions.md`.
-
-WSI-FiVE's native NSCLC mode now preserves the three distinct text roles in
-the official release. The six upstream questions, stored in a derived JSON
-container, condition patch aggregation; a complete 939-case answer bank forms
-the training-fold-only candidate bank for the native contrastive objective. It
-contains 912 nonblank upstream six-answer records reproducibly normalized from
-the two released workbooks plus 27 explicitly generated conservative
-completions for blank upstream cells;
-and the two upstream LUAD/LUSC diagnostic descriptions, stored in a derived
-JSON container, are the only comparison text used for
-validation and test classification. Per-slide answers are never inference
-inputs. RCC and UBC examples remain explicitly labelled
-`simplified_classnames`, because WSI-FiVE did not publish native answer and
-evaluation banks for those tasks. Asset-level sources and this distinction are
-recorded at pinned commit `07344c9ac6eef919fcd1440877ea796feef7445a` in
-`text_prompts/PROVENANCE.json` and `docs/design-decisions.md`.
-`scripts/build_wsi_five_prompt_assets.py --check` reproduces the answer CSV;
-runtime and the doctor reject any byte, ordering, schema, or provenance drift
-across the question, answer, and evaluation roles.
+- **FOCUS**: Uses byte-exact upstream CSVs for CAMELYON16, TCGA-NSCLC, and UBC-OCEAN. Enforces file-class binding and provenance checks.
+- **ViLa-MIL**: Uses exact headerless upstream Lung and RCC CSVs. Missing cohorts are generated task extensions matching native layouts.
+- **MSCPT**: Uses upstream banks for NSCLC, RCC, and UBC-OCEAN. Upstream content defects (like LUSC morphology entries) are preserved but disclosed.
+- **PathPT**: Uses `upstream_patch_ssl` training mode with synthetic patch classes and vendored losses.
+- **SLIP**: Preserves prompt-bank structure natively (averaging separate texts), diverging from older flattened conversions.
+- **MAPLE**: Preserves entity-major order and validates prompt dictionary against classifier order.
+- **CoD-MIL**: Uses RCC CSV as the canonical bank, avoiding arbitrary feature tensors. Fully supports PLIP/QuiltNet via a verified re-encoder.
+- **WSI-FiVE**: Preserves three distinct text roles (questions, answers, evaluation), avoiding per-slide answers as inference inputs.
 
 ## 📄 Example run YAML
 
