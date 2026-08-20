@@ -1,45 +1,60 @@
-"""Adapter for the official ConVLM patch-level zero-shot protocol."""
+"""Local feature-bag reconstruction of ConVLM's attribute protocol."""
 from __future__ import annotations
 
-import json
 from pathlib import Path
 
-import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
 from methods.base import BaseMethod
 from common.backbones import FeatureLevel, MethodBackboneContract, SwapPolicy
+from common.prompts import (
+    file_sha256,
+    load_convlm_attribute_embeddings,
+    load_convlm_prompt_bank,
+)
 
 
 class ConVLMMethod(BaseMethod):
-    """Adapt ConVLM's patch-bag, attribute-conditioned zero-shot protocol."""
+    """Run the local patch-bag, attribute-conditioned ConVLM reconstruction."""
     name = "convlm"
     backbone_contract = MethodBackboneContract(
         method=name, feature_level=FeatureLevel.PATCH_BAG,
         swap_policy=SwapPolicy.PRECOMPUTED, default_backbone="convlm-vit",
         supported_backbones=("convlm-vit",),
         rationale=(
-            "ConVLM trains on precomputed patch features -- upstream extracts "
-            "them with UNI and exposes the embedding width as a config value. "
-            "Attribute injection and token pruning are the method's own; the "
-            "visual encoder is not."))
+            "This local reconstruction trains over declared precomputed patch "
+            "bags. The released ConVLM train.py instead feeds RGB images to a "
+            "ViT; its separate UNI extraction utility is not wired into that "
+            "training path, so PRECOMPUTED describes PGVL's boundary rather "
+            "than an upstream-compatible input contract."))
 
     def _attributes(self) -> torch.Tensor:
         if hasattr(self, "_attribute_bank"):
             return self._attribute_bank
         path = self.cfg.get("attribute_embeddings")
         if path:
-            source = Path(path)
-            if source.suffix == ".npy":
-                attributes = torch.from_numpy(np.load(source))
-            else:
-                attributes = torch.load(
-                    source, map_location="cpu", weights_only=True)
-            if isinstance(attributes, dict):
-                attributes = attributes.get(
-                    "embeddings", attributes.get("attributes"))
+            artifact = load_convlm_attribute_embeddings(
+                path,
+                classnames=self.cfg["classnames"],
+                feature_space_id=self.cfg.get("attribute_feature_space_id"),
+                expected_prompt_bank_sha256=self.cfg.get(
+                    "attribute_prompt_bank_sha256"),
+            )
+            declared = self.cfg.get("prompt_provenance")
+            if declared and declared != artifact.prompt_provenance:
+                raise ValueError(
+                    "ConVLM prompt_provenance contradicts the encoded "
+                    f"attribute artifact: declared {declared!r}, expected "
+                    f"{artifact.prompt_provenance!r}")
+            declared_source = self.cfg.get("prompt_source")
+            if (declared_source and declared_source
+                    != "convlm_precomputed_attribute_embeddings"):
+                raise ValueError(
+                    "ConVLM encoded attributes require prompt_source="
+                    "convlm_precomputed_attribute_embeddings")
+            attributes = artifact.embeddings
         else:
             prompt_path = self.cfg.get("attribute_prompt_path")
             encoder_cfg = self.cfg.get("attribute_encoder")
@@ -47,25 +62,69 @@ class ConVLMMethod(BaseMethod):
                 raise KeyError(
                     "ConVLM requires attribute_embeddings or an "
                     "attribute_prompt_path plus attribute_encoder.")
-            with Path(prompt_path).open(encoding="utf-8") as handle:
-                prompt_bank = json.load(handle)
-            if list(prompt_bank) != list(self.cfg["classnames"]):
+            required = {
+                "model_name", "weights", "feature_space_id",
+                "checkpoint_sha256",
+            }
+            missing = required.difference(encoder_cfg)
+            if missing:
                 raise ValueError(
-                    "ConVLM attribute prompt order must match classnames")
+                    "ConVLM attribute_encoder is missing "
+                    f"{sorted(missing)}")
+            feature_space = self.cfg.get("attribute_feature_space_id")
+            if encoder_cfg["feature_space_id"] != feature_space:
+                raise ValueError(
+                    "ConVLM attribute encoder feature space does not match "
+                    "attribute_feature_space_id")
+            weights = Path(str(encoder_cfg["weights"])).expanduser()
+            if not weights.is_file():
+                raise ValueError(
+                    "ConVLM attribute_encoder.weights must name one "
+                    "checkpoint file")
+            actual_checkpoint_sha256 = file_sha256(weights)
+            if (actual_checkpoint_sha256.lower()
+                    != str(encoder_cfg["checkpoint_sha256"]).lower()):
+                raise ValueError(
+                    "ConVLM attribute encoder checkpoint sha256 does not "
+                    "match attribute_encoder.weights")
+            prompt_bank = load_convlm_prompt_bank(
+                prompt_path,
+                classnames=self.cfg["classnames"],
+                expected_file_sha256=self.cfg.get("attribute_prompt_sha256"),
+                expected_prompt_bank_sha256=self.cfg.get(
+                    "attribute_prompt_bank_sha256"),
+            )
+            declared = self.cfg.get("prompt_provenance")
+            if declared and declared != prompt_bank.provenance:
+                raise ValueError(
+                    "ConVLM prompt_provenance contradicts the active bank: "
+                    f"declared {declared!r}, expected "
+                    f"{prompt_bank.provenance!r}")
+            expected_source = {
+                "upstream": "convlm_upstream_attribute_prompts",
+                "derived": "convlm_derived_attribute_prompts",
+                "generated": "convlm_generated_attribute_prompts",
+            }[prompt_bank.provenance]
+            declared_source = self.cfg.get("prompt_source")
+            if declared_source and declared_source != expected_source:
+                raise ValueError(
+                    "ConVLM prompt_source contradicts the active bank: "
+                    f"declared {declared_source!r}, expected "
+                    f"{expected_source!r}")
 
             import open_clip
 
             text_model = open_clip.create_model(
                 encoder_cfg["model_name"],
-                pretrained=str(encoder_cfg["weights"]),
+                pretrained=str(weights),
                 device=self.device,
             ).eval()
             text_model.requires_grad_(False)
             tokenizer = open_clip.get_tokenizer(encoder_cfg["model_name"])
             rows = []
             with torch.inference_mode():
-                for classname in self.cfg["classnames"]:
-                    tokens = tokenizer(prompt_bank[classname]).to(self.device)
+                for prompts in prompt_bank.prompts:
+                    tokens = tokenizer(list(prompts)).to(self.device)
                     encoded = F.normalize(
                         text_model.encode_text(tokens).float(), dim=-1)
                     rows.append(F.normalize(encoded.mean(dim=0), dim=0))

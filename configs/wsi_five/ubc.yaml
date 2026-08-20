@@ -19,6 +19,12 @@ is_img_pth: true
 training_mode: "simplified_classnames"
 require_report: false
 clinical_questions: "text_prompts/wsi_five/clinical_questions/ubc_ocean.json"
+prompt_provenance: "generated_questions_with_classname_comparison"
+prompt_source: "wsi_five_simplified_classname_baseline"
+wsi_prompt_format: "six_questions_structured_answers_and_class_descriptions"
+wsi_question_file_sha256: "ff302aaa9ef8d36dcb5ddc0cdd1d6df323fd8e2a7b37eb6f5b356c9e86fd75e6"
+wsi_question_bank_sha256: "3ae81a381f60f53b2c9b217c193b3e14aef4c1ec8b3c511200de16d6222a2a70"
+wsi_question_provenance: "generated"
 
 dataset:    "tcga"
 data_path:  "path/to/UBC-OCEAN"

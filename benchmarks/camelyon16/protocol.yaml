@@ -69,16 +69,24 @@ cohorts:
     classnames:
     - normal lymph node
     - metastatic lymph node
+    # SLDPC released no CAMELYON task. These fixed class tokens and the
+    # separate zero-shot synonym reference are both generated adaptations.
+    sldpc_prompt_classnames: [normal, tumor]
+    sldpc_prompt_provenance: generated
+    sldpc_zero_shot_prompt_yaml: text_prompts/sldpc/camelyon16.yaml
     prompt_spec: benchmarks/camelyon16/prompts/camelyon16.yaml
     muse_prompt_csvs:
     - text_prompts/muse/camelyon_all/generated_new_0.csv
     - text_prompts/muse/camelyon_all/generated_new_1.csv
+    # Byte-exact native FOCUS CAMELYON release bank.
     focus_prompt_csv: text_prompts/focus/CAMELYON16_two_scale_text_prompt.csv
     slip_tissue_json: text_prompts/slip/camelyon16_tissues.json
-    sldpc_prompt_yaml: text_prompts/sldpc/camelyon16.yaml
     # TOP is not enabled in this protocol's current experiment matrix, but its
     # released code-faithful prompt pair is declared for any future TOP row.
     prompts:
+      # ViLa-MIL releases no CAMELYON16 bank. Declare the generated native
+      # task extension for any future ViLa-MIL experiment row.
+      vila_mil: text_prompts/vila_mil/CAMELYON16_two_scale_text_prompt.csv
       top_instance: text_prompts/top/instance_prototypes.json
       top_bag: text_prompts/top/camelyon16_upstream_code_bag_prompts.json
     # Upstream CAMELYON inserts a space before the first instance-level slot;

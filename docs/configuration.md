@@ -92,6 +92,15 @@ identifies the runtime prompt tower. `slide_projection_mode: native` requires
 the paired slide projector; `linear` and `mlp` are explicit learned-alignment
 variants and must be reported separately.
 
+SLDPC has two distinct text contracts. `prompt_classnames` is the ordered list
+of fixed class-code tokens embedded by the learned Stage-1/Stage-2
+PromptLearner; its digest and provenance describe the trained run. The released
+synonym YAMLs and exact 23 templates are used only by upstream's separately
+reported, untrained TITAN zero-shot baseline. A retained YAML therefore uses
+`zero_shot_prompt_path` with `zero_shot_prompt_usage:
+reference_only_unwired`; it never determines the trained run's
+`prompt_provenance`.
+
 ## Path expansion
 
 Configuration loading recursively expands environment variables and leading
@@ -135,9 +144,11 @@ must scope them under `foldN/` so the same split is never counted repeatedly.
 ## Prompt sources
 
 Most upstream repositories ship their prompts as an explicit per-task file, and
-that file is part of the published method: FOCUS reads a
-`class_name,low_res_prompt,high_res_prompt` CSV, MSCPT a GPT description JSON,
-MUSE per-class description CSVs, SLIP a tissue-name JSON. Which file a run
+that file is part of the published method: FOCUS and ViLa-MIL each read a
+headerless one-column CSV containing all low-scale prompts followed by all
+high-scale prompts, MSCPT reads a GPT description JSON, MUSE reads per-class
+description CSVs, and
+SLIP a tissue-name JSON. Which file a run
 embeds is a scientific parameter, so state it in the cohort rather than leave it
 to resolution order:
 
@@ -146,10 +157,10 @@ cohorts:
   ubc_ocean:
     prompts:
       focus: text_prompts/focus/UBC_OCEAN_two_scale_text_prompt.csv
-      vila_mil: text_prompts/focus/UBC_OCEAN_two_scale_text_prompt.csv
+      vila_mil: text_prompts/vila_mil/UBC_OCEAN_two_scale_text_prompt.csv
       mscpt: train_data/gpt/description/UBC-OCEAN.json
       slip: text_prompts/slip/ubc_ocean_tissues.json
-      sldpc: text_prompts/sldpc/ubc_ocean.yaml
+      convlm: text_prompts/convlm/ubc_ocean_attributes.json
       muse:                       # a method may name several files
         - benchmarks/ubc_ocean/data/ubc_ocean/prompts/muse/generated_new_0.csv
         - benchmarks/ubc_ocean/data/ubc_ocean/prompts/muse/generated_new_1.csv
@@ -158,6 +169,33 @@ cohorts:
         - benchmarks/ubc_ocean/data/ubc_ocean/prompts/muse/generated_new_4.csv
 ```
 
+FOCUS configs record `focus_prompt_file_classnames`,
+`focus_prompt_file_sha256`, and `focus_prompt_bank_sha256` because its native
+files are positional. CAMELYON16, TCGA-NSCLC, and UBC-OCEAN use exact upstream
+banks; BRCA and RCC are generated task extensions. The released UBC file order
+is `CC, HGSC, LGSC, EC, MC`, so the runtime explicitly reorders it to the
+benchmark classifier order rather than interpreting its rows incorrectly.
+
+ViLa-MIL's positional schema cannot name its classes in-file. Generated configs
+therefore also record `vila_prompt_file_classnames`, `vila_prompt_file_sha256`,
+and `vila_prompt_bank_sha256`. The runtime may reorder an explicitly declared
+file order into classifier order, but rejects missing, extra, or contradictory
+class bindings. Lung and RCC use byte-exact upstream banks; BRCA, UBC-OCEAN,
+and CAMELYON16 report `prompt_provenance: generated`.
+
+SLDPC declares its active and reference-only inputs outside that generic map:
+
+```yaml
+    sldpc_prompt_classnames: [CC, EC, HGSC, LGSC, MC]
+    sldpc_prompt_provenance: upstream
+    sldpc_zero_shot_prompt_yaml: text_prompts/sldpc/ubc_ocean.yaml
+```
+
+The RCC benchmark class order is `CCRCC, PRCC, CHRCC`, so those upstream codes
+are classified as `derived` after reordering. BRCA's `IDC, ILC` tokens are a
+derived subset of the upstream TCGA-OT token list. CAMELYON16 has no released
+SLDPC task bank and is marked generated.
+
 Paths are repository-relative or absolute. A named file that does not exist is
 an error, never a silent fallback: a prompt the author asked for and did not get
 would change what the model reads without saying so.
@@ -165,6 +203,14 @@ would change what the model reads without saying so.
 `prompt_provenance` describes the selected method condition, not merely the
 origin of some words inside it. Thus UBC-OCEAN's CSVs are `generated` for MUSE
 even though their descriptions originate in an upstream MSCPT bank.
+
+ConVLM is stricter because its released class attribute matrix is absent. A
+runtime JSON bank must declare or inherit audited provenance, class order,
+prompt counts, and content hashes. A precomputed `.pt` bank must additionally
+use schema `pgvl.convlm.attribute_embeddings.v1` and bind the ordered source
+prompt digest to the text encoder's feature-space ID and checkpoint SHA-256.
+Bare tensors and `.npy` matrices are rejected because they cannot prove either
+row identity or encoder compatibility.
 
 A method with no entry falls back, in order:
 
@@ -182,6 +228,20 @@ A method with no entry falls back, in order:
 WSI-FiVE is an exception to this generic fallback. Its six aligned questions,
 training answers, and evaluation descriptions have different roles and cannot
 be inferred from a class-description `prompt_spec`; configure them explicitly.
+Native NSCLC binds each role with `wsi_*_file_sha256`, a semantic
+`wsi_*_bank_sha256`, and `wsi_*_provenance`. The checked-in containers are
+not byte copies of upstream files: question/evaluation containers are `derived`,
+while the complete answer bank is `generated` because it combines 912 upstream
+answers with 27 disclosed local completions. The compiler, runtime, and doctor
+all enforce the same bindings.
+
+TOP applies the same rule to its two independent roles. The instance bank is
+bound by `top_instance_file_sha256`, `top_instance_prompt_bank_sha256`, and
+`top_instance_provenance`; a configured bag bank additionally requires the
+corresponding `top_bag_*` hashes, provenance, and usage. `top_prompt_format`
+pins the combined schema. Do not infer `prompt_provenance` or `prompt_source`
+from the filename: the shared loader derives both from the validated
+instance/bag roles and rejects contradictory declarations.
 
 Each generated config records which source was actually used in
 `prompt_provenance`, and the run matrix carries it as `prompt_source` and

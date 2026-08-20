@@ -657,8 +657,9 @@ def _load_builtin(name: str, weights_path: Optional[str], device: str
     if name == "quiltnet":
         import open_clip
 
-        # ConVLM encodes its attribute text with QuiltNet, so this is a text
-        # tower in its own right, not only a tile encoder.
+        # PGVL's ConVLM compatibility path can encode attribute text with
+        # QuiltNet, so this is a text tower in its own right, not only a tile
+        # encoder. The upstream attribute matrix itself is not released.
         repo = weights_path or "hf-hub:wisdomik/QuiltNet-B-32"
         model, _, preprocess = open_clip.create_model_and_transforms(repo)
         return model.to(device), open_clip.get_tokenizer(repo), preprocess

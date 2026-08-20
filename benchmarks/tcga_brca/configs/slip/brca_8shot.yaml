@@ -1,0 +1,99 @@
+backbone: clip-rn50
+backbone_weights: ${PGVL_USER_ROOT}/.cache/clip/RN50.pt
+encoder:
+  name: clip-rn50
+  weights: ${PGVL_USER_ROOT}/.cache/clip/RN50.pt
+  feature_space_id: openai/clip-rn50@official
+  feature_dim: 1024
+  initialization: pretrained
+feature_space_id: openai/clip-rn50@official
+n_classes: 2
+classnames:
+- invasive ductal carcinoma
+- invasive lobular carcinoma
+label_dict:
+  IDC: 0
+  ILC: 1
+shots: 8
+k: 5
+k_start: 0
+k_end: 5
+seed: 1
+batch_size: 1
+num_workers: 4
+feature_key: features
+feature_sources:
+  bag: clip_rn50_10x
+feature_resolutions:
+  bag: 10x
+feature_input_kinds:
+  bag: patch_bag
+include_metadata: true
+dataset_csv: ${PGVL_REPO_ROOT}/benchmarks/tcga_brca/data/brca/manifest.csv
+split_dir: ${PGVL_REPO_ROOT}/benchmarks/tcga_brca/splits/brca/8shot
+task: brca
+benchmark: tcga_brca_resolution_registry
+feature_dim: 1024
+method: slip
+experiment: slip
+epochs: 10
+prompt_provenance: generated
+results_dir: ${PGVL_REPO_ROOT}/results/tcga_benchmark/slip/brca/8shot
+implementation_provenance: mixed
+upstream_fidelity: partial
+fidelity_note: Mostly vendored SLIP with a local unified-training integration.
+lr: 0.002
+weight_decay: 0.0
+early_stopping: false
+context_size: 1
+context_gain: 0.01
+topk: 50
+temp: 0.01
+image_size: 224
+tissue_classnames_path: ${PGVL_REPO_ROOT}/text_prompts/slip/tcga_brca_tissues.json
+text_templates:
+- '{}'
+slip_slide_classnames:
+- - invasive ductal carcinoma
+- - invasive lobular carcinoma
+tissue_classnames:
+- - Terminal duct lobular unit
+  - Clustered small acini around an intralobular duct, lined by luminal and myoepithelial
+    layers.
+- - Myoepithelial layer
+  - Continuous outer rim of flattened cells beneath the basement membrane of ducts
+    and acini.
+- - Ductal carcinoma in situ
+  - Malignant epithelium filling ducts while confined by an intact basement membrane.
+- - Tubule formation
+  - Neoplastic cells arranged as recognisable glandular lumina.
+- - Single-file infiltration
+  - Tumour cells infiltrating in linear chains between collagen fibres.
+- - Desmoplastic stroma
+  - Dense fibroproliferative stroma provoked by invasive carcinoma.
+- - Adipose tissue
+  - Sheets of clear univacuolated adipocytes with compressed peripheral nuclei.
+- - Tumor nests
+  - Clusters of cancerous cells forming distinct groups separated by stroma.
+- - Solid tumor
+  - A solid sheet of cancer cells with little intervening architecture.
+- - Stroma
+  - Supporting connective tissue between tumour and normal structures.
+- - Necrosis
+  - Areas of dead cells with loss of nuclear detail and granular debris.
+- - Inflammatory infiltrate
+  - Immune cells scattered through tissue in response to injury or tumour.
+- - Vascular invasion
+  - Tumour cells within the lumen of a blood or lymphatic vessel.
+- - Fibrosis
+  - Dense collagen deposition replacing normal tissue architecture.
+- - Pleomorphism
+  - Marked variation in nuclear size, shape and staining between tumour cells.
+- - Lymphocytic infiltration
+  - Dense aggregates of small mature lymphocytes.
+- - Hyalinization
+  - Homogeneous glassy eosinophilic material replacing stroma.
+data_folder_s: ${PGVL_STORAGE_ROOT}/trident_features/master_benchmark/10x_224px_0px_overlap/features_clip_rn50
+feature_path_column: feature__clip_rn50_10x
+prompt_source: slip_generated_task_extension_prompt_bank
+encoder_provenance: native

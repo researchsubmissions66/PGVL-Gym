@@ -25,6 +25,10 @@ n_ctx_inst: 4
 ctx_init_bag: ""
 ctx_init_inst: ""
 instance_prompt_path: "${PGVL_REPO_ROOT}/text_prompts/top/instance_prototypes.json"
+top_prompt_format: "instance_prototypes_plus_optional_bag_context.v1"
+top_instance_file_sha256: "33a95e5e41c33459c8cf79abe68e1275986a952758c67705da02b1f7d102d0db"
+top_instance_prompt_bank_sha256: "56ae6c7ec40cb2dace3bbe2897d73ec70d0f7c4564d5d69b19912543554b0cd2"
+top_instance_provenance: "upstream"
 prompt_provenance: "upstream_instance_with_random_classname_bag"
 prompt_source: "top_upstream_instance_with_random_classname_bag"
 csc: true

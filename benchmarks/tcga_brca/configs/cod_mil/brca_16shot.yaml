@@ -42,6 +42,9 @@ experiment: cod_mil
 epochs: 200
 prompt_provenance: generated_chain_with_generated_normal_tissue
 results_dir: ${PGVL_REPO_ROOT}/results/tcga_benchmark/cod_mil/brca/16shot
+implementation_provenance: vendored
+upstream_fidelity: upstream
+fidelity_note: Vendored CoD-MIL; prompt-asset provenance remains a separate axis.
 lr: 0.0001
 weight_decay: 1.0e-05
 early_stopping: true
@@ -53,6 +56,7 @@ feature_path_column_s: feature__clip_rn50_10x
 feature_path_column_l: feature__clip_rn50_20x
 text_prompt_path: ${PGVL_REPO_ROOT}/text_prompts/cod_mil/brca_chain_of_diagnosis.json
 text_prompt_features: null
+text_prompt_bank_csv: null
 normal_structures_json: ${PGVL_REPO_ROOT}/text_prompts/cod_mil/brca_normal_structures.json
 prompt_encoding: runtime_cached
 text_feature_space_id: openai/clip-rn50@official

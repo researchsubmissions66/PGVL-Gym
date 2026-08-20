@@ -100,7 +100,7 @@ python scripts/list_backbone_compatibility.py --method muse
 | SLIP | allowlist: CLIP ViT-B, CLIP RN50, PLIP, or BiomedCLIP | Paired patch/text features and the matching native prompt branch | Each supported family uses its own tokenizer and prompt implementation. |
 | WSI-FiVE | precomputed: 512-wide patch bag | Offline patch features; native training also requires a fold-local six-answer bank | Its patch-fusion transformer and ClinicalBERT question/prompt tower are method-owned; per-slide answers are targets, never inference inputs. |
 | MUSE | capability | Any registered static patch source plus any registered black-box `text_encode` prompt bundle | `patch_encoder` provenance is independent from `prompt_feature_space_id`; a learned visual adapter maps patch `feature_dim` to the prompt encoder's `embed_dim`. CONCH/CONCH is the native encoder condition, while implementation fidelity is separately marked partial. |
-| ConVLM | precomputed: UNI patch bags | 1024-wide UNI patch bags plus QuiltNet attribute vectors | The visual encoder runs offline; attribute injection and token pruning occur in ConVLM's transformer over the resulting patch tokens. |
+| ConVLM | local precomputed patch-bag reconstruction | A declared patch-bag space plus metadata-bound attribute vectors from any declared text encoder | This is PGVL's adapter boundary, not the released training boundary: upstream `train.py` feeds RGB images to its ViT and loads an absent `att_splits.mat`. Prompt artifacts bind class order, source-bank digest, encoder checkpoint hash, and feature space. |
 | SLDPC | capability | Promptable text tower and native slide projector from one paired slide-text model | A slide-only tower, unrelated text encoder, or width-only match cannot reproduce the trained comparison space. TITAN is the default. |
 
 This matrix deliberately distinguishes architectural compatibility from an
@@ -177,6 +177,13 @@ semantics in memory: it restores the best validation prompt before CPI and
 again before final evaluation. Consequently, `epochs` must equal
 `stage1_epochs + stage2_epochs`, and the outer unified-loop
 `early_stopping` must remain disabled.
+
+Its learned prompt input is `prompt_classnames`, an ordered sequence of fixed
+class-code tokens. Do not substitute the SLDPC synonym YAML here: upstream uses
+that YAML with a 23-template ensemble only for a separate, untrained TITAN
+zero-shot baseline. The doctor rejects the old ambiguous
+`prompt_reference_yaml` field and verifies active-token and optional
+zero-shot-reference digests independently.
 
 There is no automatic projection fallback. Selecting `linear` or `mlp` is an
 explicit method variant because it introduces a learned alignment model;

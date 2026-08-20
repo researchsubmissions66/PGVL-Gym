@@ -16,12 +16,29 @@ def test_focus_manifest_explicitly_classifies_every_local_bank():
         (REPO_ROOT / "text_prompts" / "PROVENANCE.json").read_text())
     summary = manifest["method_summaries"]["focus"]
 
-    assert summary["copied_from_upstream"] == []
-    assert summary["generated_or_rewritten"]
-    for key in summary["generated_or_rewritten"]:
+    copied = {
+        "focus/CAMELYON16_two_scale_text_prompt.csv",
+        "focus/TCGA_NSCLC_two_scale_text_prompt.csv",
+        "focus/UBC_OCEAN_two_scale_text_prompt.csv",
+    }
+    assert set(summary["copied_from_upstream"]) == copied
+    for key in copied:
+        record = manifest["assets"][key]
+        assert record["provenance"] == "upstream"
+        assert record["copied_from_upstream"] is True
+    generated = {
+        "focus/TCGA_BRCA_two_scale_text_prompt.csv",
+        "focus/TCGA_RCC_two_scale_text_prompt.csv",
+    }
+    assert set(summary["generated_or_rewritten"]) == generated | {
+        "prompt_spec-compiled FOCUS banks"}
+    for key in generated:
         record = manifest["assets"][key]
         assert record["provenance"] == "generated"
         assert record["copied_from_upstream"] is False
+
+    assert not any(
+        path.is_file() for path in (REPO_ROOT / "text_prompts").glob("*.csv"))
 
 
 def test_focus_provenance_uses_content_origin_not_path_selection():
@@ -32,13 +49,37 @@ def test_focus_provenance_uses_content_origin_not_path_selection():
     explicit = {
         "prompts": {
             "focus": "text_prompts/focus/TCGA_RCC_two_scale_text_prompt.csv",
-            "vila_mil": "text_prompts/focus/TCGA_BRCA_two_scale_text_prompt.csv",
+            "vila_mil": (
+                "text_prompts/vila_mil/TCGA_BRCA_two_scale_text_prompt.csv"),
         },
     }
 
-    assert _prompt_provenance(legacy, "focus") == "generated"
+    assert _prompt_provenance(legacy, "focus") == "upstream"
     assert _prompt_provenance(explicit, "focus") == "generated"
     assert _prompt_provenance(explicit, "vila_mil") == "generated"
+
+
+def test_vila_manifest_separates_exact_copies_from_task_extensions():
+    manifest = json.loads(
+        (REPO_ROOT / "text_prompts" / "PROVENANCE.json").read_text())
+    summary = manifest["method_summaries"]["vila_mil"]
+
+    assert set(summary["copied_from_upstream"]) == {
+        "vila_mil/TCGA_Lung_two_scale_text_prompt.csv",
+        "vila_mil/TCGA_RCC_two_scale_text_prompt.csv",
+    }
+    for key in summary["copied_from_upstream"]:
+        assert manifest["assets"][key]["provenance"] == "upstream"
+        assert manifest["assets"][key]["copied_from_upstream"] is True
+    extensions = {
+        "vila_mil/TCGA_BRCA_two_scale_text_prompt.csv",
+        "vila_mil/UBC_OCEAN_two_scale_text_prompt.csv",
+        "vila_mil/CAMELYON16_two_scale_text_prompt.csv",
+    }
+    assert extensions.issubset(summary["generated_or_rewritten"])
+    for key in extensions:
+        assert manifest["assets"][key]["provenance"] == "generated"
+        assert manifest["assets"][key]["copied_from_upstream"] is False
 
 
 def test_mscpt_manifest_classifies_copied_and_generated_banks():
@@ -310,22 +351,39 @@ def test_wsi_five_provenance_separates_questions_from_comparison_bank():
 
     assert _wsi_five_prompt_provenance(
         native, "upstream_answer_bank",
-    ) == "upstream_questions_with_answer_and_evaluation_banks"
+    ) == "derived_questions_with_generated_answer_and_derived_evaluation_banks"
     assert _wsi_five_prompt_provenance(
         extension, "simplified_classnames",
     ) == "generated_questions_with_classname_comparison"
 
 
-def test_wsi_five_manifest_names_every_copied_and_generated_role():
+def test_wsi_five_manifest_names_every_derived_and_generated_role():
     manifest = json.loads(
         (REPO_ROOT / "text_prompts" / "PROVENANCE.json").read_text())
     summary = manifest["method_summaries"]["wsi_five"]
 
-    assert set(summary["copied_from_upstream"]) == {
+    derived = {
         "text_prompts/wsi_five/clinical_questions/nsclc.json",
-        "text_prompts/wsi_five/nsclc_report_answers.csv",
         "text_prompts/wsi_five/nsclc_evaluation_prompts.json",
     }
+    assert summary["copied_from_upstream"] == []
+    assert set(summary["derived_from_upstream"]) == derived
+    for path in derived:
+        record = manifest["assets"][path.removeprefix("text_prompts/")]
+        assert record["provenance"] == "derived"
+        assert record["content_provenance"] == "upstream"
+        assert record["copied_from_upstream"] is False
+        assert len(record["sha256"]) == 64
+    assert summary["mixed_from_upstream_and_generated"] == [
+        "text_prompts/wsi_five/nsclc_report_answers.csv"]
+    answer_record = manifest["assets"][
+        "wsi_five/nsclc_report_answers.csv"]
+    assert answer_record["provenance"] == "generated"
+    assert answer_record["content_provenance"] == (
+        "mixed_upstream_and_generated")
+    assert answer_record["upstream_answer_rows"] == 912
+    assert answer_record["generated_completion_rows"] == 27
+    assert len(answer_record["generated_case_ids"]) == 27
     assert set(summary["generated_or_rewritten"]) == {
         "text_prompts/wsi_five/clinical_questions/brca.json",
         "text_prompts/wsi_five/clinical_questions/rcc.json",

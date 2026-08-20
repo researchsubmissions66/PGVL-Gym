@@ -10,8 +10,7 @@ TOP's training recipe is very different from the rest:
     weight_lossA = 25
 """
 from __future__ import annotations
-import hashlib
-import json
+from functools import cached_property
 
 import torch
 import torch.nn as nn
@@ -20,6 +19,7 @@ import torch.nn.functional as F
 from methods.base import BaseMethod
 from common.backbones import (
     BackboneCapability as Cap, FeatureLevel, MethodBackboneContract, SwapPolicy)
+from common.prompts import TOP_PROMPT_FORMAT, load_top_prompt_condition
 
 
 class TOPMethod(BaseMethod):
@@ -37,11 +37,50 @@ class TOPMethod(BaseMethod):
     # the separator outside this literal: the released TCGA instance recipe
     # concatenates the first ``*`` directly after the final period, whereas
     # its bag recipe (and CAMELYON instance recipe) inserts one space.
-    LEARNABLE_SLOTS = " ".join(["*"] * 10)
     BINARY_ONLY_POOLING = frozenset({
         "NoCoOp", "learnablePrompt_noCoOp",
         "learnablePrompt_multi_noCoOp",
     })
+
+    @cached_property
+    def _prompt_condition(self):
+        """Load and verify the complete two-role prompt condition once."""
+        required = [
+            "instance_prompt_path", "top_prompt_format",
+            "top_instance_file_sha256",
+            "top_instance_prompt_bank_sha256", "top_instance_provenance",
+            "prompt_provenance", "prompt_source",
+        ]
+        if self.cfg.get("bag_prompt_path"):
+            required.extend([
+                "top_bag_file_sha256", "top_bag_prompt_bank_sha256",
+                "top_bag_provenance", "top_bag_usage",
+            ])
+        missing = [key for key in required if self.cfg.get(key) in {None, ""}]
+        if missing:
+            raise ValueError(
+                f"TOP prompt condition is missing identity fields {missing}")
+        if self.cfg["top_prompt_format"] != TOP_PROMPT_FORMAT:
+            raise ValueError(
+                f"TOP top_prompt_format must be {TOP_PROMPT_FORMAT!r}")
+        return load_top_prompt_condition(
+            self.cfg["instance_prompt_path"],
+            label_dict=self.cfg["label_dict"],
+            classnames=self.cfg["classnames"],
+            bag_path=self.cfg.get("bag_prompt_path"),
+            expected_instance_file_sha256=(
+                self.cfg["top_instance_file_sha256"]),
+            expected_instance_prompt_bank_sha256=(
+                self.cfg["top_instance_prompt_bank_sha256"]),
+            expected_instance_provenance=self.cfg["top_instance_provenance"],
+            expected_bag_file_sha256=self.cfg.get("top_bag_file_sha256"),
+            expected_bag_prompt_bank_sha256=self.cfg.get(
+                "top_bag_prompt_bank_sha256"),
+            expected_bag_provenance=self.cfg.get("top_bag_provenance"),
+            expected_bag_usage=self.cfg.get("top_bag_usage"),
+            expected_condition_provenance=self.cfg["prompt_provenance"],
+            expected_condition_source=self.cfg["prompt_source"],
+        )
 
     def _instance_ctx_init(self) -> list[str]:
         """Return TOP's instance prototype prompts, or [] to fall back.
@@ -51,115 +90,15 @@ class TOPMethod(BaseMethod):
         ``an H&E stained image of {tissue}, which is {description}`` followed by
         the learnable context slots, matching the upstream initialisation.
         """
-        path = self.cfg.get("instance_prompt_path")
-        if not path:
-            return []
-        with open(path, encoding="utf-8") as handle:
-            payload = json.load(handle)
-        prototypes = payload["prototypes"] if isinstance(payload, dict) else payload
-        if not isinstance(prototypes, list) or not prototypes:
-            raise ValueError(f"{path}: TOP instance bank has no prototypes")
-        metadata = payload.get("_metadata", {}) \
-            if isinstance(payload, dict) else {}
-        if not isinstance(metadata, dict):
-            raise ValueError(f"{path}: TOP instance _metadata must be a mapping")
-        prompts: list[str] = []
-        for index, item in enumerate(prototypes):
-            if not isinstance(item, dict) or not isinstance(
-                    item.get("prompt"), str) or not item["prompt"].strip():
-                raise ValueError(
-                    f"{path}: TOP instance prototype {index} needs a prompt")
-            prompt = item["prompt"]
-            tissue, description = item.get("tissue"), item.get("description")
-            if isinstance(tissue, str) and isinstance(description, str):
-                expected = (
-                    f"an H&E stained image of {tissue}, which is {description}")
-                if prompt != expected:
-                    raise ValueError(
-                        f"{path}: TOP instance prototype {index} does not "
-                        "match its tissue/description fields")
-            if "*" in prompt:
-                raise ValueError(
-                    f"{path}: TOP instance prototype {index} already contains "
-                    "learnable slots")
-            prompts.append(prompt)
-        if len(set(prompts)) != len(prompts):
-            raise ValueError(f"{path}: TOP instance prompts must be unique")
-        declared_count = metadata.get("count")
-        if declared_count is not None and declared_count != len(prompts):
-            raise ValueError(
-                f"{path}: metadata count {declared_count} does not match "
-                f"{len(prompts)} prototypes")
-        declared_digest = metadata.get("ordered_prompt_sha256")
-        digest = hashlib.sha256("\n".join(prompts).encode()).hexdigest()
-        if declared_digest is not None and declared_digest != digest:
-            raise ValueError(
-                f"{path}: ordered_prompt_sha256 does not match the prompt bank")
-        separator = self.cfg.get(
-            "instance_slot_separator", metadata.get("slot_separator", ""))
-        if separator not in {"", " "}:
-            raise ValueError(
-                "instance_slot_separator must be either an empty string or "
-                "one space")
-        return [f"{prompt}{separator}{self.LEARNABLE_SLOTS}"
-                for prompt in prompts]
+        return list(self._prompt_condition.instance.initialized_prompts(
+            self.cfg.get("instance_slot_separator")))
 
     def _bag_ctx_init(self):
         """Return per-class bag prompts when declared, else the configured init."""
-        path = self.cfg.get("bag_prompt_path")
-        if not path:
+        bank = self._prompt_condition.bag
+        if bank is None:
             return self.cfg.get("ctx_init_bag", "")
-        with open(path, encoding="utf-8") as handle:
-            payload = json.load(handle)
-        if not isinstance(payload, dict):
-            raise ValueError(f"{path}: TOP bag prompt bank must be a mapping")
-        # Code-faithful assets store the complete upstream ctx_init literal,
-        # including its ten slots. Supplementary/experimental banks store base
-        # prompts and let the adapter append the same slots.
-        exact_ctx = payload.get("ctx_init")
-        prompts = exact_ctx if exact_ctx is not None else payload.get("prompts")
-        if not isinstance(prompts, dict) or not prompts:
-            raise ValueError(
-                f"{path}: TOP bag bank needs a prompts or ctx_init mapping")
-        label_dict = self.cfg["label_dict"]
-        labels = [label for label, _ in sorted(
-            label_dict.items(), key=lambda item: item[1])]
-        missing = [label for label in labels if label not in prompts]
-        if missing:
-            raise KeyError(
-                f"{path}: bag prompts missing entries for {missing}; "
-                f"file provides {sorted(prompts)}")
-        values = [prompts[label] for label in labels]
-        if any(not isinstance(value, str) or not value.strip()
-               for value in values):
-            raise ValueError(f"{path}: TOP bag prompts must be non-empty strings")
-        metadata = payload.get("_metadata", {})
-        if not isinstance(metadata, dict):
-            raise ValueError(f"{path}: TOP bag _metadata must be a mapping")
-        declared_order = metadata.get("label_order")
-        if declared_order is not None and declared_order != labels:
-            raise ValueError(
-                f"{path}: TOP bag label_order {declared_order} does not match "
-                f"the classifier order {labels}")
-        if exact_ctx is not None:
-            invalid = [label for label, value in zip(labels, values)
-                       if value.count("*") != 10]
-            if invalid:
-                raise ValueError(
-                    f"{path}: code-faithful TOP ctx_init entries must contain "
-                    f"ten learnable slots; invalid labels {invalid}")
-            return values
-        invalid = [label for label, value in zip(labels, values) if "*" in value]
-        if invalid:
-            raise ValueError(
-                f"{path}: base TOP bag prompts already contain learnable "
-                f"slots for labels {invalid}")
-        separator = metadata.get("slot_separator", " ")
-        if separator not in {"", " "}:
-            raise ValueError(
-                f"{path}: slot_separator must be empty or one space")
-        return [f"{value}{separator}{self.LEARNABLE_SLOTS}"
-                for value in values]
+        return list(bank.initialized_prompts)
 
     def _bag_classnames(self) -> list[str]:
         """Use the task suffixes paired with an upstream bag initializer.
@@ -169,25 +108,10 @@ class TOPMethod(BaseMethod):
         the exact suffix list; task extensions without a published bag bank use
         the benchmark's configured classnames.
         """
-        path = self.cfg.get("bag_prompt_path")
-        if not path:
+        bank = self._prompt_condition.bag
+        if bank is None:
             return list(self.cfg["classnames"])
-        with open(path, encoding="utf-8") as handle:
-            payload = json.load(handle)
-        metadata = payload.get("_metadata", {}) \
-            if isinstance(payload, dict) else {}
-        upstream = metadata.get("upstream_classnames") \
-            if isinstance(metadata, dict) else None
-        if upstream is None:
-            return list(self.cfg["classnames"])
-        if (not isinstance(upstream, list)
-                or len(upstream) != len(self.cfg["label_dict"])
-                or any(not isinstance(name, str) or not name.strip()
-                       for name in upstream)):
-            raise ValueError(
-                f"{path}: upstream_classnames must contain one non-empty "
-                "suffix per task label")
-        return upstream
+        return list(bank.classnames)
 
     def build_model(self) -> nn.Module:
         from .learnable_prompt import (

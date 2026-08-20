@@ -11,9 +11,12 @@
 6. Resolve validation errors and inspect feature readiness.
 7. Run the dummy-feature matrix before launching real-data jobs.
 
-The prompt compiler emits FOCUS/ViLa two-scale CSVs, MUSE description CSVs,
-MSCPT description JSON, MAPLE entity JSON, CoD chains, SLIP tissues, SLDPC
-aliases, and ConVLM attributes from that single canonical profile.
+The prompt compiler emits separate method-owned FOCUS and ViLa-MIL headerless
+low-then-high CSVs, MUSE description CSVs,
+MSCPT description JSON, MAPLE entity JSON, CoD chains, SLIP tissues, an SLDPC
+zero-shot synonym bank, and ConVLM attributes from that single canonical
+profile. SLDPC Stage 1/2 still needs an explicit ordered `prompt_classnames`
+declaration; generated zero-shot aliases are not a training input.
 
 WSI-FiVE is intentionally not synthesized from this profile. A task must
 declare an explicit six-question bank; native mode additionally needs aligned

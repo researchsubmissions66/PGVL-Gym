@@ -39,6 +39,10 @@ experiment: muse_keep
 epochs: 200
 prompt_provenance: upstream
 results_dir: ${PGVL_REPO_ROOT}/results/tcga_benchmark/muse_keep/nsclc/4shot
+implementation_provenance: reimplemented_feature_space
+upstream_fidelity: partial
+fidelity_note: Local feature-space reconstruction omits upstream stochastic multi-view
+  semantic optimization.
 prompt_feature_space_id: hf:MahmoodLab/conch
 patch_encoder:
   input_kind: patch_bag

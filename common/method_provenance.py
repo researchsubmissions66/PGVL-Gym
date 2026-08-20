@@ -58,9 +58,11 @@ METHOD_PROVENANCE: dict[str, MethodProvenance] = {
         "Local feature-space reconstruction omits upstream stochastic "
         "multi-view semantic optimization."),
     "convlm": MethodProvenance(
-        "reimplemented", "partial",
-        "Local implementation consumes upstream-style offline features but is "
-        "not vendored upstream training code."),
+        "reimplemented_feature_bag_reconstruction", "partial",
+        "Local code consumes precomputed WSI patch bags and averages encoded "
+        "class prompts. Released train.py instead trains a raw-image ViT and "
+        "loads an unpublished att_splits.mat; neither local path is vendored "
+        "from that training implementation."),
     "sldpc": MethodProvenance(
         "reimplemented", "partial",
         "CPI, DHNO, and SICL are local implementations of the published method."),

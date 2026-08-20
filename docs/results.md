@@ -69,7 +69,3 @@ For every result table, state:
 6. mean and standard deviation across the same completed folds;
 7. primary accuracy metric plus at least one imbalance-sensitive metric;
 8. any failed, skipped, or unavailable runs.
-
-If GEPA or another continuous objective selects a prompt, report that objective
-separately from held-out accuracy. The test partition must not select prompts,
-soft context, checkpoints, or hyperparameters.

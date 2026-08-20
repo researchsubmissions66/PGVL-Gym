@@ -35,7 +35,25 @@ from common.configuration import (  # noqa: E402
     load_yaml_config,
     load_yaml_file,
 )
-from common.prompts import MIN_BACKGROUND_PROMPTS  # noqa: E402
+from common.prompts import (  # noqa: E402
+    FOCUS_PROMPT_FORMAT,
+    MIN_BACKGROUND_PROMPTS,
+    VILA_PROMPT_FORMAT,
+    WSI_FIVE_PROMPT_FORMAT,
+    file_sha256,
+    load_convlm_attribute_embeddings,
+    load_convlm_prompt_bank,
+    load_focus_prompt_bank,
+    load_sldpc_zero_shot_prompt_bank,
+    load_top_prompt_condition,
+    load_vila_prompt_bank,
+    load_wsi_five_answer_bank,
+    load_wsi_five_evaluation_bank,
+    load_wsi_five_question_bank,
+    sldpc_prompt_classname_sha256,
+    sldpc_prompt_classnames,
+    sldpc_zero_shot_templates_sha256,
+)
 from common.run_state import validate_resume_state  # noqa: E402
 # Each cohort owns its protocol, so there is no meaningful default: generating
 # against the wrong cohort silently produces a benchmark for the wrong data.
@@ -137,6 +155,11 @@ def _source_present(feature_cfg: dict[str, Any], path: Path) -> bool:
         return any(item.is_file() and item.suffix.lower() in extensions
                    for item in path.iterdir())
     return path.is_file()
+
+
+def _manifest_path(value: Any) -> Path:
+    """Resolve one path read back from a portable generated manifest."""
+    return Path(expand_path(str(value)))
 
 
 def _feature_root(feature_cfg: dict[str, Any], task: str | None = None) -> str:
@@ -554,7 +577,8 @@ def build_manifests(protocol: dict[str, Any], output_dir: Path) -> pd.DataFrame:
                 for slide_id in frame["slide_id"]
             ]
             present = frame[column].map(
-                lambda value: _source_present(feature_cfg, Path(value)))
+                lambda value: _source_present(
+                    feature_cfg, _manifest_path(value)))
             rows.append(
                 {
                     "cohort": cohort,
@@ -1039,12 +1063,12 @@ def _prompt_asset(
 ) -> Any:
     """Resolve the prompt asset a method reads, honouring declared precedence.
 
-    Most upstream repositories ship their prompts as an explicit per-task file --
-    FOCUS reads a ``class_name,low_res_prompt,high_res_prompt`` CSV, MUSE reads
-    per-class description CSVs, MSCPT reads a GPT description JSON. When a cohort
-    declares that published asset, it is what the paper actually used, so it wins
-    by default; the ``prompt_spec`` compiler is the fallback for tasks that have
-    no published prompts.
+    Most upstream repositories ship their prompts as an explicit per-task file:
+    FOCUS and ViLa-MIL read distinct method-owned headerless low-then-high CSVs,
+    MUSE reads per-class description CSVs, and MSCPT reads a GPT description
+    JSON. When a cohort declares that published asset, it is
+    what the paper actually used, so it wins by default; the ``prompt_spec``
+    compiler is the fallback for tasks that have no published prompts.
 
     Set ``prompt_precedence: generated`` on the cohort (or on the protocol, as a
     default for every cohort) to deliberately prefer compiled prompts instead --
@@ -1093,12 +1117,11 @@ def _prompt_asset(
 # The cohort key naming each method's published, paper-native prompt asset.
 _UPSTREAM_PROMPT_KEYS = {
     "focus": "focus_prompt_csv",
-    "vila_mil": "focus_prompt_csv",
+    "vila_mil": "vila_prompt_csv",
     "mscpt": "mscpt_prompt_json",
     "maple": "maple_prompt_json",
     "cod_mil": "cod_prompt_json",
     "slip": "slip_tissue_json",
-    "sldpc": "sldpc_prompt_yaml",
     "muse": "muse_prompt_csvs",
     "convlm": "convlm_attribute_prompt_json",
 }
@@ -1117,12 +1140,34 @@ def _prompt_provenance(cohort_cfg: dict[str, Any], method: str) -> str:
     for one method and only a compiled one for another, and recording the
     cohort's best case for every method would misreport what a run embedded.
     """
-    # FOCUS/ViLa-MIL and MSCPT resolve their *content origin* from the prompt
+    # FOCUS, ViLa-MIL, and MSCPT resolve their *content origin* from the prompt
     # manifest before considering how the path was selected. An explicit path
     # is a selection mechanism, not evidence that its text is upstream. This
     # matters for local task extensions as well as copied assets selected via a
     # ``prompts:`` entry.
-    if method in {"focus", "vila_mil", "mscpt", "maple", "slip", "muse"}:
+    if method == "sldpc":
+        origin = cohort_cfg.get("sldpc_prompt_provenance")
+        return (str(origin) if origin in {
+            "upstream", "derived", "generated"} else "unknown")
+
+    if method == "convlm" and cohort_cfg.get("convlm_attribute_embeddings"):
+        path = _absolute_repo_path(
+            cohort_cfg["convlm_attribute_embeddings"])
+        if path.is_file():
+            try:
+                payload = torch.load(
+                    path, map_location="cpu", weights_only=True)
+                origin = payload.get("prompt_provenance") \
+                    if isinstance(payload, dict) else None
+                if origin in {"upstream", "derived", "generated"}:
+                    return origin
+            except (OSError, RuntimeError, ValueError):
+                pass
+        return "unknown"
+
+    if method in {
+        "focus", "vila_mil", "mscpt", "maple", "slip", "muse", "convlm",
+    }:
         asset = _prompt_asset(
             cohort_cfg, method, _UPSTREAM_PROMPT_KEYS[method])
         origin = _recorded_prompt_origin(asset)
@@ -1134,22 +1179,20 @@ def _prompt_provenance(cohort_cfg: dict[str, Any], method: str) -> str:
         prompts = prompts if isinstance(prompts, dict) else {}
         instance_asset = prompts.get(
             "top_instance", "text_prompts/top/instance_prototypes.json")
-        instance_origin = _recorded_prompt_origin(instance_asset) or "unknown"
         bag_asset = prompts.get("top_bag")
-        if bag_asset is None:
-            return f"{instance_origin}_instance_with_random_classname_bag"
-        bag_origin = _recorded_prompt_origin(bag_asset) or "unknown"
         try:
-            with _absolute_repo_path(bag_asset).open(encoding="utf-8") as handle:
-                payload = json.load(handle)
-            usage = payload.get("_metadata", {}).get("usage") \
-                if isinstance(payload, dict) else None
-        except (OSError, ValueError, AttributeError):
-            usage = None
-        if instance_origin == bag_origin == "upstream":
-            return ("upstream" if usage == "standard_upstream_recipe"
-                    else "upstream_supplementary_condition")
-        return f"{instance_origin}_instance_with_{bag_origin}_bag"
+            condition = load_top_prompt_condition(
+                _absolute_repo_path(instance_asset),
+                label_dict=dict(zip(
+                    cohort_cfg["labels"], range(len(cohort_cfg["labels"])))),
+                classnames=cohort_cfg["classnames"],
+                bag_path=(
+                    _absolute_repo_path(bag_asset)
+                    if bag_asset is not None else None),
+            )
+        except (KeyError, OSError, TypeError, ValueError):
+            return "unknown"
+        return condition.provenance
 
     if _explicit_prompt_declared(cohort_cfg, method):
         return "explicit"
@@ -1278,9 +1321,10 @@ def _wsi_five_prompt_provenance(
                 if isinstance(payload, dict) else None
         except (OSError, ValueError):
             pass
-    origin = declared if declared in {"upstream", "generated"} else "unknown"
+    origin = declared \
+        if declared in {"upstream", "derived", "generated"} else "unknown"
     if training_mode == "upstream_answer_bank":
-        return f"{origin}_questions_with_answer_and_evaluation_banks"
+        return f"{origin}_questions_with_generated_answer_and_derived_evaluation_banks"
     return f"{origin}_questions_with_classname_comparison"
 
 
@@ -1418,6 +1462,22 @@ def _method_config(
             "feature_path_column": _feature_column(bindings["bag"]["source"]),
         })
     elif method == "focus":
+        prompt_path = _prompt_asset(
+            cohort_cfg, "focus", "focus_prompt_csv")
+        labels = list(cfg["label_dict"])
+        file_labels = cohort_cfg.get(
+            "focus_prompt_file_classnames", labels)
+        bank = load_focus_prompt_bank(
+            prompt_path,
+            class_names=labels,
+            file_class_names=file_labels,
+            expected_provenance=cfg["prompt_provenance"],
+        )
+        source_by_origin = {
+            "upstream": "focus_upstream_native_two_scale_csv",
+            "derived": "focus_derived_native_two_scale_csv",
+            "generated": "focus_generated_native_two_scale_csv",
+        }
         cfg.update({
             "lr": 1e-4,
             "weight_decay": 1e-5,
@@ -1433,9 +1493,12 @@ def _method_config(
             "data_folder_s": _feature_root(bindings["high"]["config"], cohort),
             "feature_path_column_l": _feature_column(bindings["high"]["source"]),
             "feature_path_column": _feature_column(bindings["high"]["source"]),
-            "text_prompt_path": _prompt_asset(
-                cohort_cfg, "focus", "focus_prompt_csv"),
-            "prompt_source": "focus_two_scale_csv",
+            "text_prompt_path": str(bank.path),
+            "focus_prompt_format": FOCUS_PROMPT_FORMAT,
+            "focus_prompt_file_classnames": list(bank.file_class_names),
+            "focus_prompt_file_sha256": bank.file_sha256,
+            "focus_prompt_bank_sha256": bank.ordered_prompt_bank_sha256,
+            "prompt_source": source_by_origin[bank.provenance],
             "conch_ckpt": cfg["backbone_weights"],
         })
     elif method == "mscpt":
@@ -1494,6 +1557,22 @@ def _method_config(
                 else "maple_task_extension_attribute_json"),
         })
     elif method == "vila_mil":
+        prompt_path = _prompt_asset(
+            cohort_cfg, "vila_mil", "vila_prompt_csv")
+        labels = list(cfg["label_dict"])
+        file_labels = cohort_cfg.get(
+            "vila_prompt_file_classnames", labels)
+        bank = load_vila_prompt_bank(
+            prompt_path,
+            class_names=labels,
+            file_class_names=file_labels,
+            expected_provenance=cfg["prompt_provenance"],
+        )
+        source_by_origin = {
+            "upstream": "vila_mil_upstream_native_two_scale_csv",
+            "derived": "vila_mil_derived_native_two_scale_csv",
+            "generated": "vila_mil_generated_native_two_scale_csv",
+        }
         cfg.update({
             "lr": 1e-4,
             "weight_decay": 1e-5,
@@ -1509,9 +1588,12 @@ def _method_config(
             "data_folder_l": _feature_root(bindings["high"]["config"], cohort),
             "feature_path_column_s": _feature_column(bindings["low"]["source"]),
             "feature_path_column_l": _feature_column(bindings["high"]["source"]),
-            "text_prompt_path": _prompt_asset(
-                cohort_cfg, "vila_mil", "focus_prompt_csv"),
-            "prompt_source": "vila_two_scale_csv",
+            "text_prompt_path": str(bank.path),
+            "vila_prompt_format": VILA_PROMPT_FORMAT,
+            "vila_prompt_file_classnames": list(bank.file_class_names),
+            "vila_prompt_file_sha256": bank.file_sha256,
+            "vila_prompt_bank_sha256": bank.ordered_prompt_bank_sha256,
+            "prompt_source": source_by_origin[bank.provenance],
         })
     elif method == "cod_mil":
         cfg.update({
@@ -1556,6 +1638,13 @@ def _method_config(
     elif method == "top":
         top_prompts = cohort_cfg.get("prompts", {})
         top_prompts = top_prompts if isinstance(top_prompts, dict) else {}
+        instance_path = _absolute_repo_path(top_prompts.get(
+            "top_instance", "text_prompts/top/instance_prototypes.json"))
+        top_bag = top_prompts.get("top_bag")
+        bag_path = _absolute_repo_path(top_bag) if top_bag else None
+        prompt_condition = load_top_prompt_condition(
+            instance_path, label_dict=cfg["label_dict"],
+            classnames=cfg["classnames"], bag_path=bag_path)
         cfg.update({
             "clip_arch": "RN50",
             "lr": 0.02,
@@ -1570,9 +1659,7 @@ def _method_config(
             # TOP's instance branch is prototype-based: 26 task-agnostic tissue
             # phenotypes, not the bag class names. Declared under the cohort's
             # `prompts` block as `top_instance` / `top_bag`.
-            "instance_prompt_path": str(_absolute_repo_path(
-                top_prompts.get(
-                    "top_instance", "text_prompts/top/instance_prototypes.json"))),
+            "instance_prompt_path": str(instance_path),
             "instance_slot_separator": cohort_cfg.get(
                 "top_instance_slot_separator", ""),
             "csc": True,
@@ -1582,18 +1669,10 @@ def _method_config(
             "pooling_strategy": "learnablePrompt_multi",
             "data_folder_s": _feature_root(bindings["bag"]["config"], cohort),
             "feature_path_column": _feature_column(bindings["bag"]["source"]),
-            "prompt_source": {
-                "upstream":
-                    "top_upstream_code_instance_and_bag_initializers",
-                "upstream_supplementary_condition":
-                    "top_upstream_supplementary_bag_condition",
-            }.get(
-                cfg["prompt_provenance"],
-                "top_upstream_instance_with_random_classname_bag"),
+            **prompt_condition.config_values(),
         })
-        top_bag = top_prompts.get("top_bag")
-        if top_bag:
-            cfg["bag_prompt_path"] = str(_absolute_repo_path(top_bag))
+        if bag_path is not None:
+            cfg["bag_prompt_path"] = str(bag_path)
     elif method == "slip":
         tissue_path = Path(_prompt_asset(
             cohort_cfg, "slip", "slip_tissue_json")).resolve()
@@ -1623,6 +1702,18 @@ def _method_config(
         })
     elif method == "wsi_five":
         native_text = cfg["training_mode"] == "upstream_answer_bank"
+        question_path = _absolute_repo_path(
+            cohort_cfg["wsi_five_questions_json"])
+        question_bank = load_wsi_five_question_bank(question_path)
+        answer_bank = evaluation_bank = None
+        if native_text:
+            answer_bank = load_wsi_five_answer_bank(
+                _absolute_repo_path(cohort_cfg["wsi_report_csv"]))
+            evaluation_bank = load_wsi_five_evaluation_bank(
+                _absolute_repo_path(
+                    cohort_cfg["wsi_five_evaluation_prompts"]),
+                cfg["label_dict"],
+            )
         cfg.update({
             "lr": 8e-6,
             "weight_decay": 0.05,
@@ -1645,21 +1736,22 @@ def _method_config(
             # The released question set is lung-specific. A cohort outside lung
             # must declare its own, and that set is generated, not the authors'.
             "clinical_questions": (
-                str(_absolute_repo_path(cohort_cfg["wsi_five_questions_json"]))
-                if cohort_cfg.get("wsi_five_questions_json") else None),
+                str(question_bank.path)),
             "evaluation_prompt_path": (
                 str(_absolute_repo_path(
                     cohort_cfg["wsi_five_evaluation_prompts"]))
                 if cohort_cfg.get("wsi_five_evaluation_prompts") else None),
             "prompt_source": (
-                "wsi_five_upstream_fold_local_answer_bank"
+                "wsi_five_derived_upstream_text_assets"
                 if native_text else "wsi_five_simplified_classname_baseline"),
+            "wsi_prompt_format": WSI_FIVE_PROMPT_FORMAT,
+            **question_bank.config_values(),
+            **(answer_bank.config_values() if answer_bank else {}),
+            **(evaluation_bank.config_values() if evaluation_bank else {}),
         })
     elif method == "sldpc":
         from common.backbones import get_spec
 
-        prompt_path = Path(_prompt_asset(
-            cohort_cfg, "sldpc", "sldpc_prompt_yaml")).resolve()
         prompt_cfg = experiment_cfg["prompt_encoder"]
         prompt_spec = get_spec(prompt_cfg["name"])
         prompt_weights = str(
@@ -1672,6 +1764,47 @@ def _method_config(
             "output_dim": int(prompt_spec.shared_dim),
             "trainable": projection_mode != "native",
         })
+        prompt_classnames = sldpc_prompt_classnames(
+            cohort_cfg.get("sldpc_prompt_classnames", ()),
+            n_classes=len(cohort_cfg["labels"]),
+        )
+        prompt_origin = cohort_cfg.get("sldpc_prompt_provenance")
+        if prompt_origin not in {"upstream", "derived", "generated"}:
+            raise ValueError(
+                f"Cohort {cohort!r} must declare "
+                "sldpc_prompt_provenance for its active class tokens")
+        prompt_source = {
+            "upstream": "sldpc_upstream_class_tokens",
+            "derived": "sldpc_derived_class_tokens",
+            "generated": "sldpc_generated_class_tokens",
+        }[prompt_origin]
+
+        zero_shot_path_value = cohort_cfg.get(
+            "sldpc_zero_shot_prompt_yaml")
+        zero_shot_path = (
+            _absolute_repo_path(zero_shot_path_value)
+            if zero_shot_path_value else None)
+        zero_shot: dict[str, Any] = {
+            "zero_shot_prompt_path": None,
+            "zero_shot_prompt_provenance": None,
+            "zero_shot_prompt_sha256": None,
+            "zero_shot_prompt_bank_sha256": None,
+            "zero_shot_templates_sha256": None,
+            "zero_shot_prompt_usage": None,
+        }
+        if zero_shot_path is not None:
+            zero_bank = load_sldpc_zero_shot_prompt_bank(
+                zero_shot_path, class_names=cohort_cfg["labels"])
+            zero_shot.update({
+                "zero_shot_prompt_path": str(zero_shot_path),
+                "zero_shot_prompt_provenance": zero_bank.provenance,
+                "zero_shot_prompt_sha256": zero_bank.file_sha256,
+                "zero_shot_prompt_bank_sha256": (
+                    zero_bank.ordered_prompt_sha256),
+                "zero_shot_templates_sha256": (
+                    sldpc_zero_shot_templates_sha256()),
+                "zero_shot_prompt_usage": "reference_only_unwired",
+            })
         cfg.update({
             "backbone": prompt_spec.name,
             "backbone_weights": prompt_weights,
@@ -1703,8 +1836,12 @@ def _method_config(
             "stage1_apply_tau": False,
             "early_stopping": False,
             "monitor_metric": "F1",
-            "prompt_reference_yaml": str(prompt_path),
-            "prompt_source": "sldpc_learnable_context_from_classnames",
+            "prompt_classnames": list(prompt_classnames),
+            "prompt_classname_sha256": sldpc_prompt_classname_sha256(
+                prompt_classnames),
+            "prompt_provenance": prompt_origin,
+            "prompt_source": prompt_source,
+            **zero_shot,
         })
     elif method == "convlm":
         patch_cfg = bindings["bag"]["config"]
@@ -1712,6 +1849,39 @@ def _method_config(
         patch_weights = (
             str(Path(str(patch_weights_value)).expanduser().resolve())
             if patch_weights_value else None)
+        embedding_value = cohort_cfg.get("convlm_attribute_embeddings")
+        embedding_path = (
+            str(_absolute_repo_path(embedding_value))
+            if embedding_value else None)
+        prompt_path = (
+            None if embedding_path else _prompt_asset(
+                cohort_cfg, "convlm", "convlm_attribute_prompt_json"))
+        attribute_encoder = dict(
+            experiment_cfg.get("attribute_encoder", {}))
+        if embedding_path:
+            attribute_bank = load_convlm_attribute_embeddings(
+                embedding_path,
+                classnames=cfg["classnames"],
+                feature_space_id=cohort_cfg.get(
+                    "convlm_attribute_feature_space_id"),
+            )
+            attribute_space = attribute_bank.feature_space_id
+            prompt_provenance = attribute_bank.prompt_provenance
+            prompt_bank_digest = attribute_bank.prompt_bank_sha256
+            prompt_file_digest = None
+            prompt_source = "convlm_precomputed_attribute_embeddings"
+        else:
+            prompt_bank = load_convlm_prompt_bank(
+                prompt_path, classnames=cfg["classnames"])
+            attribute_space = attribute_encoder.get("feature_space_id")
+            prompt_provenance = prompt_bank.provenance
+            prompt_bank_digest = prompt_bank.prompt_bank_sha256
+            prompt_file_digest = prompt_bank.file_sha256
+            prompt_source = {
+                "upstream": "convlm_upstream_attribute_prompts",
+                "derived": "convlm_derived_attribute_prompts",
+                "generated": "convlm_generated_attribute_prompts",
+            }[prompt_bank.provenance]
         cfg.update({
             # ``backbone`` names ConVLM's trainable token transformer for its
             # method contract. The offline visual source is recorded
@@ -1739,24 +1909,19 @@ def _method_config(
             },
             "seen_class_indices": list(range(len(cohort_cfg["labels"]))),
             "evaluation_protocol": "closed_set_all_classes_seen",
-            # ConVLM trains over offline UNI patch embeddings. The unified bag
-            # loader therefore consumes the same registry role as TOP/SLIP,
-            # rather than routing raw tile directories into an untrained ViT.
+            # PGVL's ConVLM reconstruction trains over offline patch bags. The
+            # released train.py uses RGB images; its separate UNI extraction
+            # utility is not connected to that released training path.
             "data_folder_s": _feature_root(
                 bindings["bag"]["config"], cohort),
             "feature_path_column": _feature_column(
                 bindings["bag"]["source"]),
-            "attribute_embeddings": (
-                str(_absolute_repo_path(
-                    cohort_cfg["convlm_attribute_embeddings"]))
-                if cohort_cfg.get("convlm_attribute_embeddings") else None),
-            "attribute_prompt_path": (
-                None if cohort_cfg.get("convlm_attribute_embeddings")
-                else _prompt_asset(
-                    cohort_cfg, "convlm", "convlm_attribute_prompt_json")),
-            "attribute_encoder": dict(
-                experiment_cfg.get("attribute_encoder", {})),
-            "attribute_feature_space_id": "hf:wisdomik/QuiltNet-B-32",
+            "attribute_embeddings": embedding_path,
+            "attribute_prompt_path": prompt_path,
+            "attribute_encoder": attribute_encoder,
+            "attribute_feature_space_id": attribute_space,
+            "attribute_prompt_sha256": prompt_file_digest,
+            "attribute_prompt_bank_sha256": prompt_bank_digest,
             "embed_dim": 768,
             "depth": 12,
             "num_heads": 12,
@@ -1769,10 +1934,8 @@ def _method_config(
             "loss_global_alignment": 1.0,
             "loss_sr": 1.0,
             "early_stopping": False,
-            "prompt_source": (
-                "convlm_quiltnet_attribute_embeddings"
-                if cohort_cfg.get("convlm_attribute_embeddings")
-                else "convlm_runtime_quiltnet_attribute_prompts"),
+            "prompt_provenance": prompt_provenance,
+            "prompt_source": prompt_source,
         })
     elif method == "composite":
         cfg.update({
@@ -1821,20 +1984,70 @@ def _nonempty_strings(values: Any, label: str) -> list[str]:
 
 
 def _validate_focus_prompt(cfg: dict[str, Any]) -> None:
-    path = _require_asset(cfg.get("text_prompt_path"), "FOCUS prompt CSV")
-    frame = pd.read_csv(path)
-    required = {"class_name", "low_res_prompt", "high_res_prompt"}
-    if not required.issubset(frame.columns):
-        raise ValueError(f"{path}: FOCUS prompt columns must include {sorted(required)}")
-    labels = list(cfg["label_dict"])
-    if frame["class_name"].astype(str).tolist() != labels:
+    path = _require_asset(
+        cfg.get("text_prompt_path"), "FOCUS native prompt CSV")
+    if cfg.get("focus_prompt_format") != FOCUS_PROMPT_FORMAT:
         raise ValueError(
-            f"{path}: FOCUS class order must be {labels}, got "
-            f"{frame['class_name'].astype(str).tolist()}")
-    for column in ("low_res_prompt", "high_res_prompt"):
-        values = frame[column].astype(str).str.strip()
-        if values.eq("").any() or values.str.lower().eq("nan").any():
-            raise ValueError(f"{path}: FOCUS {column} contains an empty prompt")
+            "FOCUS focus_prompt_format must be " + FOCUS_PROMPT_FORMAT)
+    for key in (
+        "focus_prompt_file_classnames",
+        "focus_prompt_file_sha256",
+        "focus_prompt_bank_sha256",
+        "prompt_provenance",
+        "prompt_source",
+    ):
+        if not cfg.get(key):
+            raise ValueError(f"FOCUS config requires {key}")
+    bank = load_focus_prompt_bank(
+        path,
+        class_names=list(cfg["label_dict"]),
+        file_class_names=cfg.get("focus_prompt_file_classnames"),
+        expected_provenance=cfg.get("prompt_provenance"),
+        expected_file_sha256=cfg.get("focus_prompt_file_sha256"),
+        expected_ordered_prompt_bank_sha256=cfg.get(
+            "focus_prompt_bank_sha256"),
+    )
+    expected_source = {
+        "upstream": "focus_upstream_native_two_scale_csv",
+        "derived": "focus_derived_native_two_scale_csv",
+        "generated": "focus_generated_native_two_scale_csv",
+    }[bank.provenance]
+    if cfg.get("prompt_source") != expected_source:
+        raise ValueError("FOCUS prompt_source does not match prompt provenance")
+
+
+def _validate_vila_prompt(cfg: dict[str, Any]) -> None:
+    path = _require_asset(
+        cfg.get("text_prompt_path"), "ViLa-MIL native prompt CSV")
+    if cfg.get("vila_prompt_format") != VILA_PROMPT_FORMAT:
+        raise ValueError(
+            "ViLa-MIL vila_prompt_format must be " + VILA_PROMPT_FORMAT)
+    for key in (
+        "vila_prompt_file_classnames",
+        "vila_prompt_file_sha256",
+        "vila_prompt_bank_sha256",
+        "prompt_provenance",
+        "prompt_source",
+    ):
+        if not cfg.get(key):
+            raise ValueError(f"ViLa-MIL config requires {key}")
+    bank = load_vila_prompt_bank(
+        path,
+        class_names=list(cfg["label_dict"]),
+        file_class_names=cfg.get("vila_prompt_file_classnames"),
+        expected_provenance=cfg.get("prompt_provenance"),
+        expected_file_sha256=cfg.get("vila_prompt_file_sha256"),
+        expected_ordered_prompt_bank_sha256=cfg.get(
+            "vila_prompt_bank_sha256"),
+    )
+    expected_source = {
+        "upstream": "vila_mil_upstream_native_two_scale_csv",
+        "derived": "vila_mil_derived_native_two_scale_csv",
+        "generated": "vila_mil_generated_native_two_scale_csv",
+    }[bank.provenance]
+    if cfg.get("prompt_source") != expected_source:
+        raise ValueError(
+            "ViLa-MIL prompt_source does not match prompt provenance")
 
 
 def _validate_maple_prompt(cfg: dict[str, Any]) -> None:
@@ -1888,8 +2101,11 @@ def _validate_muse_prompts(cfg: dict[str, Any]) -> None:
             f"MUSE prompt_csvs order must be {classnames}, got {list(prompt_csvs)}")
     for classname, value in prompt_csvs.items():
         path = _require_asset(value, f"MUSE prompt CSV for {classname}")
-        from methods.muse.adapter import _csv_descriptions
-        _csv_descriptions(path)
+        # MUSE's strict CSV parser lives in the shared prompt library. The
+        # runtime adapter deliberately no longer exposes its former private
+        # helper, so generation and training must validate through one API.
+        from common.prompts import load_muse_prompt_csv
+        load_muse_prompt_csv(path)
 
 
 def _validate_muse_feature_config(cfg: dict[str, Any]) -> None:
@@ -2019,36 +2235,36 @@ def _validate_cod_prompt(cfg: dict[str, Any]) -> None:
 
 
 def _validate_top_prompts(cfg: dict[str, Any]) -> None:
-    """Check TOP's prototype bank and, when declared, its bag prompts.
+    """Validate the same hash- and role-bound condition used at runtime."""
+    from common.prompts import TOP_PROMPT_FORMAT
 
-    TOP scores each instance prototype against the bag class prompts, so the
-    prototype bank sizes the instance branch while the class list sizes the bag
-    branch. They are independent, and a bank that silently collapses to the
-    class count reproduces the defect this validation exists to prevent.
-    """
-    path = _require_asset(cfg.get("instance_prompt_path"),
-                          "TOP instance prototype bank")
-    with path.open(encoding="utf-8") as handle:
-        payload = json.load(handle)
-    prototypes = payload["prototypes"] if isinstance(payload, dict) else payload
-    if len(prototypes) < 2:
-        raise ValueError(f"{path}: TOP needs at least two instance prototypes")
-    missing = [item for item in prototypes if "prompt" not in item]
-    if missing:
-        raise ValueError(f"{path}: every prototype needs a 'prompt' field")
-
-    bag_path = cfg.get("bag_prompt_path")
-    if not bag_path:
-        return
-    resolved = _require_asset(bag_path, "TOP bag prompt file")
-    with resolved.open(encoding="utf-8") as handle:
-        prompts = json.load(handle)["prompts"]
-    labels = list(cfg["label_dict"])
-    absent = [label for label in labels if label not in prompts]
-    if absent:
+    if cfg.get("top_prompt_format") != TOP_PROMPT_FORMAT:
         raise ValueError(
-            f"{resolved}: TOP bag prompts missing {absent}; "
-            f"file provides {sorted(prompts)}")
+            f"TOP top_prompt_format must be {TOP_PROMPT_FORMAT!r}")
+    condition = load_top_prompt_condition(
+        _require_asset(cfg.get("instance_prompt_path"),
+                       "TOP instance prototype bank"),
+        label_dict=cfg["label_dict"], classnames=cfg["classnames"],
+        bag_path=(
+            _require_asset(cfg["bag_prompt_path"], "TOP bag prompt file")
+            if cfg.get("bag_prompt_path") else None),
+        expected_instance_file_sha256=cfg.get("top_instance_file_sha256"),
+        expected_instance_prompt_bank_sha256=cfg.get(
+            "top_instance_prompt_bank_sha256"),
+        expected_instance_provenance=cfg.get("top_instance_provenance"),
+        expected_bag_file_sha256=cfg.get("top_bag_file_sha256"),
+        expected_bag_prompt_bank_sha256=cfg.get(
+            "top_bag_prompt_bank_sha256"),
+        expected_bag_provenance=cfg.get("top_bag_provenance"),
+        expected_bag_usage=cfg.get("top_bag_usage"),
+        expected_condition_provenance=cfg.get("prompt_provenance"),
+        expected_condition_source=cfg.get("prompt_source"),
+    )
+    required = condition.config_values()
+    missing = [key for key in required if cfg.get(key) != required[key]]
+    if missing:
+        raise ValueError(
+            f"TOP prompt identity fields do not match active banks: {missing}")
 
 
 def _validate_slip_prompt(cfg: dict[str, Any]) -> None:
@@ -2071,16 +2287,49 @@ def _validate_slip_prompt(cfg: dict[str, Any]) -> None:
 
 
 def _validate_sldpc_prompt(cfg: dict[str, Any]) -> None:
-    path = _require_asset(
-        cfg.get("prompt_reference_yaml"), "SLDPC prompt reference YAML")
-    payload = load_yaml_file(path)
-    prompts = payload.get("prompts") if isinstance(payload, dict) else None
-    if (not isinstance(prompts, dict)
-            or set(prompts) != set(cfg["label_dict"])):
+    if cfg.get("prompt_reference_yaml"):
         raise ValueError(
-            f"{path}: SLDPC prompt keys must be {list(cfg['label_dict'])}")
-    for label, values in prompts.items():
-        _nonempty_strings(values, f"{path}:{label}")
+            "SLDPC prompt_reference_yaml is not a Stage 1/2 input; use "
+            "prompt_classnames and a separately labeled zero-shot reference")
+    prompt_classnames = sldpc_prompt_classnames(
+        cfg.get("prompt_classnames", ()), n_classes=cfg["n_classes"])
+    if cfg.get("prompt_classname_sha256") != \
+            sldpc_prompt_classname_sha256(prompt_classnames):
+        raise ValueError(
+            "SLDPC prompt_classname_sha256 does not match active tokens")
+    origin = cfg.get("prompt_provenance")
+    expected_source = {
+        "upstream": "sldpc_upstream_class_tokens",
+        "derived": "sldpc_derived_class_tokens",
+        "generated": "sldpc_generated_class_tokens",
+    }.get(origin)
+    if expected_source is None or cfg.get("prompt_source") != expected_source:
+        raise ValueError(
+            "SLDPC prompt provenance/source does not describe active tokens")
+
+    value = cfg.get("zero_shot_prompt_path")
+    if not value:
+        return
+    path = _require_asset(value, "SLDPC zero-shot prompt reference")
+    class_names = [name for name, _ in sorted(
+        cfg["label_dict"].items(), key=lambda item: item[1])]
+    bank = load_sldpc_zero_shot_prompt_bank(
+        path,
+        class_names=class_names,
+        expected_file_sha256=cfg.get("zero_shot_prompt_sha256"),
+        expected_ordered_prompt_sha256=cfg.get(
+            "zero_shot_prompt_bank_sha256"),
+    )
+    if cfg.get("zero_shot_prompt_provenance") != bank.provenance:
+        raise ValueError(
+            "SLDPC zero-shot prompt provenance contradicts its reference")
+    if cfg.get("zero_shot_templates_sha256") != \
+            sldpc_zero_shot_templates_sha256():
+        raise ValueError("SLDPC zero-shot template digest is wrong")
+    if cfg.get("zero_shot_prompt_usage") != "reference_only_unwired":
+        raise ValueError(
+            "SLDPC zero-shot bank must remain a separately labeled unwired "
+            "reference in unified Stage 1/2 configs")
 
 
 def _validate_slide_embedding_source_config(cfg: dict[str, Any]) -> None:
@@ -2153,42 +2402,73 @@ def _validate_wsi_five_assets(cfg: dict[str, Any]) -> None:
     mode = cfg.get("training_mode", "simplified_classnames")
     if mode not in {"upstream_answer_bank", "simplified_classnames"}:
         raise ValueError("WSI-FiVE training_mode is invalid")
-    questions = _require_asset(
-        cfg.get("clinical_questions"), "WSI-FiVE clinical questions")
-    with questions.open(encoding="utf-8") as handle:
-        question_payload = json.load(handle)
-    question_values = (question_payload.get("questions")
-                       if isinstance(question_payload, dict)
-                       else question_payload)
-    if (not isinstance(question_values, list) or len(question_values) != 6
-            or any(not isinstance(value, str) or not value.strip()
-                   for value in question_values)):
+    if cfg.get("wsi_prompt_format") != WSI_FIVE_PROMPT_FORMAT:
         raise ValueError(
-            f"{questions}: WSI-FiVE requires exactly six non-empty questions")
+            "WSI-FiVE wsi_prompt_format does not match the runtime contract")
+    question_keys = (
+        "clinical_questions", "wsi_question_file_sha256",
+        "wsi_question_bank_sha256", "wsi_question_provenance",
+        "prompt_provenance", "prompt_source",
+    )
+    missing = [key for key in question_keys if not cfg.get(key)]
+    if missing:
+        raise ValueError(f"WSI-FiVE config is missing {missing}")
+    questions = _require_asset(
+        cfg["clinical_questions"], "WSI-FiVE clinical questions")
+    question_bank = load_wsi_five_question_bank(
+        questions,
+        expected_file_sha256=cfg["wsi_question_file_sha256"],
+        expected_prompt_bank_sha256=cfg["wsi_question_bank_sha256"],
+        expected_provenance=cfg["wsi_question_provenance"],
+    )
     if mode == "upstream_answer_bank":
-        report_path = _require_asset(cfg.get("report_csv"), "WSI-FiVE report CSV")
-        columns = set(pd.read_csv(report_path, nrows=1).columns)
-        if not columns.intersection(
-                {"slide_id", "case_id", "patient_id", "patient_filename"}):
-            raise ValueError(f"{report_path}: missing a report identifier column")
-        required_answers = {"answer", *(
-            f"q{index}" for index in range(1, 7))}
-        missing = sorted(required_answers - columns)
+        native_keys = (
+            "report_csv", "wsi_answer_file_sha256",
+            "wsi_answer_bank_sha256", "wsi_answer_provenance",
+            "evaluation_prompt_path", "wsi_evaluation_file_sha256",
+            "wsi_evaluation_bank_sha256", "wsi_evaluation_provenance",
+        )
+        missing = [key for key in native_keys if not cfg.get(key)]
         if missing:
-            raise ValueError(
-                f"{report_path}: native WSI-FiVE answer bank is missing "
-                f"columns {missing}")
+            raise ValueError(f"WSI-FiVE native config is missing {missing}")
+        report_path = _require_asset(
+            cfg["report_csv"], "WSI-FiVE report CSV")
+        answer_bank = load_wsi_five_answer_bank(
+            report_path,
+            expected_file_sha256=cfg["wsi_answer_file_sha256"],
+            expected_answer_bank_sha256=cfg["wsi_answer_bank_sha256"],
+            expected_provenance=cfg["wsi_answer_provenance"],
+        )
         evaluation = _require_asset(
-            cfg.get("evaluation_prompt_path"),
+            cfg["evaluation_prompt_path"],
             "WSI-FiVE evaluation prompt bank")
-        from methods.wsi_five.prompts import load_evaluation_prompts
-        load_evaluation_prompts(evaluation, cfg["label_dict"])
+        evaluation_bank = load_wsi_five_evaluation_bank(
+            evaluation, cfg["label_dict"],
+            expected_file_sha256=cfg["wsi_evaluation_file_sha256"],
+            expected_prompt_bank_sha256=cfg["wsi_evaluation_bank_sha256"],
+            expected_provenance=cfg["wsi_evaluation_provenance"],
+        )
         if cfg.get("require_report") is not True:
             raise ValueError(
                 "WSI-FiVE native mode requires training answer coverage")
+        expected_provenance = (
+            f"{question_bank.provenance}_questions_with_"
+            f"{answer_bank.provenance}_answer_and_"
+            f"{evaluation_bank.provenance}_evaluation_banks")
+        expected_source = "wsi_five_derived_upstream_text_assets"
     elif cfg.get("require_report", False):
         raise ValueError(
             "WSI-FiVE simplified mode must not require privileged report text")
+    else:
+        expected_provenance = (
+            f"{question_bank.provenance}_questions_with_classname_comparison")
+        expected_source = "wsi_five_simplified_classname_baseline"
+    if cfg["prompt_provenance"] != expected_provenance:
+        raise ValueError(
+            "WSI-FiVE prompt_provenance does not match active text roles")
+    if cfg["prompt_source"] != expected_source:
+        raise ValueError(
+            "WSI-FiVE prompt_source does not match active text roles")
     _require_asset(
         cfg.get("clinicalbert_weights"), "WSI-FiVE ClinicalBERT weights")
 
@@ -2197,49 +2477,62 @@ def _validate_convlm_assets(cfg: dict[str, Any]) -> None:
     if not cfg.get("attribute_embeddings"):
         path = _require_asset(
             cfg.get("attribute_prompt_path"), "ConVLM attribute prompt JSON")
-        with path.open(encoding="utf-8") as handle:
-            payload = json.load(handle)
-        # Keys beginning with an underscore are metadata (provenance, notes),
-        # not classes; comparing them against classnames would reject a marked
-        # asset.
-        payload = {k: v for k, v in payload.items()
-                   if not str(k).startswith("_")}
-        if list(payload) != list(cfg["classnames"]):
+        bank = load_convlm_prompt_bank(
+            path,
+            classnames=cfg["classnames"],
+            expected_file_sha256=cfg.get("attribute_prompt_sha256"),
+            expected_prompt_bank_sha256=cfg.get(
+                "attribute_prompt_bank_sha256"),
+        )
+        if cfg.get("prompt_provenance") != bank.provenance:
             raise ValueError(
-                f"{path}: ConVLM prompt classes must be {cfg['classnames']}")
-        for classname, prompts in payload.items():
-            _nonempty_strings(prompts, f"{path}:{classname}")
+                "ConVLM prompt_provenance contradicts the active text bank")
         encoder = cfg.get("attribute_encoder")
         if not isinstance(encoder, dict):
             raise ValueError(
                 "ConVLM runtime prompts require attribute_encoder metadata")
-        required = {"model_name", "weights", "feature_space_id"}
+        required = {
+            "model_name", "weights", "feature_space_id", "checkpoint_sha256",
+        }
         missing = required.difference(encoder)
         if missing:
             raise ValueError(
                 f"ConVLM attribute_encoder missing {sorted(missing)}")
-        _require_asset(encoder["weights"], "ConVLM attribute encoder weights")
+        weights = _require_asset(
+            encoder["weights"], "ConVLM attribute encoder weights")
+        if not weights.is_file():
+            raise ValueError(
+                "ConVLM attribute encoder weights must be one checkpoint file")
         if encoder["feature_space_id"] != cfg.get("attribute_feature_space_id"):
             raise ValueError(
                 "ConVLM attribute encoder feature space does not match config")
+        digest = encoder["checkpoint_sha256"]
+        if (not isinstance(digest, str) or len(digest) != 64
+                or any(char not in "0123456789abcdefABCDEF" for char in digest)):
+            raise ValueError(
+                "ConVLM attribute_encoder.checkpoint_sha256 must be a "
+                "64-character digest")
+        if file_sha256(weights).lower() != digest.lower():
+            raise ValueError(
+                "ConVLM attribute_encoder.checkpoint_sha256 does not match "
+                "the configured weights")
         return
     path = _require_asset(
         cfg.get("attribute_embeddings"), "ConVLM attribute embeddings")
-    payload = torch.load(path, map_location="cpu", weights_only=True)
-    feature_space = None
-    classnames = None
-    if isinstance(payload, dict):
-        feature_space = payload.get("feature_space_id")
-        classnames = payload.get("classnames")
-        payload = payload.get("embeddings", payload.get("attributes"))
-    if not torch.is_tensor(payload) or payload.ndim != 2:
-        raise ValueError(f"{path}: ConVLM attributes must be rank 2")
-    if payload.shape[0] != cfg["n_classes"]:
-        raise ValueError(f"{path}: ConVLM attribute row count is wrong")
-    if feature_space != cfg.get("attribute_feature_space_id"):
-        raise ValueError(f"{path}: ConVLM attribute feature space is wrong")
-    if classnames is not None and list(classnames) != list(cfg["classnames"]):
-        raise ValueError(f"{path}: ConVLM attribute class order is wrong")
+    bank = load_convlm_attribute_embeddings(
+        path,
+        classnames=cfg["classnames"],
+        feature_space_id=cfg.get("attribute_feature_space_id"),
+        expected_prompt_bank_sha256=cfg.get(
+            "attribute_prompt_bank_sha256"),
+    )
+    if cfg.get("prompt_provenance") != bank.prompt_provenance:
+        raise ValueError(
+            "ConVLM prompt_provenance contradicts the encoded attribute bank")
+    if cfg.get("prompt_source") != "convlm_precomputed_attribute_embeddings":
+        raise ValueError(
+            "ConVLM encoded attributes require prompt_source="
+            "convlm_precomputed_attribute_embeddings")
 
 
 def validate_generated_config_assets(cfg: dict[str, Any]) -> None:
@@ -2316,7 +2609,7 @@ def validate_generated_config_assets(cfg: dict[str, Any]) -> None:
                 "simplified_slide_ce", "upstream_patch_ssl"}:
             raise ValueError("PathPT training_mode is invalid")
     elif method == "vila_mil":
-        _validate_focus_prompt(cfg)
+        _validate_vila_prompt(cfg)
     elif method == "cod_mil":
         _validate_cod_prompt(cfg)
     elif method == "top":
@@ -2421,7 +2714,8 @@ def generate_configs(protocol: dict[str, Any], output_dir: Path) -> None:
             for binding, column in zip(bindings.values(), required_columns):
                 missing_files += int((~manifest[column].map(
                     lambda value, source_cfg=binding["config"]:
-                    _source_present(source_cfg, Path(value)))).sum())
+                    _source_present(
+                        source_cfg, _manifest_path(value)))).sum())
             for shot in sorted(int(value) for value in protocol["shots"]):
                 split_root = output_dir / "splits" / cohort / f"{shot}shot"
                 split_ready = all(
@@ -2529,7 +2823,8 @@ def generate_configs(protocol: dict[str, Any], output_dir: Path) -> None:
                         or cfg.get("description_prompt_path")
                         or ";".join(cfg.get("prompt_csvs", {}).values())
                         or cfg.get("tissue_classnames_path")
-                        or cfg.get("prompt_reference_yaml")
+                        or (";".join(cfg.get("prompt_classnames", []))
+                            if cfg.get("prompt_classnames") else None)
                         or cfg.get("attribute_embeddings")
                         or cfg.get("attribute_prompt_path")
                         or cfg.get("report_csv")
@@ -2570,6 +2865,11 @@ def generate_configs(protocol: dict[str, Any], output_dir: Path) -> None:
             output_dir / "skipped_configs.csv", index=False)
         print(f"  {len(skipped_configs)} configs skipped; see "
               f"{output_dir / 'skipped_configs.csv'}")
+    else:
+        # A skip report describes this exact generation pass. Keeping an old
+        # report after its missing prompt/config was repaired falsely presents
+        # the current matrix as incomplete.
+        (output_dir / "skipped_configs.csv").unlink(missing_ok=True)
 
 
 def _assert_disjoint(frames: dict[str, pd.DataFrame], cohort: str, fold: int) -> None:
@@ -2724,7 +3024,8 @@ def validate(protocol: dict[str, Any], output_dir: Path) -> dict[str, Any]:
             column = _feature_column(feature_source)
             missing = manifest.loc[
                 ~manifest[column].map(
-                    lambda value: _source_present(feature_cfg, Path(value))),
+                    lambda value: _source_present(
+                        feature_cfg, _manifest_path(value))),
                 column,
             ]
             if not missing.empty:
@@ -2740,12 +3041,13 @@ def validate(protocol: dict[str, Any], output_dir: Path) -> dict[str, Any]:
                 )
             available_samples = manifest.loc[
                 manifest[column].map(
-                    lambda value: _source_present(feature_cfg, Path(value))),
+                    lambda value: _source_present(
+                        feature_cfg, _manifest_path(value))),
                 column,
             ]
             kind = _input_kind(feature_cfg)
             if not available_samples.empty and kind != "raw_tile_directory":
-                sample_path = Path(available_samples.iloc[0])
+                sample_path = _manifest_path(available_samples.iloc[0])
                 shape = _feature_tensor_shape(
                     sample_path, feature_cfg.get("feature_key", "features"))
                 expected_dim = int(feature_cfg["feature_dim"])

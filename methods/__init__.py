@@ -5,10 +5,11 @@ The unified `train.py` calls `get_method(name)(cfg)` to obtain a
 it on the command line.
 """
 from __future__ import annotations
-from typing import Type
+from typing import TYPE_CHECKING, Type
 
-from .base import BaseMethod
-from common.backbones import MethodBackboneContract
+if TYPE_CHECKING:
+    from .base import BaseMethod
+    from common.backbones import MethodBackboneContract
 
 
 _CANONICAL_METHODS = (
@@ -41,7 +42,7 @@ def canonical_method_name(name: str) -> str:
         ) from None
 
 
-def get_method(name: str) -> Type[BaseMethod]:
+def get_method(name: str) -> Type["BaseMethod"]:
     """Resolve a method name or supported alias to its adapter class.
 
     Imports are intentionally lazy so registry inspection does not initialize
@@ -118,7 +119,7 @@ def list_methods() -> list[str]:
     return list(_CANONICAL_METHODS)
 
 
-def get_backbone_contracts() -> dict[str, MethodBackboneContract]:
+def get_backbone_contracts() -> dict[str, "MethodBackboneContract"]:
     """Return every adapter's declared encoder contract, keyed by method.
 
     Returns:

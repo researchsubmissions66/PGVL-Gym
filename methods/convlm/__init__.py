@@ -1,1 +1,1 @@
-"""ConVLM patch-level zero-shot classification integration."""
+"""Local feature-bag reconstruction of ConVLM classification."""

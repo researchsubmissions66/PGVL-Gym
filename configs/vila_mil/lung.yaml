@@ -1,5 +1,5 @@
 # ViLa-MIL / LUNG / 16-shot / 5-fold
-# Source: README of Jiangbo-Shi/ViLa-MIL.
+# Prompt source: exact Jiangbo-Shi/ViLa-MIL release at commit 68a11cf.
 
 method: "vila_mil"
 backbone: "clip-rn50"
@@ -31,5 +31,11 @@ dataset_csv:    "splits/TCGA_Lung/dataset.csv"
 data_folder_s:  "path/to/TCGA_Lung/feats_5x"
 data_folder_l:  "path/to/TCGA_Lung/feats_20x"
 split_dir:      "splits/task_tcga_lung_subtyping_16shots_5folds"
-text_prompt_path: "text_prompts/TCGA_Lung_two_scale_text_prompt.csv"
+text_prompt_path: "text_prompts/vila_mil/TCGA_Lung_two_scale_text_prompt.csv"
+vila_prompt_format: "headerless_low_then_high"
+vila_prompt_file_classnames: [LUAD, LUSC]
+vila_prompt_file_sha256: "4fcea3a2016b2b0c600421da19a9b40441faef5a6b491d40ed80aa80e58319f1"
+vila_prompt_bank_sha256: "61c001097a14a153dd8723cf5d85b41b8b2b0f61bb09b84b218280f1818eedfa"
+prompt_provenance: "upstream"
+prompt_source: "vila_mil_upstream_native_two_scale_csv"
 results_dir:    "results/vila_mil_lung16"

@@ -11,6 +11,7 @@ import torch.nn.functional as F
 from methods.base import BaseMethod
 from common.backbones import (
     BackboneCapability as Cap, FeatureLevel, MethodBackboneContract, SwapPolicy)
+from common.prompts import sldpc_prompt_classnames
 
 
 class SLDPCMethod(BaseMethod):
@@ -104,8 +105,13 @@ class SLDPCMethod(BaseMethod):
                 "SLDPC slide_projection.mode must be native, linear, or mlp")
 
         from .model import PromptedSlideTextModel, SLDPCPromptLearner
+        prompt_classnames = sldpc_prompt_classnames(
+            self.cfg.get("prompt_classnames", ()),
+            n_classes=self.cfg["n_classes"],
+        )
         prompt = SLDPCPromptLearner(
-            self.cfg["classnames"], encoder.text, n_ctx=self.cfg.get("n_ctx", 8),
+            list(prompt_classnames), encoder.text,
+            n_ctx=self.cfg.get("n_ctx", 8),
             ctx_init=self.cfg.get("ctx_init"), csc=self.cfg.get("csc", False),
             class_token_position=self.cfg.get("class_token_position", "end"),
             omega=self.cfg.get("omega", 0.8)).to(self.device)

@@ -20,8 +20,10 @@ if [[ -f "${REPO}/.env" ]]; then
     set +a
 fi
 
-# Set PGVL_CONDA_ENV to the environment built from environment.yml once it
-# exists; scripts/pgvl_job.sh activates it on the compute node.
+# PGVL_CONDA_ENV names the environment scripts/pgvl_job.sh activates on the
+# compute node. Dry-run planning is deliberately dependency-light and works
+# without it; real submission refuses an empty value instead of dispatching
+# jobs into the incomplete site PyTorch module.
 export PGVL_CONDA_ENV="${PGVL_CONDA_ENV:-}"
 
 exec python3 "${REPO}/scripts/run_benchmark.py" "$@"

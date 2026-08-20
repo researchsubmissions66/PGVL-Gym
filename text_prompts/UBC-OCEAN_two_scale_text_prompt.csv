@@ -1,6 +1,0 @@
-class,low_res_prompt,high_res_prompt
-HGSC,a low resolution image of high grade serous carcinoma,a high resolution image of high grade serous carcinoma
-LGSC,a low resolution image of low grade serous carcinoma,a high resolution image of low grade serous carcinoma
-EC,a low resolution image of endometrioid carcinoma,a high resolution image of endometrioid carcinoma
-CC,a low resolution image of clear cell carcinoma,a high resolution image of clear cell carcinoma
-MC,a low resolution image of mucinous carcinoma,a high resolution image of mucinous carcinoma

@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
-"""Generate optional TCGA attribute tensors and verify CoD-MIL banks.
+"""Generate audited ConVLM attributes and verify CoD-MIL prompt banks.
 
 CoD-MIL prompt features are intentionally built by
 ``build_cod_mil_prompt_features.py`` from a declared source CSV.  This legacy
 multi-asset utility no longer invents background prompts or silently preserves
-an unverifiable tensor.
+an unverifiable tensor. ConVLM attributes are encoded from the selected,
+provenance-checked JSON and saved with their prompt and encoder bindings.
 """
 from __future__ import annotations
 
@@ -43,7 +44,6 @@ def parse_args() -> argparse.Namespace:
 def main() -> None:
     args = parse_args()
     try:
-        import pandas as pd
         import torch
         import torch.nn.functional as F
         import yaml
@@ -94,25 +94,55 @@ def main() -> None:
 
         if not cfg.get("convlm_attribute_embeddings"):
             continue
-        focus = pd.read_csv(_repo_path(cfg["focus_prompt_csv"]))
+        from common.prompts import (
+            ATTRIBUTE_EMBEDDING_SCHEMA,
+            file_sha256,
+            load_convlm_prompt_bank,
+        )
+
+        declared_prompts = cfg.get("prompts", {})
+        prompt_value = (
+            declared_prompts.get("convlm")
+            if isinstance(declared_prompts, dict) else None)
+        prompt_value = prompt_value or cfg.get("convlm_attribute_prompt_json")
+        if not prompt_value:
+            raise ValueError(
+                f"{cohort}: ConVLM attribute generation requires an audited "
+                "prompts.convlm or convlm_attribute_prompt_json bank")
+        prompt_path = _repo_path(prompt_value)
+        prompt_bank = load_convlm_prompt_bank(
+            prompt_path, classnames=cfg["classnames"])
+        attribute_space = "hf:wisdomik/QuiltNet-B-32"
+        declared_space = cfg.get("convlm_attribute_feature_space_id")
+        if declared_space is not None and declared_space != attribute_space:
+            raise ValueError(
+                f"{cohort}: --quilt-weights produces {attribute_space!r}, "
+                f"not declared space {declared_space!r}")
         quilt_rows = []
-        for index, classname in enumerate(cfg["classnames"]):
-            descriptions = [
-                f"a histopathology image of {classname}",
-                str(focus.iloc[index]["low_res_prompt"]),
-                str(focus.iloc[index]["high_res_prompt"]),
-            ]
-            encoded = _encode(quilt, quilt_tokenizer, descriptions)
+        for descriptions in prompt_bank.prompts:
+            encoded = _encode(quilt, quilt_tokenizer, list(descriptions))
             quilt_rows.append(F.normalize(encoded.mean(dim=0), dim=0))
         attributes = torch.stack(quilt_rows).cpu()
         attribute_output = _repo_path(cfg["convlm_attribute_embeddings"])
         attribute_output.parent.mkdir(parents=True, exist_ok=True)
         torch.save({
+            "schema": ATTRIBUTE_EMBEDDING_SCHEMA,
             "embeddings": attributes,
-            "feature_space_id": "hf:wisdomik/QuiltNet-B-32",
+            "feature_space_id": attribute_space,
             "classnames": list(cfg["classnames"]),
+            "prompt_bank_sha256": prompt_bank.prompt_bank_sha256,
+            "source_prompt_file_sha256": prompt_bank.file_sha256,
+            "prompt_provenance": prompt_bank.provenance,
+            "encoder": {
+                "model_name": "ViT-B-32",
+                "weights": str(args.quilt_weights.expanduser().resolve()),
+                "feature_space_id": attribute_space,
+                "checkpoint_sha256": file_sha256(args.quilt_weights),
+            },
         }, attribute_output)
-        print(f"wrote {attribute_output}: {tuple(attributes.shape)}")
+        print(
+            f"wrote {attribute_output}: {tuple(attributes.shape)}, "
+            f"source={prompt_path}, provenance={prompt_bank.provenance}")
 
 
 if __name__ == "__main__":

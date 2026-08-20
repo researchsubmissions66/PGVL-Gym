@@ -7,15 +7,19 @@ import numpy as np
 import pandas as pd
 import pytest
 import torch
+import yaml
 
 from scripts.tcga_benchmark import (
     _experiment_supports_task,
     _feature_path,
     _feature_root,
     _load_task_metadata,
+    _manifest_path,
+    _prompt_provenance,
     _resolve_feature_bindings,
     _validate_feature_roles,
     _validate_mscpt_prompt,
+    _validate_muse_prompts,
     _validate_protocol_registry,
     _validate_protocol_schedule,
     _validate_slide_embedding_source_config,
@@ -26,7 +30,12 @@ from scripts.tcga_benchmark import (
     build_splits,
     validate,
 )
-from common.prompts import compile_task_prompt_assets
+from common.prompts import (
+    compile_task_prompt_assets,
+    load_convlm_prompt_bank,
+    load_focus_prompt_bank,
+    load_vila_prompt_bank,
+)
 from common.run_state import run_identity
 
 
@@ -146,6 +155,15 @@ def test_shared_pickle_slide_source_resolves_to_the_file(tmp_path: Path):
 
     assert _feature_path(source, "slide-a", "toy") == store
     assert _feature_root(source, "toy") == str(store)
+
+
+def test_portable_manifest_paths_are_expanded_before_readiness_checks(
+    tmp_path: Path, monkeypatch,
+):
+    monkeypatch.setenv("PGVL_STORAGE_ROOT", str(tmp_path))
+
+    assert _manifest_path("${PGVL_STORAGE_ROOT}/slide.h5") == \
+        tmp_path / "slide.h5"
 
 
 def test_shared_pickle_slide_source_rejects_per_slide_template(tmp_path: Path):
@@ -378,12 +396,22 @@ def test_canonical_prompt_profile_compiles_every_method_schema(tmp_path: Path):
 
     assert set(assets).issuperset({
         "focus", "vila_mil", "muse", "mscpt", "maple", "cod_mil",
-        "slip", "sldpc", "convlm",
+        "slip", "sldpc_zero_shot", "convlm",
     })
     assert "wsi_five_default_report" not in assets
     assert assets["provenance"] == "generated"
     assert assets["source_profile_provenance"] == "user_defined"
-    assert pd.read_csv(assets["focus"])["class_name"].tolist() == ["A", "B"]
+    focus = load_focus_prompt_bank(
+        assets["focus"], class_names=["A", "B"],
+        file_class_names=["A", "B"],
+        record={"provenance": "generated"})
+    assert focus.prompts == ("A low 0", "B low 0", "A high 0", "B high 0")
+    assert assets["vila_mil"] != assets["focus"]
+    vila = load_vila_prompt_bank(
+        assets["vila_mil"], class_names=["A", "B"],
+        file_class_names=["A", "B"],
+        record={"provenance": "generated"})
+    assert vila.prompts == ("A low 0", "B low 0", "A high 0", "B high 0")
     assert list(json.loads(Path(assets["cod_mil"]).read_text())) == [
         "class alpha", "class beta"]
     mscpt = json.loads(Path(assets["mscpt"]).read_text())
@@ -393,6 +421,33 @@ def test_canonical_prompt_profile_compiles_every_method_schema(tmp_path: Path):
     assert maple["_provenance"] == "generated"
     assert maple["_metadata"]["classnames"] == [
         "class alpha", "class beta"]
+    convlm = load_convlm_prompt_bank(
+        assets["convlm"], classnames=["class alpha", "class beta"])
+    assert convlm.provenance == "generated"
+    convlm_payload = json.loads(Path(assets["convlm"]).read_text())
+    assert convlm.prompt_counts == tuple(
+        convlm_payload["_metadata"]["prompt_counts_per_class"].values())
+
+
+def test_sldpc_prompt_provenance_tracks_active_tokens_not_reference_yaml():
+    cohort = {
+        "sldpc_prompt_classnames": ["IDC", "ILC"],
+        "sldpc_prompt_provenance": "derived",
+        "sldpc_zero_shot_prompt_yaml": "text_prompts/sldpc/tcga_brca.yaml",
+        "prompt_provenance": "upstream",
+    }
+
+    assert _prompt_provenance(cohort, "sldpc") == "derived"
+
+
+def test_benchmark_generator_uses_shared_muse_csv_validator(tmp_path: Path):
+    prompt = tmp_path / "class_a.csv"
+    prompt.write_text(",0\n0,a diagnostic description\n")
+
+    _validate_muse_prompts({
+        "classnames": ["class a"],
+        "prompt_csvs": {"class a": str(prompt)},
+    })
 
 
 def test_dual_feature_roles_select_resolutions_independently():
@@ -934,12 +989,16 @@ def test_wsi_five_uses_class_agnostic_context_when_reports_are_unavailable(
 def test_wsi_five_adapter_does_not_pass_report_text_into_the_model():
     from methods.wsi_five.adapter import WSIFiVEMethod
 
-    method = WSIFiVEMethod({
-        "backbone": "wsi-five-vit", "feature_dim": 512,
+    cfg = yaml.safe_load((
+        Path(__file__).resolve().parents[1]
+        / "configs" / "wsi_five" / "rcc.yaml").read_text())
+    cfg.update({
+        "feature_dim": 512,
         "n_classes": 2, "training_mode": "simplified_classnames",
         "classnames": ["class A", "class B"],
         "label_dict": {"A": 0, "B": 1},
-    }, device="cpu")
+    })
+    method = WSIFiVEMethod(cfg, device="cpu")
 
     class Capture(torch.nn.Module):
         def __init__(self):

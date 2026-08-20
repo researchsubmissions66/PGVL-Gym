@@ -73,7 +73,11 @@ cohorts:
     muse_prompt_csvs:
     - text_prompts/muse/tcga_nsclc/generated_new_0.csv
     - text_prompts/muse/tcga_nsclc/generated_new_1.csv
+    # Byte-exact native FOCUS TCGA-Lung release bank.
     focus_prompt_csv: text_prompts/focus/TCGA_NSCLC_two_scale_text_prompt.csv
+    # Byte-exact native ViLa-MIL release bank; unlike FOCUS, this is a
+    # headerless low-then-high one-column CSV.
+    vila_prompt_csv: text_prompts/vila_mil/TCGA_Lung_two_scale_text_prompt.csv
     mscpt_prompt_json: train_data/gpt/description/Lung.json
     maple_prompt_json: text_prompts/maple/LUNG_attributes.json
     cod_prompt_json: text_prompts/cod_mil/nsclc_chain_of_diagnosis.json
@@ -84,13 +88,19 @@ cohorts:
     # bronchial epithelium, keratin pearls...), so this cohort uses the
     # authors' own asset rather than an authored substitute.
     slip_tissue_json: text_prompts/slip/TCGA_prompt_bank.json
-    sldpc_prompt_yaml: text_prompts/sldpc/tcga_nsclc.yaml
+    # Stage 1/2 embeds these exact class codes, matching the released dataset
+    # config. The synonym YAML belongs only to the separate TITAN zero-shot
+    # baseline and is retained below as an unwired reference.
+    sldpc_prompt_classnames: [LUAD, LUSC]
+    sldpc_prompt_provenance: upstream
+    sldpc_zero_shot_prompt_yaml: text_prompts/sldpc/tcga_nsclc.yaml
     wsi_report_csv: text_prompts/wsi_five/nsclc_report_answers.csv
     # The authors' own question set and their GPT answers to it: the only
     # cohort where WSI-FiVE is prompt-faithful.
     wsi_five_questions_json: text_prompts/wsi_five/clinical_questions/nsclc.json
     wsi_five_evaluation_prompts: text_prompts/wsi_five/nsclc_evaluation_prompts.json
     prompts:
+      vila_mil: text_prompts/vila_mil/TCGA_Lung_two_scale_text_prompt.csv
       top_instance: text_prompts/top/instance_prototypes.json
       # Exact active bagPrompt_ctx_init literals from the released TOP TCGA
       # training script. The separate tcga_nsclc_bag_prompts.json preserves

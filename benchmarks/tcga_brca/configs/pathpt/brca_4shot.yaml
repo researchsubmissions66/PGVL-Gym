@@ -37,12 +37,14 @@ feature_dim: 512
 method: pathpt
 experiment: pathpt
 epochs: 20
-training_mode: upstream_patch_ssl
 prompt_provenance: upstream
+results_dir: ${PGVL_REPO_ROOT}/results/tcga_benchmark/pathpt/brca/4shot
+training_mode: upstream_patch_ssl
 implementation_provenance: vendored_native_objective
 upstream_fidelity: upstream
-fidelity_note: Native PathPT patch-supervision pipeline; prompt origin is recorded separately.
-results_dir: ${PGVL_REPO_ROOT}/results/tcga_benchmark/pathpt/brca/4shot
+fidelity_note: Uses training-fold prompt selection, a synthetic Normal patch class,
+  upstream PatchSSLoss, and Normal-excluding WSI voting; task prompt origin is recorded
+  separately.
 lr: 0.0001
 n_ctx: 32
 prompt_init: template

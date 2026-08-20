@@ -27,7 +27,12 @@ def _token_attr(tokenizer: Any, *names: str, default: int = 0) -> int:
 
 
 class SLDPCPromptLearner(nn.Module):
-    """Class-unified/class-specific context with SLDPC CPI and WFM."""
+    """Class-unified/class-specific context with SLDPC CPI and WFM.
+
+    ``classnames`` are the fixed class tokens inside the learned prompt, not
+    display names or the synonym lists used by TITAN's separate zero-shot
+    baseline. The adapter supplies them from ``prompt_classnames``.
+    """
 
     def __init__(self, classnames: list[str], text_encoder: Any, n_ctx: int = 8,
                  ctx_init: str | None = None, csc: bool = False,

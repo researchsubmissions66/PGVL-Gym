@@ -1,5 +1,6 @@
 # ViLa-MIL / UBC / 16-shot / 5-fold
-# Source: README of Jiangbo-Shi/ViLa-MIL.
+# ViLa-MIL publishes no UBC-OCEAN prompt bank; this uses a generated native-
+# format task extension. File order is explicit and runtime-reordered below.
 
 method: "vila_mil"
 backbone: "clip-rn50"
@@ -31,5 +32,11 @@ dataset_csv:    "splits/UBC-OCEAN/dataset.csv"
 data_folder_s:  "path/to/UBC-OCEAN/feats_5x"
 data_folder_l:  "path/to/UBC-OCEAN/feats_20x"
 split_dir:      "splits/task_UBC-OCEAN_subtyping_16shots_5folds"
-text_prompt_path: "text_prompts/UBC-OCEAN_two_scale_text_prompt.csv"
+text_prompt_path: "text_prompts/vila_mil/UBC_OCEAN_two_scale_text_prompt.csv"
+vila_prompt_format: "headerless_low_then_high"
+vila_prompt_file_classnames: [CC, EC, HGSC, LGSC, MC]
+vila_prompt_file_sha256: "f2a8e2c2ab45f0aece457029666fcce2f0a467a9c96ed7b866415ef70f9ba788"
+vila_prompt_bank_sha256: "a693ac313d96ed3dd588507cca47de413cee4dc570a22ac35ff2639d70e7b418"
+prompt_provenance: "generated"
+prompt_source: "vila_mil_generated_native_two_scale_csv"
 results_dir:    "results/vila_mil_ubc16"

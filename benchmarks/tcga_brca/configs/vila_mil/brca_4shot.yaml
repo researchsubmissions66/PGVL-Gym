@@ -42,6 +42,9 @@ experiment: vila_mil
 epochs: 200
 prompt_provenance: generated
 results_dir: ${PGVL_REPO_ROOT}/results/tcga_benchmark/vila_mil/brca/4shot
+implementation_provenance: vendored
+upstream_fidelity: upstream
+fidelity_note: Vendored ViLa-MIL architecture and objective.
 lr: 0.0001
 weight_decay: 1.0e-05
 bag_loss: ce
@@ -56,6 +59,12 @@ data_folder_s: ${PGVL_STORAGE_ROOT}/trident_features/master_benchmark/5x_224px_0
 data_folder_l: ${PGVL_STORAGE_ROOT}/trident_features/master_benchmark/20x_224px_0px_overlap/features_clip_rn50
 feature_path_column_s: feature__clip_rn50_5x
 feature_path_column_l: feature__clip_rn50_20x
-text_prompt_path: ${PGVL_REPO_ROOT}/text_prompts/focus/TCGA_BRCA_two_scale_text_prompt.csv
-prompt_source: vila_two_scale_csv
+text_prompt_path: ${PGVL_REPO_ROOT}/text_prompts/vila_mil/TCGA_BRCA_two_scale_text_prompt.csv
+vila_prompt_format: headerless_low_then_high
+vila_prompt_file_classnames:
+- IDC
+- ILC
+vila_prompt_file_sha256: a8bf0709cd4ef0fd7630c6b60bc38743ec079a1097fcb104f779a0a5ff17ded5
+vila_prompt_bank_sha256: af5c672ba5e6565bfd1402ec90e8b265810d97fd96fba719ef648c0bf7b36c70
+prompt_source: vila_mil_generated_native_two_scale_csv
 encoder_provenance: native

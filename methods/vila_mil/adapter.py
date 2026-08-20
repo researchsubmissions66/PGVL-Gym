@@ -7,53 +7,62 @@ from __future__ import annotations
 from types import SimpleNamespace
 import torch
 import torch.nn as nn
-import pandas as pd
 
 from methods.base import BaseMethod, probabilities_to_logits
 from common.backbones import (
     BackboneCapability as Cap, FeatureLevel, MethodBackboneContract, SwapPolicy)
+from common.prompts import VILA_PROMPT_FORMAT, load_vila_prompt_bank
 
 
 def _build_config(cfg):
-    text_prompt = None
-    if cfg.get("text_prompt_path"):
-        frame = pd.read_csv(cfg["text_prompt_path"])
-        required = {"class_name", "low_res_prompt", "high_res_prompt"}
-        missing = sorted(required - set(frame.columns))
-        if missing:
-            raise ValueError(
-                "ViLa-MIL prompt CSV is missing columns: "
-                + ", ".join(missing))
-        if len(frame) != int(cfg["n_classes"]):
-            raise ValueError(
-                f"ViLa-MIL prompt CSV has {len(frame)} rows for "
-                f"n_classes={cfg['n_classes']}")
-        for column in required:
-            if frame[column].isna().any() or (
-                    frame[column].astype(str).str.strip() == "").any():
-                raise ValueError(
-                    f"ViLa-MIL prompt CSV has blank values in {column}")
-        actual_order = frame["class_name"].astype(str).str.strip().tolist()
-        if len(set(actual_order)) != len(actual_order):
-            raise ValueError("ViLa-MIL prompt CSV repeats class_name values")
-        expected_orders = []
-        if isinstance(cfg.get("label_dict"), dict):
-            expected_orders.append([
-                str(label) for label, _index in sorted(
-                    cfg["label_dict"].items(), key=lambda item: item[1])])
-        if isinstance(cfg.get("classnames"), list):
-            expected_orders.append([str(value) for value in cfg["classnames"]])
-        if expected_orders and actual_order not in expected_orders:
-            raise ValueError(
-                "ViLa-MIL prompt CSV class_name order does not match "
-                "label_dict/classnames class-index order")
-        text_prompt = (frame["low_res_prompt"].astype(str).tolist() +
-                       frame["high_res_prompt"].astype(str).tolist())
+    if not cfg.get("text_prompt_path"):
+        raise ValueError("ViLa-MIL requires text_prompt_path")
+    if cfg.get("vila_prompt_format") != VILA_PROMPT_FORMAT:
+        raise ValueError(
+            "ViLa-MIL requires vila_prompt_format=" + VILA_PROMPT_FORMAT)
+    for key in (
+        "vila_prompt_file_classnames",
+        "vila_prompt_file_sha256",
+        "vila_prompt_bank_sha256",
+        "prompt_provenance",
+        "prompt_source",
+    ):
+        if not cfg.get(key):
+            raise ValueError(f"ViLa-MIL requires {key}")
+    label_dict = cfg.get("label_dict")
+    if not isinstance(label_dict, dict) or not label_dict:
+        raise ValueError("ViLa-MIL requires an ordered label_dict")
+    if (any(not isinstance(index, int) or isinstance(index, bool)
+            for index in label_dict.values())
+            or sorted(label_dict.values()) != list(range(len(label_dict)))):
+        raise ValueError(
+            "ViLa-MIL label_dict indices must be contiguous from zero")
+    labels = [
+        str(label) for label, _index in sorted(
+            label_dict.items(), key=lambda item: item[1])]
+    if int(cfg.get("n_classes", -1)) != len(labels):
+        raise ValueError("ViLa-MIL n_classes does not match label_dict")
+    bank = load_vila_prompt_bank(
+        cfg["text_prompt_path"],
+        class_names=labels,
+        file_class_names=cfg.get("vila_prompt_file_classnames"),
+        expected_provenance=cfg.get("prompt_provenance"),
+        expected_file_sha256=cfg.get("vila_prompt_file_sha256"),
+        expected_ordered_prompt_bank_sha256=cfg.get("vila_prompt_bank_sha256"),
+    )
+    expected_source = {
+        "upstream": "vila_mil_upstream_native_two_scale_csv",
+        "derived": "vila_mil_derived_native_two_scale_csv",
+        "generated": "vila_mil_generated_native_two_scale_csv",
+    }[bank.provenance]
+    if cfg["prompt_source"] != expected_source:
+        raise ValueError(
+            "ViLa-MIL prompt_source does not match prompt provenance")
     return SimpleNamespace(
         input_size=cfg.get("feature_dim", 1024),
         hidden_size=cfg.get("hidden_size", 192),
         prototype_number=cfg.get("prototype_number", 16),
-        text_prompt=text_prompt,
+        text_prompt=list(bank.prompts),
     )
 
 

@@ -5,12 +5,10 @@ import h5py
 import numpy as np
 import pytest
 import torch
-from torch import nn
 
 from common.datasets.dataset_generic import _load_feature_tensor
 from common.datasets.bag_features import BagFeaturesDataset
 from common.utils.core_utils import Accuracy_Logger
-from methods.focus.adapter import _set_trainable_scope
 from eval import (
     _checkpoint_kind,
     _validate_checkpoint_identity,
@@ -151,26 +149,6 @@ def test_results_directory_lock_rejects_concurrent_trainers(tmp_path: Path):
 
     second = _acquire_results_lock(tmp_path)
     _release_results_lock(second)
-
-
-def test_soft_context_scope_freezes_every_other_parameter():
-    class PromptLearner(nn.Module):
-        def __init__(self):
-            super().__init__()
-            self.ctx = nn.Parameter(torch.ones(2, 3))
-
-    class Model(nn.Module):
-        def __init__(self):
-            super().__init__()
-            self.prompt_learner = PromptLearner()
-            self.classifier = nn.Linear(3, 2)
-
-    model = Model()
-    _set_trainable_scope(model, "soft_context")
-
-    trainable = [name for name, value in model.named_parameters()
-                 if value.requires_grad]
-    assert trainable == ["prompt_learner.ctx"]
 
 
 def test_unified_classification_metrics_include_calibration_and_macro_scores():

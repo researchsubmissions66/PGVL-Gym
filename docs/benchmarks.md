@@ -42,6 +42,15 @@ specific run currently exists. This distinction allows future RCC or
 additional-resolution features to be registered before extraction finishes,
 without presenting those runs as executable.
 
+Feature production is asynchronous bookkeeping, not protocol generation.
+`scripts/run_benchmark.py` refreshes per-source coverage and each row's
+`missing_feature_files` before planning, using the paths already frozen in the
+manifest. It changes only feature-derived coverage/readiness cells; prompt,
+encoder, auxiliary, metadata, split, and config validity remain independent
+gates. The refresh also expands portable `${PGVL_*}` paths before checking the
+filesystem. A full `tcga_benchmark.py all` regeneration is therefore unnecessary
+when a backfill merely adds the previously expected feature files.
+
 ## Generated artifacts
 
 Each protocol directory contains:

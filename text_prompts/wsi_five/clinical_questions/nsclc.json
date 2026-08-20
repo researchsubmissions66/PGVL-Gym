@@ -1,6 +1,10 @@
 {
-  "_provenance": "upstream",
-  "_note": "Verbatim PROMPT_LIST from WSI-FiVE's released _configs/wsi/*.yaml. These are the questions the published model cross-attends to, and the answers in text_prompts/wsi_five/nsclc_report_answers.csv respond to them in this order.",
+  "_provenance": "derived",
+  "_content_provenance": "upstream",
+  "_upstream_commit": "07344c9ac6eef919fcd1440877ea796feef7445a",
+  "_source": "configs/wsi/fix_pth.yaml:PROMPT_LIST",
+  "_source_sha256": "78df5983214e59007594e09cdae061602b2e5295711ff2db3e7039e9bd77467c",
+  "_note": "Derived JSON container holding the verbatim PROMPT_LIST from WSI-FiVE. These are the questions the published model cross-attends to, and the answers in text_prompts/wsi_five/nsclc_report_answers.csv respond to them in this order.",
   "questions": [
     "What is the differentiation of the lesion? (maybe: Well-differentiated; Moderately differentiated; Poorly differentiated; Moderately to poorly differentiated; Mixed differentiation. or others.)",
     "Is there any indication of spread through air spaces around the lesion?",

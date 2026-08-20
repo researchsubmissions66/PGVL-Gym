@@ -10,7 +10,14 @@ import numpy as np
 import torch
 
 from common.preflight import preflight
-from common.prompts import load_prompt_bank_csv, prompt_feature_metadata
+from common.prompts import (
+    WSI_FIVE_PROMPT_FORMAT,
+    load_prompt_bank_csv,
+    load_wsi_five_answer_bank,
+    load_wsi_five_evaluation_bank,
+    load_wsi_five_question_bank,
+    prompt_feature_metadata,
+)
 from scripts import preflight as preflight_cli
 
 
@@ -561,7 +568,6 @@ def test_preflight_checks_method_specific_configured_assets(tmp_path: Path):
         "report_csv": str(missing / "reports.csv"),
         "attribute_embeddings": str(missing / "attributes.pt"),
         "clinicalbert_weights": str(missing / "clinicalbert"),
-        "initial_checkpoint": str(missing / "initial.pt"),
     }
 
     report = preflight(
@@ -1008,7 +1014,7 @@ def test_preflight_rejects_malformed_top_prompt_banks(tmp_path: Path):
 
     assert any("at least two instance prototypes" in item
                for item in report.problems)
-    assert any("missing task labels ['B']" in item
+    assert any("prompt order must match classifier order" in item
                for item in report.problems)
 
 
@@ -1128,21 +1134,28 @@ def test_preflight_rejects_convlm_attribute_order_drift(tmp_path: Path):
                for item in report.problems)
 
 
-def test_preflight_rejects_malformed_sldpc_prompt_reference(tmp_path: Path):
+def test_preflight_rejects_ambiguous_sldpc_prompt_reference(tmp_path: Path):
     prompt = tmp_path / "sldpc.yaml"
     prompt.write_text("prompts:\n  A: [valid]\n")
 
     report = preflight({
         "method": "sldpc",
         "prompt_reference_yaml": str(prompt),
+        "prompt_classnames": ["A", "B"],
+        "prompt_classname_sha256": (
+            "b64e3448a83a5b86466465080361c1a7e1157a27ddccd4b6"
+            "8069cb18caffb74a"),
+        "prompt_provenance": "generated",
+        "prompt_source": "sldpc_generated_class_tokens",
+        "n_classes": 2,
         "label_dict": {"A": 0, "B": 1},
     }, checks={"prompts"})
 
-    assert any("prompt keys must match label_dict" in item
+    assert any("prompt_reference_yaml is ambiguous" in item
                for item in report.problems)
 
 
-def test_preflight_validates_focus_prompt_table_schema(tmp_path: Path):
+def test_preflight_rejects_named_table_as_focus_native_bank(tmp_path: Path):
     prompt = tmp_path / "focus.csv"
     prompt.write_text(
         "class_name,low_res_prompt,high_res_prompt\n"
@@ -1152,14 +1165,21 @@ def test_preflight_validates_focus_prompt_table_schema(tmp_path: Path):
         "method": "focus",
         "text_prompt_path": str(prompt),
         "n_classes": 2,
+        "label_dict": {"A": 0, "B": 1},
+        "focus_prompt_format": "headerless_low_then_high",
+        "focus_prompt_file_classnames": ["A", "B"],
+        "focus_prompt_file_sha256": "invalid",
+        "focus_prompt_bank_sha256": "invalid",
+        "prompt_provenance": "generated",
+        "prompt_source": "focus_generated_native_two_scale_csv",
     }, checks={"prompts"})
 
     assert not report.ok
-    assert any("1 rows for n_classes=2" in problem
+    assert any("exactly one prompt" in problem
                for problem in report.problems)
 
 
-def test_preflight_rejects_misordered_vila_prompt_classes(tmp_path: Path):
+def test_preflight_rejects_focus_table_as_vila_native_bank(tmp_path: Path):
     prompt = tmp_path / "vila.csv"
     prompt.write_text(
         "class_name,low_res_prompt,high_res_prompt\n"
@@ -1172,10 +1192,16 @@ def test_preflight_rejects_misordered_vila_prompt_classes(tmp_path: Path):
         "n_classes": 2,
         "classnames": ["class A", "class B"],
         "label_dict": {"A": 0, "B": 1},
+        "vila_prompt_format": "headerless_low_then_high",
+        "vila_prompt_file_classnames": ["A", "B"],
+        "vila_prompt_file_sha256": "invalid",
+        "vila_prompt_bank_sha256": "invalid",
+        "prompt_provenance": "generated",
+        "prompt_source": "vila_mil_generated_native_two_scale_csv",
     }, checks={"prompts"})
 
     assert not report.ok
-    assert any("class_name order" in problem for problem in report.problems)
+    assert any("exactly one prompt" in problem for problem in report.problems)
 
 
 def test_preflight_rejects_conflicting_wsi_five_reports(tmp_path: Path):
@@ -1211,24 +1237,41 @@ def test_preflight_rejects_scalar_wsi_five_question_payload(tmp_path: Path):
 def _write_wsi_five_native_assets(tmp_path: Path):
     answers = tmp_path / "answers.csv"
     answers.write_text(
-        "case_id,answer,q1,q2,q3,q4,q5,q6\n"
-        "case-a,all answers,a1,a2,a3,a4,a5,a6\n")
+        "case_id,cancer_type,answer,q1,q2,q3,q4,q5,q6\n"
+        "case-a,LUAD,a1; a2; a3; a4; a5; a6,a1,a2,a3,a4,a5,a6\n")
     questions = tmp_path / "questions.json"
     questions.write_text(json.dumps({
-        "_provenance": "upstream",
+        "_provenance": "derived",
         "questions": [f"question {index}" for index in range(1, 7)],
     }))
     evaluation = tmp_path / "evaluation.json"
     evaluation.write_text(json.dumps({
-        "_provenance": "upstream",
+        "_provenance": "derived",
         "prompts": {"LUAD": "adenocarcinoma", "LUSC": "squamous"},
     }))
-    return answers, questions, evaluation
+    question_bank = load_wsi_five_question_bank(
+        questions, expected_provenance="derived")
+    answer_bank = load_wsi_five_answer_bank(
+        answers, expected_provenance="generated")
+    evaluation_bank = load_wsi_five_evaluation_bank(
+        evaluation, {"LUAD": 0, "LUSC": 1},
+        expected_provenance="derived")
+    contract = {
+        "wsi_prompt_format": WSI_FIVE_PROMPT_FORMAT,
+        **question_bank.config_values(),
+        **answer_bank.config_values(),
+        **evaluation_bank.config_values(),
+        "prompt_provenance": (
+            "derived_questions_with_generated_answer_and_derived_evaluation_banks"),
+        "prompt_source": "wsi_five_derived_upstream_text_assets",
+    }
+    return answers, questions, evaluation, contract
 
 
 def test_preflight_accepts_complete_wsi_five_native_prompt_contract(
         tmp_path: Path):
-    answers, questions, evaluation = _write_wsi_five_native_assets(tmp_path)
+    answers, questions, evaluation, contract = (
+        _write_wsi_five_native_assets(tmp_path))
 
     report = preflight({
         "method": "wsi_five",
@@ -1239,6 +1282,7 @@ def test_preflight_accepts_complete_wsi_five_native_prompt_contract(
         "require_report": True,
         "n_classes": 2,
         "label_dict": {"LUAD": 0, "LUSC": 1},
+        **contract,
     }, checks={"prompts"})
 
     assert report.ok, report.problems
@@ -1246,7 +1290,8 @@ def test_preflight_accepts_complete_wsi_five_native_prompt_contract(
 
 def test_preflight_rejects_incomplete_wsi_five_native_answer_schema(
         tmp_path: Path):
-    answers, questions, evaluation = _write_wsi_five_native_assets(tmp_path)
+    answers, questions, evaluation, contract = (
+        _write_wsi_five_native_assets(tmp_path))
     answers.write_text(
         "case_id,answer,q1,q2,q3,q4,q5\n"
         "case-a,all answers,a1,a2,a3,a4,a5\n")
@@ -1260,6 +1305,7 @@ def test_preflight_rejects_incomplete_wsi_five_native_answer_schema(
         "require_report": True,
         "n_classes": 2,
         "label_dict": {"LUAD": 0, "LUSC": 1},
+        **contract,
     }, checks={"prompts"})
 
     assert not report.ok
@@ -1269,7 +1315,8 @@ def test_preflight_rejects_incomplete_wsi_five_native_answer_schema(
 
 def test_preflight_rejects_misaligned_wsi_five_evaluation_bank(
         tmp_path: Path):
-    answers, questions, evaluation = _write_wsi_five_native_assets(tmp_path)
+    answers, questions, evaluation, contract = (
+        _write_wsi_five_native_assets(tmp_path))
     evaluation.write_text(json.dumps({
         "prompts": {"LUAD": "adenocarcinoma", "OTHER": "wrong task"},
     }))
@@ -1283,6 +1330,7 @@ def test_preflight_rejects_misaligned_wsi_five_evaluation_bank(
         "require_report": True,
         "n_classes": 2,
         "label_dict": {"LUAD": 0, "LUSC": 1},
+        **contract,
     }, checks={"prompts"})
 
     assert not report.ok

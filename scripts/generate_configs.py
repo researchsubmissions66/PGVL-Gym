@@ -31,7 +31,16 @@ DATASETS = {
         "label_dict": {"HGSC": 0, "LGSC": 1, "EC": 2, "CC": 3, "MC": 4},
         "task": "task_UBC-OCEAN_subtyping",
         "split_dirname": "UBC-OCEAN",
-        "text_prompt": "text_prompts/UBC-OCEAN_two_scale_text_prompt.csv",
+        "text_prompt": "text_prompts/focus/UBC_OCEAN_two_scale_text_prompt.csv",
+        "focus_file_classnames": ["CC", "HGSC", "LGSC", "EC", "MC"],
+        "focus_file_sha256": "d8e93638bca7a12b0282710de8f540ab33187e15b594a2d783752f51ec31f1ca",
+        "focus_bank_sha256": "6f9c80918319220f0582fc591de4a27400f9bf34a50ce0f57c63db1e6092b04c",
+        "focus_provenance": "upstream",
+        "vila_prompt": "text_prompts/vila_mil/UBC_OCEAN_two_scale_text_prompt.csv",
+        "vila_file_classnames": ["CC", "EC", "HGSC", "LGSC", "MC"],
+        "vila_file_sha256": "f2a8e2c2ab45f0aece457029666fcce2f0a467a9c96ed7b866415ef70f9ba788",
+        "vila_bank_sha256": "a693ac313d96ed3dd588507cca47de413cee4dc570a22ac35ff2639d70e7b418",
+        "vila_provenance": "generated",
     },
     "lung": {
         "n_classes": 2,
@@ -39,7 +48,16 @@ DATASETS = {
         "label_dict": {"LUAD": 0, "LUSC": 1},
         "task": "task_tcga_lung_subtyping",
         "split_dirname": "TCGA_Lung",
-        "text_prompt": "text_prompts/TCGA_Lung_two_scale_text_prompt.csv",
+        "text_prompt": "text_prompts/focus/TCGA_NSCLC_two_scale_text_prompt.csv",
+        "focus_file_classnames": ["LUAD", "LUSC"],
+        "focus_file_sha256": "a8df24b0adbfa15369b51fb31f17adef4a9a6b955d25cd9ab0e09f3284c76c50",
+        "focus_bank_sha256": "a966d04324b31fe04b81874d5bbace791fd44347eac19bef0fa73d7a4c156b3c",
+        "focus_provenance": "upstream",
+        "vila_prompt": "text_prompts/vila_mil/TCGA_Lung_two_scale_text_prompt.csv",
+        "vila_file_classnames": ["LUAD", "LUSC"],
+        "vila_file_sha256": "4fcea3a2016b2b0c600421da19a9b40441faef5a6b491d40ed80aa80e58319f1",
+        "vila_bank_sha256": "61c001097a14a153dd8723cf5d85b41b8b2b0f61bb09b84b218280f1818eedfa",
+        "vila_provenance": "upstream",
     },
     "rcc": {
         "n_classes": 3,
@@ -49,7 +67,16 @@ DATASETS = {
         "label_dict": {"CCRCC": 0, "PRCC": 1, "CHRCC": 2},
         "task": "task_tcga_rcc_subtyping",
         "split_dirname": "TCGA_RCC",
-        "text_prompt": "text_prompts/TCGA_RCC_two_scale_text_prompt.csv",
+        "text_prompt": "text_prompts/focus/TCGA_RCC_two_scale_text_prompt.csv",
+        "focus_file_classnames": ["CCRCC", "PRCC", "CHRCC"],
+        "focus_file_sha256": "24c83ca73f7d8de17c6206189f9c8024a60b83336468cb976608fb1eb91aefb1",
+        "focus_bank_sha256": "f311087ebf290b280746040886195a4731ad90c75b614f7a2886f27d17c3f422",
+        "focus_provenance": "generated",
+        "vila_prompt": "text_prompts/vila_mil/TCGA_RCC_two_scale_text_prompt.csv",
+        "vila_file_classnames": ["CCRCC", "PRCC", "CHRCC"],
+        "vila_file_sha256": "af95c33eaaa2ab47eeba139a98fcdf7e5137fe797748c8a7caff189c4340886a",
+        "vila_bank_sha256": "288fd6b82c6d608ffb2e5d57ff191df47638171ff876d116a928edf4bf5c3077",
+        "vila_provenance": "upstream",
     },
 }
 
@@ -71,8 +98,17 @@ def _yml_label_dict(meta):
     return "{" + items + "}"
 
 
+def _yml_string_list(values):
+    return "[" + ", ".join(f'"{value}"' for value in values) + "]"
+
+
 # ---- FOCUS ----------------------------------------------------------------
 def cfg_focus(meta, dset):
+    prompt_source = (
+        "focus_upstream_native_two_scale_csv"
+        if meta["focus_provenance"] == "upstream"
+        else "focus_generated_native_two_scale_csv"
+    )
     return textwrap.dedent(f"""\
         # FOCUS / {dset.upper()} / 16-shot / 10-fold
         # Source: official `{dset.upper()}.sh` style script from dddavid4real/FOCUS.
@@ -113,6 +149,12 @@ def cfg_focus(meta, dset):
         data_folder_l:  "path/to/{meta['split_dirname']}/features_20x_conch"
         split_dir:      "splits/{meta['split_dirname']}_16shots_10folds"
         text_prompt_path: "{meta['text_prompt']}"
+        focus_prompt_format: "headerless_low_then_high"
+        focus_prompt_file_classnames: {_yml_string_list(meta['focus_file_classnames'])}
+        focus_prompt_file_sha256: "{meta['focus_file_sha256']}"
+        focus_prompt_bank_sha256: "{meta['focus_bank_sha256']}"
+        prompt_provenance: "{meta['focus_provenance']}"
+        prompt_source: "{prompt_source}"
         conch_ckpt:     "ckpts/conch.pth"
         results_dir:    "results/focus_{dset}16"
         """)
@@ -120,6 +162,11 @@ def cfg_focus(meta, dset):
 
 # ---- ViLa-MIL ------------------------------------------------------------
 def cfg_vila_mil(meta, dset):
+    prompt_source = (
+        "vila_mil_upstream_native_two_scale_csv"
+        if meta["vila_provenance"] == "upstream"
+        else "vila_mil_generated_native_two_scale_csv"
+    )
     return textwrap.dedent(f"""\
         # ViLa-MIL / {dset.upper()} / 16-shot / 5-fold
         # Source: README of Jiangbo-Shi/ViLa-MIL.
@@ -154,7 +201,13 @@ def cfg_vila_mil(meta, dset):
         data_folder_s:  "path/to/{meta['split_dirname']}/feats_5x"
         data_folder_l:  "path/to/{meta['split_dirname']}/feats_20x"
         split_dir:      "splits/{meta['task']}_16shots_5folds"
-        text_prompt_path: "{meta['text_prompt']}"
+        text_prompt_path: "{meta['vila_prompt']}"
+        vila_prompt_format: "headerless_low_then_high"
+        vila_prompt_file_classnames: {_yml_string_list(meta['vila_file_classnames'])}
+        vila_prompt_file_sha256: "{meta['vila_file_sha256']}"
+        vila_prompt_bank_sha256: "{meta['vila_bank_sha256']}"
+        prompt_provenance: "{meta['vila_provenance']}"
+        prompt_source: "{prompt_source}"
         results_dir:    "results/vila_mil_{dset}16"
         """)
 
@@ -451,16 +504,58 @@ def cfg_slip(meta, dset):
 
 
 # ---- WSI-FiVE ------------------------------------------------------------
+WSI_FIVE_QUESTION_METADATA = {
+    "lung": {
+        "file_sha256":
+            "642274c61e3388acda81dc461c2f0be4e8c6c3be8c8cf6285eb550d825335da8",
+        "bank_sha256":
+            "66689686c7d2305341dc42e71b27438412fc327275a80860e7f98499935f026f",
+        "provenance": "derived",
+    },
+    "rcc": {
+        "file_sha256":
+            "c104cf4f2a9f1bba1daa6158041de62d8370ce64ffa148eb2a1151b4035ccb65",
+        "bank_sha256":
+            "96ca33c1413503c7552b4bd3c8d958ae82f3664e07f8759a650a89470b025b2b",
+        "provenance": "generated",
+    },
+    "ubc": {
+        "file_sha256":
+            "ff302aaa9ef8d36dcb5ddc0cdd1d6df323fd8e2a7b37eb6f5b356c9e86fd75e6",
+        "bank_sha256":
+            "3ae81a381f60f53b2c9b217c193b3e14aef4c1ec8b3c511200de16d6222a2a70",
+        "provenance": "generated",
+    },
+}
+
+
 def cfg_wsi_five(meta, dset):
     native = dset == "lung"
     training_mode = ("upstream_answer_bank" if native
                      else "simplified_classnames")
     question_name = {"lung": "nsclc", "rcc": "rcc", "ubc": "ubc_ocean"}[dset]
+    question_meta = WSI_FIVE_QUESTION_METADATA[dset]
+    prompt_provenance = (
+        "derived_questions_with_generated_answer_and_derived_evaluation_banks"
+        if native else "generated_questions_with_classname_comparison")
+    prompt_source = (
+        "wsi_five_derived_upstream_text_assets"
+        if native else "wsi_five_simplified_classname_baseline")
     native_assets = (
         '        report_csv: "text_prompts/wsi_five/'
         'nsclc_report_answers.csv"\n'
         '        evaluation_prompt_path: "text_prompts/wsi_five/'
         'nsclc_evaluation_prompts.json"\n'
+        '        wsi_answer_file_sha256: '
+        '"dbe2ebb91eb57e391f2f9fff807246815943a4a85036575375c2ec62d8b9d360"\n'
+        '        wsi_answer_bank_sha256: '
+        '"a853601f0cb18324627956e1a9304aa554e499e8164e798306cd80f7f611ac83"\n'
+        '        wsi_answer_provenance: "generated"\n'
+        '        wsi_evaluation_file_sha256: '
+        '"3cdcdc0fe542e01ae8f416897e71159b6f55b555d9788b1d440653af9ab9a0b2"\n'
+        '        wsi_evaluation_bank_sha256: '
+        '"cc1647ebeb30b20f588da39992b5990a360506734d7633f50ee246c8f753b3da"\n'
+        '        wsi_evaluation_provenance: "derived"\n'
         '        require_report: true\n'
         if native else
         '        require_report: false\n'
@@ -486,6 +581,12 @@ def cfg_wsi_five(meta, dset):
         is_img_pth: true
         training_mode: "{training_mode}"
         clinical_questions: "text_prompts/wsi_five/clinical_questions/{question_name}.json"
+        wsi_prompt_format: "six_questions_structured_answers_and_class_descriptions"
+        wsi_question_file_sha256: "{question_meta['file_sha256']}"
+        wsi_question_bank_sha256: "{question_meta['bank_sha256']}"
+        wsi_question_provenance: "{question_meta['provenance']}"
+        prompt_provenance: "{prompt_provenance}"
+        prompt_source: "{prompt_source}"
 {native_assets}
         dataset:    "tcga"
         data_path:  "path/to/{meta['split_dirname']}"

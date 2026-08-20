@@ -19,6 +19,12 @@ is_img_pth: true
 training_mode: "simplified_classnames"
 require_report: false
 clinical_questions: "text_prompts/wsi_five/clinical_questions/rcc.json"
+prompt_provenance: "generated_questions_with_classname_comparison"
+prompt_source: "wsi_five_simplified_classname_baseline"
+wsi_prompt_format: "six_questions_structured_answers_and_class_descriptions"
+wsi_question_file_sha256: "c104cf4f2a9f1bba1daa6158041de62d8370ce64ffa148eb2a1151b4035ccb65"
+wsi_question_bank_sha256: "96ca33c1413503c7552b4bd3c8d958ae82f3664e07f8759a650a89470b025b2b"
+wsi_question_provenance: "generated"
 
 dataset:    "tcga"
 data_path:  "path/to/TCGA_RCC"

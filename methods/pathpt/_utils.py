@@ -1,6 +1,5 @@
 # To run pathpt on your own dataset, you need to record subtype names in this file with format like 'datasetname_names'
 
-import h5py
 import json
 
 templates = ['CLASSNAME.',
@@ -208,6 +207,11 @@ ucs_names = {'Uterine Carcinosarcoma-MMMT-Heterologous Type': ['uterine Carcinos
 
 
 def read_h5(path):
+    # Prompt-bank consumers import this vendored module only for the released
+    # constants above. Keep HDF5 optional until a feature payload is actually
+    # opened so login-node planning and the doctor remain metadata-only.
+    import h5py
+
     with h5py.File(path, 'r') as f:
         coords = f['coords'][:]
         features = f['features'][:]

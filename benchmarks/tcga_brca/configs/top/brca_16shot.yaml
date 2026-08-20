@@ -39,6 +39,9 @@ experiment: top
 epochs: 8000
 prompt_provenance: upstream_instance_with_random_classname_bag
 results_dir: ${PGVL_REPO_ROOT}/results/tcga_benchmark/top/brca/16shot
+implementation_provenance: vendored
+upstream_fidelity: upstream
+fidelity_note: Vendored TOP architecture and pooling rule.
 clip_arch: RN50
 lr: 0.02
 lr_TB: 0.02
@@ -58,5 +61,9 @@ weight_lossA: 25
 pooling_strategy: learnablePrompt_multi
 data_folder_s: ${PGVL_STORAGE_ROOT}/trident_features/master_benchmark/10x_224px_0px_overlap/features_clip_rn50
 feature_path_column: feature__clip_rn50_10x
+top_prompt_format: instance_prototypes_plus_optional_bag_context.v1
+top_instance_file_sha256: 33a95e5e41c33459c8cf79abe68e1275986a952758c67705da02b1f7d102d0db
+top_instance_prompt_bank_sha256: 56ae6c7ec40cb2dace3bbe2897d73ec70d0f7c4564d5d69b19912543554b0cd2
+top_instance_provenance: upstream
 prompt_source: top_upstream_instance_with_random_classname_bag
 encoder_provenance: native

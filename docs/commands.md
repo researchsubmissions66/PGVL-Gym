@@ -66,10 +66,16 @@ The doctor identifies:
   missing directory whose existing parent can create it;
 - absent method-required feature roots/columns, prompt banks, reports,
   cross-scale maps, and encoder assets;
-- malformed FOCUS/ViLa-MIL prompt tables and MAPLE, MSCPT, TOP, SLIP,
-  CoD-MIL, MUSE, ConVLM, or SLDPC prompt graphs/banks, including
-  class-order/cardinality drift and registered MUSE row-count/hash/class-file
-  mismatches;
+- malformed FOCUS or ViLa-MIL native headerless banks, positional class
+  bindings, provenance, or hashes; and malformed MAPLE,
+  MSCPT, TOP, SLIP,
+  CoD-MIL, MUSE, or ConVLM prompt graphs/banks, plus SLDPC active class-token
+  order/digests and separately declared zero-shot reference banks, including
+  class-order/cardinality drift, registered MUSE row-count/hash/class-file
+  mismatches, and ConVLM prompt hashes, provenance, encoder feature spaces,
+  checkpoint identities, and encoded-bank source bindings;
+- WSI-FiVE question, structured-answer, and evaluation roles, including their
+  exact schemas, byte hashes, semantic ordered-bank hashes, and provenance;
 - incompatible variable-length bag batch sizes and invalid batch-failure
   thresholds, optimizer values, epochs, staged-training controls, class schemas,
   and sampling limits;
@@ -96,6 +102,13 @@ The doctor identifies:
 ```bash
 python scripts/preflight.py \
   benchmarks/tcga_brca/configs/focus/brca_4shot.yaml
+```
+
+The checked-in WSI-FiVE NSCLC answer CSV can also be independently reproduced
+from the pinned vendored upstream workbooks:
+
+```bash
+python scripts/build_wsi_five_prompt_assets.py --check
 ```
 
 With no selection flags the command checks all aspects. Checks can be combined
@@ -253,6 +266,19 @@ writes `benchmarks/launch_report.csv` atomically:
 ./launch_pgvl.sh --cohort brca --shots 4 --limit 3
 ./launch_pgvl.sh
 ```
+
+Every campaign plan first performs a lightweight feature-readiness refresh from
+the existing manifests. Newly arrived feature files update
+`feature_coverage.csv` and `run_matrix.csv` without importing model code or
+regenerating prompts, splits, and configs. Pass `--no-refresh-readiness` to
+diagnose the previously recorded matrix state without this refresh.
+
+The dry-run planner performs metadata-only validation and does not require
+Torch, h5py, or a method adapter import. Before any real submission,
+`PGVL_CONDA_ENV` must name the environment created from `environment.yml`;
+an unset value is a fatal launch error rather than an implicit fallback to the
+site PyTorch module. The compute wrapper activates the named environment for
+every job.
 
 `--rerun` forwards a real restart to every selected job; the trainer archives
 the old metrics, config, checkpoints, predictions, and TensorBoard state before

@@ -94,6 +94,12 @@ cohorts:
     classnames:
     - invasive ductal carcinoma
     - invasive lobular carcinoma
+    # IDC/ILC are exact class tokens from the released TCGA-OT configuration,
+    # selected as a two-class task here. The subset is therefore derived; the
+    # standalone BRCA synonym bank itself is a generated zero-shot extension.
+    sldpc_prompt_classnames: [IDC, ILC]
+    sldpc_prompt_provenance: derived
+    sldpc_zero_shot_prompt_yaml: text_prompts/sldpc/tcga_brca.yaml
     muse_prompt_csvs:
     - text_prompts/muse/tcga_brca/generated_new_0.csv
     - text_prompts/muse/tcga_brca/generated_new_1.csv
@@ -112,7 +118,6 @@ cohorts:
     # patch features. Declaring a .pt that was never released would fail config
     # generation the moment a cod_mil experiment is added.
     slip_tissue_json: text_prompts/slip/tcga_brca_tissues.json
-    sldpc_prompt_yaml: text_prompts/sldpc/tcga_brca.yaml
     wsi_report_csv: methods/wsi_five/gpt_preprocess/TCGA_Reports.csv
     # Questions authored here; the released set is lung-specific. Reports are
     # free text, not answers to these questions, so this is doubly generated.
@@ -122,7 +127,9 @@ cohorts:
       # not publish a BRCA bag initializer, so this extension deliberately uses
       # learned random bag context plus the configured IDC/ILC classnames.
       top_instance: text_prompts/top/instance_prototypes.json
-      vila_mil: text_prompts/focus/TCGA_BRCA_two_scale_text_prompt.csv
+      # ViLa-MIL releases no BRCA bank. This dedicated native-format file is a
+      # generated task extension, never reported as an upstream prompt bank.
+      vila_mil: text_prompts/vila_mil/TCGA_BRCA_two_scale_text_prompt.csv
 experiments:
   pathpt:
     method: pathpt

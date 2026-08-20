@@ -31,6 +31,12 @@ slide_projection:
 n_classes: 2
 classnames: ["LUAD", "LUSC"]
 label_dict: {"LUAD": 0, "LUSC": 1}
+# These exact ordered codes, rather than a synonym YAML, are embedded by the
+# Stage-1/Stage-2 PromptLearner. They match the released NSCLC class tokens.
+prompt_classnames: ["LUAD", "LUSC"]
+prompt_classname_sha256: "4515a591db0ff0ef8d5f4ffb33580f649f3d8b81a6bf809f2c01993e6a8dd683"
+prompt_provenance: "upstream"
+prompt_source: "sldpc_upstream_class_tokens"
 
 source_type: "per_slide_torch"  # also per_slide_h5 or pkl
 slide_features: "path/to/TCGA_Lung/titan_slide_embeddings"

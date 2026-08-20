@@ -45,8 +45,6 @@ class PromptLearner(nn.Module):
         
         # Get the tokenizer
         self.tokenizer = get_tokenizer()
-        object.__setattr__(self, "_token_embedding", conch_model.text.token_embedding)
-
         if ctx_init:
             ctx_init = ctx_init.replace("_", " ")
             n_ctx = len(ctx_init.split(" "))
@@ -88,27 +86,6 @@ class PromptLearner(nn.Module):
                                                    truncation=True)) 
                          for name in classnames]
         self.class_token_position = "end"
-
-    def set_class_prompts(self, prompts):
-        """Retokenize fixed text while preserving the learned context tokens."""
-        prompts = [str(prompt).strip().replace("_", " ") for prompt in prompts]
-        if len(prompts) != self.n_cls:
-            raise ValueError(
-                f"FOCUS expects {self.n_cls} prompts, received {len(prompts)}")
-        if any(not prompt for prompt in prompts):
-            raise ValueError("FOCUS prompts must be non-empty")
-        tokenized = tokenize(self.tokenizer, prompts).to(self.ctx.device)
-        # The text encoder and prompt learner share this embedding at build time;
-        # retain a private reference solely for prompt retokenization.
-        with torch.no_grad():
-            embedding = self._token_embedding(tokenized).type(self.ctx.dtype)
-        self.token_prefix = embedding[:, :1, :]
-        self.token_suffix = embedding[:, 1 + self.n_ctx:, :]
-        self.tokenized_prompts = tokenized
-        self.name_lens = [
-            len(self.tokenizer.encode(prompt, max_length=127, truncation=True))
-            for prompt in prompts
-        ]
 
     def forward(self):
         ctx = self.ctx
@@ -237,10 +214,6 @@ class FOCUS(nn.Module):
         # Classifier
         self.classifier = nn.Linear(self.feature_dim, num_classes)
 
-    def set_class_prompts(self, prompts):
-        """Update the ordered low/high prompt bank for frozen inference."""
-        self.prompt_learner.set_class_prompts(prompts)
-        
     def cross_attention(self, queries, keys, values, attention_mask=None):
         bsz, q_len, _ = queries.size()
         _, kv_len, _ = keys.size()

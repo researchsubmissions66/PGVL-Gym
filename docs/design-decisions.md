@@ -27,23 +27,29 @@ generated config, the run matrix, and `aggregate_results.csv`.
 All provenance fields are **derived from the declared contract and the files on
 disk**, not set by hand, so they cannot drift from what the run actually does.
 
-### FOCUS prompt origins
+### FOCUS prompt origins and native schema
 
-No FOCUS CSV currently checked into `text_prompts/` is a verbatim upstream
-copy. The distinction is recorded per asset in `text_prompts/PROVENANCE.json`
-and propagated into generated configs:
+FOCUS reads a headerless one-column CSV positionally: all low-resolution class
+prompts, followed by all high-resolution prompts. The earlier PGVL three-column
+table was a local conversion, not the released schema. The shared loader,
+runtime, generator validator, and doctor now enforce the native format, explicit
+file-class binding, provenance, file hash, and ordered class-bound bank hash.
 
 | Local bank | Origin | Upstream status |
 | --- | --- | --- |
-| CAMELYON16 | generated/reworded | FOCUS publishes a CAMELYON bank, but the local wording is a shorter rewrite |
-| TCGA-NSCLC | generated/reworded | FOCUS publishes a TCGA-Lung bank, but the local wording is expanded and rewritten |
-| UBC-OCEAN | generated/reworded | FOCUS publishes a UBC-OCEAN bank, but the local wording is condensed and rewritten |
+| CAMELYON16 | upstream copy | Byte-exact released CAMELYON bank |
+| TCGA-NSCLC | upstream copy | Byte-exact released TCGA-Lung bank |
+| UBC-OCEAN | upstream copy | Byte-exact released bank; file order `CC, HGSC, LGSC, EC, MC` is explicitly reordered to benchmark order |
 | TCGA-BRCA | generated | FOCUS publishes no BRCA prompt CSV |
-| TCGA-RCC and RCC-GEPA | generated | FOCUS publishes no RCC prompt CSV |
+| TCGA-RCC | generated | FOCUS publishes no RCC prompt CSV |
 
-Accordingly, these runs report `prompt_provenance: generated`. An explicit YAML
-path describes how an asset was selected; it does not turn locally authored
-text into upstream text.
+The three copies are pinned to commit
+`66c4015d5ba09657f4c8183bc06947faecd5b01f`. The released UBC clear-cell
+high-resolution row contains unescaped quotes around `hobnail`; upstream pandas
+therefore preserves a trailing quote in the parsed text. PGVL preserves the
+file and parse exactly instead of silently creating a corrected prompt
+condition. BRCA/RCC extensions use the same native positional format but remain
+reported as `generated`.
 
 ### MSCPT prompt origins
 
@@ -73,6 +79,27 @@ and `generated` for the task-extended BRCA and CAMELYON16 banks. The separate
 `upstream_fidelity: partial` implementation label still applies because the
 feature-only integration bypasses MSCPT's selected-5x raw-image visual-prompt
 branch.
+
+### ViLa-MIL prompt format and origins
+
+ViLa-MIL's released prompt loader reads a headerless one-column CSV and splits
+exactly `2 * n_classes` rows into all low-resolution prompts followed by all
+high-resolution prompts. The earlier PGVL integration incorrectly shared its
+local three-column FOCUS conversion, so header and class-name cells became
+prompt text and did not reproduce either upstream method. PGVL now keeps
+distinct method-owned native assets for ViLa-MIL and FOCUS, even though their
+released loaders use the same positional layout, and records each asset's
+file-class binding explicitly.
+
+The TCGA-Lung and TCGA-RCC banks are byte-exact copies from ViLa-MIL commit
+`68a11cf0d5cf092dd980f0da1cb38ccac8747a82`. ViLa-MIL publishes no BRCA,
+UBC-OCEAN, or CAMELYON16 prompt bank, so those files are generated task
+extensions and are never reported as upstream. The upstream RCC text spells the
+third class `CRCC` at both scales. That wording remains unchanged for fidelity;
+the provenance record and loader bind its third positional slot to the
+classifier's `CHRCC` label. File hashes protect exact copies, while an ordered
+prompt-bank hash protects the final classifier binding after any declared
+reordering.
 
 ### MAPLE prompt origins and ordering
 
@@ -121,7 +148,16 @@ ten-slot placement, and no longer inserts a second period between an instance
 description and its learnable slots. It also preserves the release's tiny
 recipe difference: TCGA concatenates the first instance slot directly, while
 CAMELYON inserts a space. The instance asset records the pinned upstream commit
-and a digest over all 26 ordered rendered prompts.
+and a digest over all 26 ordered rendered prompts. Every TOP asset is also
+bound to a manifest file hash and a semantic bank hash; the bag hash includes
+mode, classifier-label order, initializer text, and the class suffixes actually
+passed to `PromptLearner`. Checked-in configs repeat those trusted bindings.
+One shared loader enforces them in runtime, doctor, and benchmark generation
+and derives the reportable condition from the selected roles. Consequently,
+selecting the supplementary bank produces `upstream_supplementary_condition`,
+while omitting a published bag bank produces
+`upstream_instance_with_random_classname_bag`; neither can be mislabeled as the
+standard `upstream` condition.
 
 ### SLIP prompt origins
 
@@ -187,6 +223,17 @@ aggregate grouping; the doctor rejects contradictory declarations.
 | `muse` | 0 | 105 | reimplemented (self-declared: "feature-space portion") |
 | `convlm` | 0 | 124 | reimplemented (self-declared) |
 | `sldpc` | 0 | 246 | reimplemented (CPI/DHNO/SICL written here) |
+
+SLDPC prompt provenance is intentionally split at the consumer boundary. At
+upstream commit `3c9580a1f3602a140d7e6bcc75ad93d7554e4e85`, the two-stage
+`TitanPromptLearner` receives dataset `class_names` codes. The YAML synonym
+banks and 23-template ensemble enter only the independently evaluated TITAN
+zero-shot baseline. Four local YAMLs (NSCLC, RCC, TCGA-OT, and UBC-OCEAN) are
+byte-exact upstream copies; BRCA and CAMELYON16 are generated task extensions.
+The complete file hashes, token origins, and pinned source links are recorded
+in `text_prompts/PROVENANCE.json`. The unified adapter currently retains the
+zero-shot assets only as audited, explicitly unwired references and does not
+report a zero-shot metric.
 
 `wsi_five` was the most misleading case and has since been rebuilt: the adapter
 now drives the vendored `PatchFusionTransformer`, `MedCLIPTextModel` and
@@ -390,8 +437,9 @@ parameterized for the explicitly labelled PLIP/QuiltNet extension.
 ### WSI-FiVE — the vision tower is not method-owned
 
 The compatibility analysis originally attributed 18 blocked cells to "the method
-owns its vision tower (`wsi_five`, `convlm`)". That framing was wrong for both
-methods: each consumes offline visual features. For WSI-FiVE specifically,
+owns its vision tower (`wsi_five`, `convlm`)". That framing was wrong for
+WSI-FiVE and conflated PGVL's local ConVLM adapter with ConVLM's released
+training path. For WSI-FiVE specifically,
 with the shipped default `IS_IMG_PTH: True`, upstream sets
 `self.visual = nn.Identity()` (MedCLIP vision is commented out), hardcodes
 `embed_dim = 512`, never parses the CLIP state dict, and reads precomputed
@@ -439,15 +487,30 @@ text:
 
 | Text asset | Role | Local provenance |
 | --- | --- | --- |
-| Six clinical questions | Cross-attention queries that condition patch aggregation | Copied from the upstream lung configuration |
-| Six GPT-derived answers per case | Training answer candidates and targets | Copied from upstream `gpt_preprocess/*.xlsx` into `nsclc_report_answers.csv` |
-| LUAD/LUSC diagnostic descriptions | Validation/test comparison bank | Copied from upstream `LUAD_LUSC_labels_{train,val}_reid.csv` into `nsclc_evaluation_prompts.json` |
+| Six clinical questions | Cross-attention queries that condition patch aggregation | Derived JSON container preserving upstream `configs/wsi/fix_pth.yaml:PROMPT_LIST` verbatim |
+| Six answers per case | Training answer candidates and targets | Generated complete CSV: 912 upstream GPT answers are preserved and 27 blank upstream cells receive disclosed conservative local completions |
+| LUAD/LUSC diagnostic descriptions | Validation/test comparison bank | Derived JSON container preserving upstream `LUAD_LUSC_labels_{train,val}_reid.csv` text verbatim |
 
-The NSCLC answer asset covers 912 of 946 metadata cases, with all six fields
-present. For each benchmark fold, the adapter reads answers only for training
-rows, constructs and hashes a unique candidate bank from that fold, randomly
-drops zero to five aligned question/answer fields, removes `Unknown` answers,
-and shuffles retained answer segments. This restores the released
+These assets are pinned to WSI-FiVE commit
+`07344c9ac6eef919fcd1440877ea796feef7445a`. None is a byte-for-byte upstream
+file: JSON containers were introduced for questions and evaluation text, and
+the two answer workbooks were normalized into one CSV. The reproducible answer
+derivation merges 471 LUAD and 468 LUSC rows, splits the 912 nonblank upstream
+answers into exactly six stripped fields, fills the 27 blank upstream cells
+with six deterministic, conservative “not documented/cannot determine” answers,
+and sorts all 939 records by `case_id`. The exact fill text and affected case
+IDs are listed in `text_prompts/PROVENANCE.json`.
+`scripts/build_wsi_five_prompt_assets.py --check` verifies the source workbook
+hashes, counts, and byte-exact generated CSV.
+
+The NSCLC answer asset covers all 939 source cases, with all six fields present.
+Because 27 records contain locally generated completions, the answer asset and
+aggregate native condition explicitly report generated answer provenance; they
+must not be described as a purely upstream answer bank. For each benchmark
+fold, the adapter reads answers only for training rows, constructs
+and hashes a unique candidate bank from that fold, randomly drops zero to five
+aligned question/answer fields, removes `Unknown` answers, and shuffles retained
+answer segments. This restores the released
 `aug_question` and label-hashing semantics without admitting validation/test
 answers into the bank. The saved fold trace records the candidate count, asset
 sources, and a SHA-256 digest, but deliberately does not duplicate patient text.
@@ -465,6 +528,11 @@ evaluation descriptions for those tasks. Their generated question provenance
 is recorded, and a generated answer/evaluation bank would be a separate
 experimental condition that must not be reported as upstream.
 
+Runtime, config compilation, and the doctor load all three roles through the
+same strict contract. Each config binds the asset byte hash, a semantic ordered
+bank hash, and role provenance; edited, reordered, relabelled, or substituted
+text fails before training.
+
 !!! warning "Remaining deviations"
     - **Rebuilt orchestration.** The released `FiVE.py` cannot be imported or
       constructed, so the lifecycle is rebuilt around its usable vendored
@@ -477,19 +545,55 @@ experimental condition that must not be reported as upstream.
       features. A run using a different 512-d feature space is dimensionally
       valid but not the paper's encoder condition.
 
-### ConVLM — offline visual features, locally reconstructed attributes
+### ConVLM — missing upstream attributes and a local feature-bag reconstruction
 
-ConVLM does not train a vision foundation model inside the benchmark. Upstream
-extracts patch and ROI embeddings with UNI before training, and
-`AttributeConVLM` consumes those bags through its configured `feature_dim`.
-Accordingly, its contract is `PRECOMPUTED/PATCH_BAG`, the protocol compiler
-binds a `bag` feature source, and the unified bag loader reads either the
-manifest's `feature_path_column` or `data_folder_s/<slide_id>.pt`.
+The [release is pinned at commit
+`a399e51585eeb4c7974b274174ca9b0360a9120d`](https://github.com/BasitAlawode/ConVLM/tree/a399e51585eeb4c7974b274174ca9b0360a9120d).
+It does not contain a reusable class prompt bank or the dataset-specific
+`att_splits.mat` loaded by
+[`train.py`](https://github.com/BasitAlawode/ConVLM/blob/a399e51585eeb4c7974b274174ca9b0360a9120d/train.py).
+Its two text utilities do not fill that gap:
 
-The attribute banks built for all five cohorts still substitute for the
-paper's unpublished Quilt-LLaVA bank. That text-side provenance is a real
-reproducibility limitation and must be reported, but it is separate from the
-offline visual-feature boundary. No active benchmark protocol currently
+- [`generate_text.py`](https://github.com/BasitAlawode/ConVLM/blob/a399e51585eeb4c7974b274174ca9b0360a9120d/generate_text.py)
+  asks Quilt-LLaVA for one description per input image. It produces
+  image-specific JSONL, not an ordered class bank.
+- [`attribute_embedding_generation.py`](https://github.com/BasitAlawode/ConVLM/blob/a399e51585eeb4c7974b274174ca9b0360a9120d/attribute_embedding_generation.py)
+  is hard-coded to the two NSCLC labels, contains malformed quoted input,
+  calls `quilt_model.encode_text(text)(text)`, and never saves an attribute
+  matrix.
+
+There is therefore no honest upstream bank to import. The CAMELYON16,
+TCGA-NSCLC, TCGA-BRCA, TCGA-RCC, and UBC-OCEAN JSONs checked into
+`text_prompts/convlm/` are all generated substitutes and remain unwired by
+default. Their file hashes, ordered prompt-content hashes, class order, prompt
+counts, and `copied_from_upstream: false` declarations are pinned in
+`text_prompts/PROVENANCE.json`. Selecting one reports
+`prompt_provenance: generated` and
+`prompt_source: convlm_generated_attribute_prompts` regardless of whether its
+path came from `prompts:`, a legacy cohort key, or the compiler.
+
+The runtime preserves every prompt through loading, then performs a local
+aggregation: it normalizes each encoded prompt, averages within class, and
+normalizes the resulting class vector. Because upstream publishes no executable
+equivalent, this is disclosed as a reconstruction rather than described as the
+paper's QuiltNet attribute protocol.
+
+Precomputed attributes use schema
+`pgvl.convlm.attribute_embeddings.v1`. The doctor and runtime reject a bare
+tensor or `.npy`: the artifact must carry exact ordered classnames, the source
+prompt-bank SHA-256, prompt provenance, feature-space ID, and encoder metadata
+including checkpoint SHA-256. This boundary is encoder-agnostic—QuiltNet is one
+valid declared space, not a hard-coded requirement—but a matrix from one text
+tower cannot silently be paired with another.
+
+The architecture boundary also differs from the release. PGVL's adapter reads
+precomputed WSI patch bags and applies a locally written attribute-conditioned
+token-pruning transformer. The released `train.py` instead constructs the
+raw-image ViT from `convlm.py`, whose `PatchEmbed` consumes 224×224 RGB images.
+The repository contains a separate UNI feature extractor and its README
+discusses ROI features, but the released training script does not consume those
+bags. `PRECOMPUTED/PATCH_BAG` consequently describes this benchmark adapter,
+not an upstream-compatible data path. No active benchmark protocol currently
 enables ConVLM by default.
 
 ### MUSE — upstream and generated prompt banks
@@ -555,4 +659,4 @@ Correcting it would be a separate derived prompt condition.
 
 | Item | Question |
 | --- | --- |
-| ConVLM | Release or reproducibly regenerate the data-specific QuiltNet attribute bank? |
+| ConVLM | Can the authors release the data-specific `att_splits.mat` and a working generator so a true upstream attribute condition can be added? |

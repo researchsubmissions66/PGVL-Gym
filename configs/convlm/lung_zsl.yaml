@@ -1,7 +1,9 @@
 # ConVLM / zero-shot TCGA-NSCLC example.
-# ConVLM consumes the release's offline patch embeddings (UNI upstream), not
-# RGB tiles. Each split CSV may name an exact bag in `feature_path`; otherwise
-# the loader resolves `<data_folder_s>/<slide_id>.pt`.
+# PGVL's partial ConVLM reconstruction consumes offline patch bags, not RGB
+# tiles. The released train.py instead trains its ViT from RGB images; its
+# separate UNI extraction utility is not wired to that training path. Each
+# split CSV may name an exact bag in `feature_path`; otherwise the loader
+# resolves `<data_folder_s>/<slide_id>.pt`.
 method: "convlm"
 n_classes: 2
 classnames: ["lung adenocarcinoma", "lung squamous cell carcinoma"]
@@ -13,9 +15,15 @@ feature_path_column: "feature_path"
 feature_key: "features"
 feature_dim: 1024
 split_dir: "splits/ConVLM_TCGA_Lung_zsl"
-# [LUAD, LUSC] QuiltNet embeddings generated from the task's Quilt-LLaVA
-# attribute descriptions. These data-specific descriptions are not released.
+# This must be a metadata-bound .pt mapping, never a bare tensor/.npy. Required
+# keys are: schema=pgvl.convlm.attribute_embeddings.v1, embeddings, classnames,
+# feature_space_id, prompt_bank_sha256, prompt_provenance, and encoder metadata
+# (model_name, weights, feature_space_id, checkpoint_sha256). The upstream
+# att_splits.mat is not released and its generation script is unusable.
 attribute_embeddings: "path/to/convlm_lung_quiltnet_attributes.pt"
+attribute_feature_space_id: "hf:wisdomik/QuiltNet-B-32"
+prompt_provenance: "generated"
+prompt_source: "convlm_precomputed_attribute_embeddings"
 
 embed_dim: 768
 depth: 12

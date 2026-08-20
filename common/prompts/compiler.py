@@ -196,15 +196,21 @@ def compile_task_prompt_assets(
 
     focus_path = root / "focus_two_scale.csv"
     with focus_path.open("w", encoding="utf-8", newline="") as handle:
-        writer = csv.DictWriter(
-            handle, fieldnames=["class_name", "low_res_prompt", "high_res_prompt"])
-        writer.writeheader()
+        writer = csv.writer(handle)
         for label in labels:
-            writer.writerow({
-                "class_name": label,
-                "low_res_prompt": classes[label]["low_res"][0],
-                "high_res_prompt": classes[label]["high_res"][0],
-            })
+            writer.writerow([classes[label]["low_res"][0]])
+        for label in labels:
+            writer.writerow([classes[label]["high_res"][0]])
+
+    # Keep method-owned files distinct even though both released loaders use
+    # the same positional schema; provenance and future task selection differ.
+    vila_path = root / "vila_mil.csv"
+    with vila_path.open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.writer(handle)
+        for label in labels:
+            writer.writerow([classes[label]["low_res"][0]])
+        for label in labels:
+            writer.writerow([classes[label]["high_res"][0]])
 
     muse_dir = root / "muse"
     muse_dir.mkdir(parents=True, exist_ok=True)
@@ -293,8 +299,7 @@ def compile_task_prompt_assets(
         "prompts": {label: classes[label]["aliases"] for label in labels}},
         sort_keys=False), encoding="utf-8")
 
-    convlm_path = root / "convlm_attributes.json"
-    convlm_path.write_text(json.dumps({
+    convlm_prompts = {
         classes[label]["classname"]: [
             f"a histopathology image of {classes[label]['classname']}",
             classes[label]["low_res"][0],
@@ -302,7 +307,26 @@ def compile_task_prompt_assets(
             *classes[label]["attributes"],
         ]
         for label in labels
-    }, indent=2) + "\n", encoding="utf-8")
+    }
+    convlm_digest = hashlib.sha256(json.dumps(
+        convlm_prompts, ensure_ascii=False, separators=(",", ":"),
+    ).encode()).hexdigest()
+    convlm_payload = dict(convlm_prompts)
+    convlm_payload.update({
+        "_provenance": "generated",
+        "_metadata": {
+            "role": "generated_convlm_attribute_prompts",
+            "source_profile": profile["provenance"],
+            "classnames": list(convlm_prompts),
+            "prompt_counts_per_class": {
+                name: len(values) for name, values in convlm_prompts.items()
+            },
+            "prompt_bank_sha256": convlm_digest,
+        },
+    })
+    convlm_path = root / "convlm_attributes.json"
+    convlm_path.write_text(
+        json.dumps(convlm_payload, indent=2) + "\n", encoding="utf-8")
 
     return {
         "canonical": str(canonical_path),
@@ -313,12 +337,15 @@ def compile_task_prompt_assets(
         "source_profile_provenance": profile["provenance"],
         "context": profile["context"],
         "focus": str(focus_path),
-        "vila_mil": str(focus_path),
+        "vila_mil": str(vila_path),
         "muse": muse_paths,
         "mscpt": str(mscpt_path),
         "maple": str(maple_path),
         "cod_mil": str(cod_path),
         "slip": str(slip_path),
-        "sldpc": str(sldpc_path),
+        # This YAML is for SLDPC's separately reported TITAN zero-shot
+        # baseline. Stage 1/2 learns context around prompt_classnames and does
+        # not consume synonym banks.
+        "sldpc_zero_shot": str(sldpc_path),
         "convlm": str(convlm_path),
     }

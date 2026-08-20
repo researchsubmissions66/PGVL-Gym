@@ -52,6 +52,9 @@ experiment: sldpc
 epochs: 100
 prompt_provenance: upstream
 results_dir: ${PGVL_REPO_ROOT}/results/tcga_benchmark/sldpc/nsclc/8shot
+implementation_provenance: reimplemented
+upstream_fidelity: partial
+fidelity_note: CPI, DHNO, and SICL are local implementations of the published method.
 prompt_feature_space_id: hf:MahmoodLab/TITAN@dac6773d9961cfc75503440676ff157a2c6e8d2e
 slide_projection:
   mode: native
@@ -75,6 +78,15 @@ topk: 8
 stage1_apply_tau: false
 early_stopping: false
 monitor_metric: F1
-prompt_reference_yaml: ${PGVL_REPO_ROOT}/text_prompts/sldpc/tcga_nsclc.yaml
-prompt_source: sldpc_learnable_context_from_classnames
+prompt_classnames:
+- LUAD
+- LUSC
+prompt_classname_sha256: 4515a591db0ff0ef8d5f4ffb33580f649f3d8b81a6bf809f2c01993e6a8dd683
+prompt_source: sldpc_upstream_class_tokens
+zero_shot_prompt_path: ${PGVL_REPO_ROOT}/text_prompts/sldpc/tcga_nsclc.yaml
+zero_shot_prompt_provenance: upstream
+zero_shot_prompt_sha256: a139ac9e0f43ed18365f606dca584b74039b18b192b3519522bb72c438a8aa00
+zero_shot_prompt_bank_sha256: 996b07ca151a0d0e910036470d26b4ab0b4d85ed88165f418f7fe71b36cc082b
+zero_shot_templates_sha256: 6688a22c36820dd7b8e66a8bb1b3ea67487939f13f2e65a981afc516ae74596d
+zero_shot_prompt_usage: reference_only_unwired
 encoder_provenance: native

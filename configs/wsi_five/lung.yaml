@@ -18,12 +18,24 @@ T_mit: 8
 is_img_pth: true
 training_mode: "upstream_answer_bank"
 text_gradient_sample_size: 96
+prompt_provenance: "derived_questions_with_generated_answer_and_derived_evaluation_banks"
+prompt_source: "wsi_five_derived_upstream_text_assets"
+wsi_prompt_format: "six_questions_structured_answers_and_class_descriptions"
 
 dataset:    "tcga"
 data_path:  "path/to/TCGA_Lung"
 report_csv: "text_prompts/wsi_five/nsclc_report_answers.csv"
 clinical_questions: "text_prompts/wsi_five/clinical_questions/nsclc.json"
 evaluation_prompt_path: "text_prompts/wsi_five/nsclc_evaluation_prompts.json"
+wsi_question_file_sha256: "642274c61e3388acda81dc461c2f0be4e8c6c3be8c8cf6285eb550d825335da8"
+wsi_question_bank_sha256: "66689686c7d2305341dc42e71b27438412fc327275a80860e7f98499935f026f"
+wsi_question_provenance: "derived"
+wsi_answer_file_sha256: "dbe2ebb91eb57e391f2f9fff807246815943a4a85036575375c2ec62d8b9d360"
+wsi_answer_bank_sha256: "a853601f0cb18324627956e1a9304aa554e499e8164e798306cd80f7f611ac83"
+wsi_answer_provenance: "generated"
+wsi_evaluation_file_sha256: "3cdcdc0fe542e01ae8f416897e71159b6f55b555d9788b1d440653af9ab9a0b2"
+wsi_evaluation_bank_sha256: "cc1647ebeb30b20f588da39992b5990a360506734d7633f50ee246c8f753b3da"
+wsi_evaluation_provenance: "derived"
 require_report: true  # enforced only for the training fold
 
 dataset_csv: "splits/TCGA_Lung/dataset.csv"

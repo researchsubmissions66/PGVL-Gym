@@ -63,6 +63,12 @@ cohorts:
     - clear cell renal cell carcinoma
     - papillary renal cell carcinoma
     - chromophobe renal cell carcinoma
+    # Exact released RCC class tokens, reordered to this benchmark's label
+    # order (upstream orders CHRCC before PRCC), hence `derived` rather than a
+    # byte-for-byte upstream sequence.
+    sldpc_prompt_classnames: [CCRCC, PRCC, CHRCC]
+    sldpc_prompt_provenance: derived
+    sldpc_zero_shot_prompt_yaml: text_prompts/sldpc/tcga_rcc.yaml
     label_column: label
     slide_id_column: slide_id
     case_id_column: case_id
@@ -82,10 +88,11 @@ cohorts:
     wsi_five_questions_json: text_prompts/wsi_five/clinical_questions/rcc.json
     prompts:
       focus: text_prompts/focus/TCGA_RCC_two_scale_text_prompt.csv
-      vila_mil: text_prompts/focus/TCGA_RCC_two_scale_text_prompt.csv
+      # Byte-exact ViLa-MIL release bank. Its third prompt says CRCC upstream;
+      # positional binding maps that unchanged text to classifier label CHRCC.
+      vila_mil: text_prompts/vila_mil/TCGA_RCC_two_scale_text_prompt.csv
       mscpt: train_data/gpt/description/RCC.json
       slip: text_prompts/slip/tcga_rcc_tissues.json
-      sldpc: text_prompts/sldpc/tcga_rcc.yaml
       cod_mil: text_prompts/cod_mil/rcc_chain_of_diagnosis.json
       maple: text_prompts/maple/RCC_attributes.json
     # The imported 30-row upstream CLIP tensor is retained for audit only: its

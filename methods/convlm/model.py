@@ -1,10 +1,9 @@
-"""Attribute-conditioned token-pruning ViT used by ConVLM.
+"""Local attribute-conditioned token-pruning transformer inspired by ConVLM.
 
-The official ConVLM release is a patch-level zero-shot pipeline.  Its key
-mechanisms are retained here: pathology-patch tokens are conditioned on the
-Quilt-LLaVA/QuiltNet attribute of the observed class and pruned at three
-transformer depths; the resulting visual representation is aligned to the
-same attribute space for zero-shot prediction.
+The released training path feeds RGB images to its own patch-embedding ViT.
+PGVL-Gym instead consumes already embedded WSI patches and reconstructs the
+reported attribute conditioning and token-pruning ideas in feature space.
+That distinction is recorded as partial implementation provenance.
 """
 from __future__ import annotations
 
@@ -61,18 +60,16 @@ class _ConditionedBlock(nn.Module):
 
 
 class AttributeConVLM(nn.Module):
-    """ConVLM attribute-conditioned encoder over precomputed patch features.
+    """Local ConVLM-like encoder over precomputed patch features.
 
-    Upstream extracts patch- and ROI-level features with UNI
-    (``ConVLM_visual_feature_extraction.py``) and trains on those; its config
-    exposes the embedding dimension precisely because the visual encoder is not
-    part of the trained model. This consumes the same input rather than
-    re-learning a vision tower from scratch, which would need pretraining the
-    release never performed and never published weights for.
+    The release contains a separate UNI feature-extraction utility, but its
+    ``train.py`` constructs the raw-image ViT in ``convlm.py`` and does not
+    consume those extracted bags. This class therefore defines PGVL's own
+    feature-bag adaptation boundary rather than claiming input equivalence.
 
-    The method's own mechanisms are kept: attributes are injected into the token
-    stream, tokens are pruned at three depths, and the output is aligned to the
-    attribute space for zero-shot comparison.
+    The reconstructed mechanisms inject attributes into the token stream,
+    prune tokens at three depths, and align the output to attribute space for
+    zero-shot comparison.
     """
 
     def __init__(self, attr_dim: int, feature_dim: int = 1024,

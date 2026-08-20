@@ -34,6 +34,19 @@ compile task prompts for cohorts not released by the authors; those configs
 record `prompt_provenance` and must be reported as extensions rather than exact
 prompt-asset reproductions.
 
+ViLa-MIL configs use the released headerless one-column layout: all low-scale
+class prompts, then all high-scale prompts. Lung and RCC point to pinned exact
+upstream copies; UBC-OCEAN is a generated extension and declares its positional
+file-class order and hashes explicitly. FOCUS uses the same native positional
+layout but keeps method-owned assets and provenance: Lung and UBC-OCEAN are
+exact upstream copies, while RCC is a generated task extension. The two methods'
+files are not interchangeable merely because their schemas match.
+
+TOP configs bind the task-agnostic instance bank and any task-specific bag
+initializer independently with file and semantic hashes. They also declare the
+bag usage (`standard_upstream_recipe` versus an explicit alternative); runtime
+and doctor derive the combined provenance from those validated roles.
+
 | Method   | Reference script in upstream repo                       |
 | -------- | ------------------------------------------------------- |
 | FOCUS    | `UBC-OCEAN.sh`, `LUAD_LUSC.sh`, `camelyon.sh`           |

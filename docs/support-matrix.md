@@ -17,7 +17,7 @@ feature or checkpoint is currently present.
 | SLIP | Patch bag | Allowlist | CLIP ViT-B, CLIP-RN50, PLIP, BiomedCLIP |
 | WSI-FiVE | Patch bag; native train-time answer bank | Precomputed | Offline 512-wide features plus WSI-FiVE aggregation/text towers |
 | MUSE | Patch bag | Capability | Any declared patch space with a compatible text encoder and learned adapter |
-| ConVLM | Attribute-conditioned precomputed patch bag | Precomputed | UNI feature bags plus ConVLM's token transformer |
+| ConVLM | Local attribute-conditioned patch-bag reconstruction | Precomputed | Any declared patch bags plus metadata-bound attribute vectors; not the released raw-image training path |
 | SLDPC | Slide embedding | Capability | Soft-prompt and text-encoding prompt tower; slide source declared separately |
 
 Query the live contracts at any time:
@@ -44,8 +44,25 @@ The standard protocols expand 13 method families into 19 declared variants:
 | SLIP | CLIP-RN50 10x |
 | WSI-FiVE | 512-d patch bag; six fixed questions, train-only answer candidates, and a fixed evaluation description bank (BioClinicalBERT tower) |
 | SLDPC | TITAN 20x slide embeddings and prompt tower |
-| ConVLM | UNI 20x patch bags plus QuiltNet attribute vectors |
+| ConVLM | Local patch-bag reconstruction; audited generated prompts or metadata-bound encoded attributes (no upstream bank is released) |
 | Composite | CLIP-RN50 10x classname baseline |
+
+FOCUS prompt fidelity is upstream for TCGA-NSCLC, UBC-OCEAN, and CAMELYON16,
+whose native positional CSVs are byte-exact copies. TCGA-BRCA and TCGA-RCC use
+generated native-format extensions because the release contains no matching
+banks. UBC's released file order is explicitly rebound to benchmark order.
+
+ViLa-MIL prompt fidelity is task-specific: TCGA-NSCLC and TCGA-RCC select
+byte-exact released native CSVs, while TCGA-BRCA, UBC-OCEAN, and CAMELYON16 use
+generated native-format task extensions. The RCC copy preserves upstream's
+`CRCC` text while explicitly binding that positional slot to `CHRCC`.
+
+WSI-FiVE native NSCLC uses three hash-bound roles: six upstream questions in a
+derived container, a complete 939-case answer bank containing 912 upstream
+answers plus 27 disclosed generated completions, and two upstream evaluation
+descriptions in a derived container. RCC and UBC use generated questions plus
+classname comparison and are explicitly simplified conditions, not upstream
+prompt banks.
 
 Architectural compatibility is not implementation fidelity. Generated configs
 and result tables separately carry `implementation_provenance` and

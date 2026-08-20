@@ -68,18 +68,26 @@ cohorts:
     - ovarian high-grade serous carcinoma
     - ovarian low-grade serous carcinoma
     - ovarian mucinous carcinoma
+    # Exact class-token sequence from the released SLDPC dataset config. The
+    # synonym bank is a separate zero-shot baseline input, not Stage 1/2 text.
+    sldpc_prompt_classnames: [CC, EC, HGSC, LGSC, MC]
+    sldpc_prompt_provenance: upstream
+    sldpc_zero_shot_prompt_yaml: text_prompts/sldpc/ubc_ocean.yaml
     prompt_spec: benchmarks/ubc_ocean/prompts/ubc_ocean.yaml
     muse_prompt_json: train_data/gpt/description/UBC-OCEAN.json
+    # Byte-exact native FOCUS bank. Its released positional class order differs
+    # from this benchmark, so the binding is declared and reordered explicitly.
     focus_prompt_csv: text_prompts/focus/UBC_OCEAN_two_scale_text_prompt.csv
+    focus_prompt_file_classnames: [CC, HGSC, LGSC, EC, MC]
     mscpt_prompt_json: train_data/gpt/description/UBC-OCEAN.json
     slip_tissue_json: text_prompts/slip/ubc_ocean_tissues.json
-    sldpc_prompt_yaml: text_prompts/sldpc/ubc_ocean.yaml
     prompts:
       focus: text_prompts/focus/UBC_OCEAN_two_scale_text_prompt.csv
-      vila_mil: text_prompts/focus/UBC_OCEAN_two_scale_text_prompt.csv
+      # ViLa-MIL releases no UBC-OCEAN bank; this is a generated task extension
+      # in the method's native headerless low-then-high format.
+      vila_mil: text_prompts/vila_mil/UBC_OCEAN_two_scale_text_prompt.csv
       mscpt: train_data/gpt/description/UBC-OCEAN.json
       slip: text_prompts/slip/ubc_ocean_tissues.json
-      sldpc: text_prompts/sldpc/ubc_ocean.yaml
 experiments:
   pathpt:
     method: pathpt

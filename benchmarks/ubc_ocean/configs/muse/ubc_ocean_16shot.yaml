@@ -45,6 +45,10 @@ experiment: muse
 epochs: 200
 prompt_provenance: generated
 results_dir: ${PGVL_REPO_ROOT}/results/ubc_ocean_benchmark/muse/ubc_ocean/16shot
+implementation_provenance: reimplemented_feature_space
+upstream_fidelity: partial
+fidelity_note: Local feature-space reconstruction omits upstream stochastic multi-view
+  semantic optimization.
 prompt_feature_space_id: hf:MahmoodLab/conch
 patch_encoder:
   input_kind: patch_bag

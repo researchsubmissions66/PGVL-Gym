@@ -6,10 +6,12 @@ still needs, and submits only that. A run that cannot proceed -- missing
 features, missing metadata, an ungenerated split -- is *skipped with a recorded
 reason* rather than being submitted to fail on a GPU, and never stops the walk.
 
-State is derived from what is on disk (``metrics.json`` per results directory)
-plus the live SLURM queue. There is no separate bookkeeping file to drift out of
-sync, so the launcher can be re-run at any time and will submit exactly the
-runs that are still outstanding.
+State is derived from what is on disk (feature manifests and files,
+``metrics.json`` per results directory) plus the live SLURM queue. Before each
+plan, feature coverage and feature-derived matrix readiness are refreshed
+without rebuilding prompts, splits, or configs. The launcher can therefore be
+re-run after an asynchronous feature backfill and will pick up newly complete
+runs.
 
 Usage
 -----
@@ -56,6 +58,7 @@ JOB_SCRIPT = REPO / "scripts" / "pgvl_job.sh"
 sys.path.insert(0, str(REPO))
 from common.preflight import preflight  # noqa: E402
 from common.configuration import expand_path, load_yaml_config  # noqa: E402
+from common.readiness import refresh_benchmark_readiness  # noqa: E402
 from common.run_state import validate_resume_state  # noqa: E402
 
 # One benchmark directory per cohort. Multi-cohort protocols were split up so a
@@ -261,6 +264,18 @@ def _queued_job_names() -> dict[str, str] | None:
         if name:
             jobs.setdefault(name, job_id)
     return jobs
+
+
+def _submission_environment_error() -> str | None:
+    """Return why compute jobs cannot enter the project environment."""
+    environment = os.environ.get("PGVL_CONDA_ENV", "").strip()
+    if environment:
+        return None
+    return (
+        "PGVL_CONDA_ENV is unset; refusing to submit jobs that would fall "
+        "back to the incomplete site PyTorch module. Set it to the Conda "
+        "environment created from environment.yml. Dry-run planning does "
+        "not require the training environment.")
 
 
 def _skip_reason(row: dict[str, str]) -> str:
@@ -736,6 +751,10 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
                            help="submit runs the matrix marks not ready "
                                 "(they are expected to fail; for debugging)")
     behaviour.add_argument(
+        "--no-refresh-readiness", action="store_true",
+        help="plan from the existing feature readiness cells without checking "
+             "feature files (normally readiness is refreshed automatically)")
+    behaviour.add_argument(
         "--best-effort", action="store_true",
         help="return success even when selected rows or submissions error")
     behaviour.add_argument("--allow-missing-features", type=_nonnegative_int,
@@ -769,6 +788,11 @@ def main(argv: Sequence[str] | None = None) -> int:
     if not JOB_SCRIPT.exists():
         print(f"FATAL: job script not found: {JOB_SCRIPT}", file=sys.stderr)
         return 1
+    if not args.dry_run:
+        environment_error = _submission_environment_error()
+        if environment_error:
+            print(f"FATAL: {environment_error}", file=sys.stderr)
+            return 1
     if not args.dry_run and not os.access(JOB_SCRIPT, os.X_OK):
         JOB_SCRIPT.chmod(0o755)
 
@@ -785,6 +809,26 @@ def main(argv: Sequence[str] | None = None) -> int:
                 plan.notes.append(note)
                 print(f"  ! {note}")
 
+    refresh_failed: set[str] = set()
+    if not args.no_refresh_readiness:
+        print("Refreshing feature readiness", flush=True)
+        for benchmark in args.benchmarks:
+            benchmark_dir = _benchmark_directory(benchmark)
+            if benchmark_dir is None:
+                continue
+            try:
+                refreshed = refresh_benchmark_readiness(benchmark_dir)
+            except (OSError, ValueError) as error:
+                note = f"{benchmark}: readiness refresh failed ({error})"
+                plan.notes.append(note)
+                refresh_failed.add(benchmark)
+                print(f"  ! {note}", flush=True)
+            else:
+                print(
+                    f"  {benchmark}: {refreshed.feature_sources} feature "
+                    f"sources, {refreshed.matrix_rows} rows, "
+                    f"{refreshed.changed_rows} changed", flush=True)
+
     queued = _queued_job_names()
     if queued is None:
         if not args.dry_run and not args.force:
@@ -796,6 +840,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         queued = {}
     print(f"\nPlanning ({len(queued)} of your jobs already in the queue)")
     for benchmark in args.benchmarks:
+        if benchmark in refresh_failed:
+            continue
         runs, notes = plan_benchmark(benchmark, args, queued)
         plan.runs.extend(runs)
         plan.notes.extend(notes)

@@ -77,7 +77,10 @@ export PGVL_CONDA_ENV=/path/to/project/envs/pgvl-gym
 
 `scripts/pgvl_job.sh` activates `$PGVL_CONDA_ENV` on the compute node and exits
 with status 78 if activation fails, so a broken environment is reported as an
-environment problem rather than being mistaken for a modelling failure.
+environment problem rather than being mistaken for a modelling failure. Store
+the value in the ignored `.env` file when it should persist across login
+sessions. Campaign dry-runs remain available without it, but real submission
+fails before contacting `sbatch` when the value is empty.
 
 !!! warning "A cluster PyTorch module is not enough"
 

@@ -147,8 +147,10 @@ for cohort nsclc. If this cohort already ships answers, it does not need
 generating -- generated text would displace published text.
 ```
 
-TCGA-Lung is the reference cohort. Its answers are the authors', and generated
-text must not replace them.
+TCGA-Lung is the reference cohort. Its checked-in complete bank preserves 912
+author answers and fills 27 blank upstream cells with the conservative local
+policy disclosed in `text_prompts/PROVENANCE.json`; an external model must not
+silently replace either portion.
 
 ## What this does not do
 

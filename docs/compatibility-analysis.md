@@ -54,13 +54,16 @@ than of the methods or encoders themselves.
 
 ### 1. The method fixes its visual representation boundary (20 cells)
 
-`wsi_five` and `convlm` are pinned to `wsi-five-vit` and `convlm-vit`.
+`wsi_five` and the local `convlm` reconstruction are pinned to
+`wsi-five-vit` and `convlm-vit`.
 
-For **ConVLM**, UNI produces the patch embeddings offline; ConVLM does not own
-or train that image encoder. The fixed boundary is nevertheless meaningful:
-attribute injection and token pruning happen in ConVLM's transformer over UNI
-tokens, so swapping the feature space without regenerating and validating the
-paired assets does not reproduce the declared protocol.
+For **ConVLM**, `PRECOMPUTED` describes PGVL's local adaptation, not the
+released training path. The release has a separate UNI extraction utility, but
+its `train.py` constructs a raw-image ViT and does not consume those bags. The
+local fixed boundary remains meaningful: patch bags must declare their feature
+space, and encoded attributes must bind class order, source prompts, and text
+encoder identity. Changing either side creates a different reconstructed
+condition; none is presented as the upstream protocol.
 
 For **WSI-FiVE**, the pin likewise describes a fixed precomputed feature
 boundary, not an owned image encoder. WSI-FiVE has no vision tower at all.

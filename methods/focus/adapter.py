@@ -10,74 +10,68 @@ object with attributes:
 and loads CONCH internally from `ckpts/conch.pth`.
 """
 from __future__ import annotations
-from pathlib import Path
 from types import SimpleNamespace
 import torch
 import torch.nn as nn
-import pandas as pd
 
 from methods.base import BaseMethod, probabilities_to_logits
 from common.backbones import (
     BackboneCapability as Cap, FeatureLevel, MethodBackboneContract, SwapPolicy)
+from common.prompts import FOCUS_PROMPT_FORMAT, load_focus_prompt_bank
 
 
 def _build_config(cfg):
-    text_prompt = None
-    if cfg.get("text_prompt_path"):
-        frame = pd.read_csv(cfg["text_prompt_path"])
-        required = {"class_name", "low_res_prompt", "high_res_prompt"}
-        missing = sorted(required - set(frame.columns))
-        if missing:
-            raise ValueError(
-                "FOCUS prompt CSV is missing columns: " + ", ".join(missing))
-        if len(frame) != int(cfg["n_classes"]):
-            raise ValueError(
-                f"FOCUS prompt CSV has {len(frame)} rows for "
-                f"n_classes={cfg['n_classes']}")
-        if frame["class_name"].astype(str).duplicated().any():
-            raise ValueError("FOCUS prompt CSV repeats class_name values")
-        for column in ("class_name", "low_res_prompt", "high_res_prompt"):
-            if frame[column].isna().any() or (
-                    frame[column].astype(str).str.strip() == "").any():
-                raise ValueError(
-                    f"FOCUS prompt CSV has blank values in {column}")
-        actual_order = frame["class_name"].astype(str).str.strip().tolist()
-        expected_orders = []
-        if isinstance(cfg.get("label_dict"), dict):
-            expected_orders.append([
-                str(label) for label, _index in sorted(
-                    cfg["label_dict"].items(), key=lambda item: item[1])])
-        if isinstance(cfg.get("classnames"), list):
-            expected_orders.append([str(value) for value in cfg["classnames"]])
-        if expected_orders and actual_order not in expected_orders:
-            raise ValueError(
-                "FOCUS prompt CSV class_name order does not match "
-                "label_dict/classnames class-index order")
-        # Native learner indexes [all low classes, all high classes].
-        text_prompt = (frame["low_res_prompt"].astype(str).tolist() +
-                       frame["high_res_prompt"].astype(str).tolist())
+    if not cfg.get("text_prompt_path"):
+        raise ValueError("FOCUS requires text_prompt_path")
+    if cfg.get("focus_prompt_format") != FOCUS_PROMPT_FORMAT:
+        raise ValueError(
+            "FOCUS requires focus_prompt_format=" + FOCUS_PROMPT_FORMAT)
+    for key in (
+        "focus_prompt_file_classnames",
+        "focus_prompt_file_sha256",
+        "focus_prompt_bank_sha256",
+        "prompt_provenance",
+        "prompt_source",
+    ):
+        if not cfg.get(key):
+            raise ValueError(f"FOCUS requires {key}")
+    label_dict = cfg.get("label_dict")
+    if not isinstance(label_dict, dict) or not label_dict:
+        raise ValueError("FOCUS requires an ordered label_dict")
+    if (any(not isinstance(index, int) or isinstance(index, bool)
+            for index in label_dict.values())
+            or sorted(label_dict.values()) != list(range(len(label_dict)))):
+        raise ValueError("FOCUS label_dict indices must be contiguous from zero")
+    labels = [
+        str(label) for label, _index in sorted(
+            label_dict.items(), key=lambda item: item[1])]
+    if int(cfg.get("n_classes", -1)) != len(labels):
+        raise ValueError("FOCUS n_classes does not match label_dict")
+    bank = load_focus_prompt_bank(
+        cfg["text_prompt_path"],
+        class_names=labels,
+        file_class_names=cfg.get("focus_prompt_file_classnames"),
+        expected_provenance=cfg.get("prompt_provenance"),
+        expected_file_sha256=cfg.get("focus_prompt_file_sha256"),
+        expected_ordered_prompt_bank_sha256=cfg.get(
+            "focus_prompt_bank_sha256"),
+    )
+    expected_source = {
+        "upstream": "focus_upstream_native_two_scale_csv",
+        "derived": "focus_derived_native_two_scale_csv",
+        "generated": "focus_generated_native_two_scale_csv",
+    }[bank.provenance]
+    if cfg["prompt_source"] != expected_source:
+        raise ValueError("FOCUS prompt_source does not match prompt provenance")
     return SimpleNamespace(
         input_size=cfg.get("feature_dim", 1024),
         hidden_size=cfg.get("hidden_size", 192),
         prototype_number=cfg.get("prototype_number", 16),
-        text_prompt=text_prompt,
+        text_prompt=list(bank.prompts),
         window_size=cfg.get("window_size", 7),
         sim_threshold=cfg.get("sim_threshold", 0.7),
         max_context_length=cfg.get("max_context_length", 4096),
     )
-
-
-def _set_trainable_scope(model: nn.Module, scope: str) -> None:
-    """Restrict second-stage FOCUS optimization to its learned context."""
-    if scope == "all":
-        return
-    if scope != "soft_context":
-        raise ValueError(
-            "FOCUS trainable_scope must be 'all' or 'soft_context', "
-            f"got {scope!r}")
-    for parameter in model.parameters():
-        parameter.requires_grad_(False)
-    model.prompt_learner.ctx.requires_grad_(True)
 
 
 class FOCUSMethod(BaseMethod):
@@ -112,27 +106,6 @@ class FOCUSMethod(BaseMethod):
         encoder = self.load_encoder(weights_path=self.cfg.get("conch_ckpt"))
         model = FOCUS(config, num_classes=self.cfg["n_classes"],
                       conch_model=encoder.raw_model)
-        initial_checkpoint = self.cfg.get("initial_checkpoint")
-        if initial_checkpoint:
-            checkpoint_path = Path(initial_checkpoint).expanduser().resolve()
-            if not checkpoint_path.is_file():
-                raise FileNotFoundError(
-                    f"FOCUS initial checkpoint does not exist: {checkpoint_path}")
-            try:
-                state = torch.load(
-                    checkpoint_path, map_location=self.device, weights_only=True)
-            except TypeError:  # torch < 2.0
-                state = torch.load(checkpoint_path, map_location=self.device)
-            if isinstance(state, dict) and "state_dict" in state:
-                state = state["state_dict"]
-            model.load_state_dict(state, strict=True)
-            # Prompt buffers are part of the checkpoint. Retokenize only after
-            # loading so the configured GEPA text replaces the old seed text
-            # while the learned context vectors remain intact.
-            model.set_class_prompts(config.text_prompt)
-
-        _set_trainable_scope(
-            model, self.cfg.get("trainable_scope", "all"))
         return model.to(self.device)
 
     def train_step(self, batch, model, optimizer, loss_fn):

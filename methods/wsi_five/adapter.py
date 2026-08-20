@@ -24,10 +24,15 @@ import torch.nn as nn
 
 from methods.base import BaseMethod
 from common.backbones import FeatureLevel, MethodBackboneContract, SwapPolicy
+from common.prompts import (
+    WSI_FIVE_PROMPT_FORMAT,
+    load_wsi_five_answer_bank,
+    load_wsi_five_evaluation_bank,
+    load_wsi_five_question_bank,
+)
 from .prompts import (
     ANSWER_FIELD_COUNT,
     augment_answer_bank,
-    load_evaluation_prompts,
     normalize_answer_fields,
 )
 
@@ -55,16 +60,65 @@ class WSIFiVEMethod(BaseMethod):
             raise ValueError(
                 "WSI-FiVE training_mode must be 'upstream_answer_bank' or "
                 "'simplified_classnames'")
+        if self.cfg.get("wsi_prompt_format") != WSI_FIVE_PROMPT_FORMAT:
+            raise ValueError(
+                "WSI-FiVE requires wsi_prompt_format=" +
+                WSI_FIVE_PROMPT_FORMAT)
+        for key in (
+            "clinical_questions", "wsi_question_file_sha256",
+            "wsi_question_bank_sha256", "wsi_question_provenance",
+            "prompt_provenance", "prompt_source",
+        ):
+            if not self.cfg.get(key):
+                raise ValueError(f"WSI-FiVE requires {key}")
+        self.question_bank = load_wsi_five_question_bank(
+            self.cfg["clinical_questions"],
+            expected_file_sha256=self.cfg["wsi_question_file_sha256"],
+            expected_prompt_bank_sha256=self.cfg["wsi_question_bank_sha256"],
+            expected_provenance=self.cfg["wsi_question_provenance"],
+        )
         if self.native_mode:
-            path = self.cfg.get("evaluation_prompt_path")
-            if not path:
-                raise ValueError(
-                    "WSI-FiVE upstream_answer_bank requires "
-                    "evaluation_prompt_path")
-            self.evaluation_prompts = load_evaluation_prompts(
-                path, self.cfg["label_dict"])
+            for key in (
+                "report_csv", "wsi_answer_file_sha256",
+                "wsi_answer_bank_sha256", "wsi_answer_provenance",
+                "evaluation_prompt_path", "wsi_evaluation_file_sha256",
+                "wsi_evaluation_bank_sha256", "wsi_evaluation_provenance",
+            ):
+                if not self.cfg.get(key):
+                    raise ValueError(
+                        f"WSI-FiVE upstream_answer_bank requires {key}")
+            self.answer_bank = load_wsi_five_answer_bank(
+                self.cfg["report_csv"],
+                expected_file_sha256=self.cfg["wsi_answer_file_sha256"],
+                expected_answer_bank_sha256=self.cfg["wsi_answer_bank_sha256"],
+                expected_provenance=self.cfg["wsi_answer_provenance"],
+            )
+            evaluation = load_wsi_five_evaluation_bank(
+                self.cfg["evaluation_prompt_path"], self.cfg["label_dict"],
+                expected_file_sha256=self.cfg["wsi_evaluation_file_sha256"],
+                expected_prompt_bank_sha256=(
+                    self.cfg["wsi_evaluation_bank_sha256"]),
+                expected_provenance=self.cfg["wsi_evaluation_provenance"],
+            )
+            self.evaluation_prompts = evaluation.prompts
+            expected_prompt_provenance = (
+                f"{self.question_bank.provenance}_questions_with_"
+                f"{self.answer_bank.provenance}_answer_and_"
+                f"{evaluation.provenance}_evaluation_banks")
+            expected_prompt_source = "wsi_five_derived_upstream_text_assets"
         else:
+            self.answer_bank = None
             self.evaluation_prompts = tuple(self.cfg.get("classnames", ()))
+            expected_prompt_provenance = (
+                f"{self.question_bank.provenance}_questions_with_"
+                "classname_comparison")
+            expected_prompt_source = "wsi_five_simplified_classname_baseline"
+        if self.cfg["prompt_provenance"] != expected_prompt_provenance:
+            raise ValueError(
+                "WSI-FiVE prompt_provenance does not match active text roles")
+        if self.cfg["prompt_source"] != expected_prompt_source:
+            raise ValueError(
+                "WSI-FiVE prompt_source does not match active text roles")
         if len(self.evaluation_prompts) != int(self.cfg["n_classes"]):
             raise ValueError(
                 "WSI-FiVE evaluation prompt count must match n_classes")
@@ -88,7 +142,7 @@ class WSIFiVEMethod(BaseMethod):
             learnable_prompts=self.cfg.get("learnable_prompts", 16),
             lora_targets=self.cfg.get("lora_targets", "query,key,value,dense"),
             logit_scale=self.cfg.get("logit_scale", 300.0),
-            prompt_list=self.cfg.get("clinical_questions"),
+            prompt_list=list(self.question_bank.questions),
         )
         return model.to(self.device)
 

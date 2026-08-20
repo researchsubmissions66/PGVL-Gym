@@ -48,6 +48,10 @@ experiment: mscpt_5x20x
 epochs: 50
 prompt_provenance: upstream
 results_dir: ${PGVL_REPO_ROOT}/results/ubc_ocean_benchmark/mscpt_5x20x/ubc_ocean/4shot
+implementation_provenance: vendored_feature_only
+upstream_fidelity: partial
+fidelity_note: Generated runs use precomputed high-scale features and bypass the upstream
+  selected-5x raw-image visual-prompt branch.
 lr: 0.0001
 weight_decay: 1.0e-05
 dataset_name: UBC-OCEAN

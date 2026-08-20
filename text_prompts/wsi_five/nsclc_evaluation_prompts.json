@@ -1,11 +1,17 @@
 {
-  "_provenance": "upstream",
-  "_source": "https://github.com/ls1rius/WSI_FiVE/tree/main/data/TCGA-lung-patch_report",
+  "_provenance": "derived",
+  "_content_provenance": "upstream",
+  "_upstream_commit": "07344c9ac6eef919fcd1440877ea796feef7445a",
+  "_source": "https://github.com/ls1rius/WSI_FiVE/tree/07344c9ac6eef919fcd1440877ea796feef7445a/data/TCGA-lung-patch_report",
   "_upstream_files": [
     "LUAD_LUSC_labels_train_reid.csv",
     "LUAD_LUSC_labels_val_reid.csv"
   ],
-  "_note": "Verbatim two-row evaluation bank released by WSI-FiVE. Both upstream train and validation class-description CSVs contain these same prompts in LUAD, LUSC order.",
+  "_upstream_sha256": [
+    "8f4d35087a28460abcfd6c9bc4aa8d3e239fa14f9aaa9e6bc6cb78ba7ac09a7f",
+    "8f4d35087a28460abcfd6c9bc4aa8d3e239fa14f9aaa9e6bc6cb78ba7ac09a7f"
+  ],
+  "_note": "Derived JSON container holding the verbatim two-row evaluation bank released by WSI-FiVE. Both upstream train and validation class-description CSVs contain these same prompts in LUAD, LUSC order.",
   "prompts": {
     "LUAD": "LUAD (Lung Adenocarcinoma) typically exhibits a diverse array of cell types, including glandular, papillary, and acinar structures with mucin production, and varying differentiation levels from well-differentiated to poorly-differentiated.",
     "LUSC": "LUSC (Lung Squamous Cell Carcinoma) is characterized by tumor cells forming sheet-like squamous structures, possibly showing keratinization features like keratin pearl formation, and is typically well-differentiated."

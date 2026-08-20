@@ -37,12 +37,14 @@ feature_dim: 768
 method: pathpt
 experiment: pathpt_keep
 epochs: 20
-training_mode: upstream_patch_ssl
 prompt_provenance: upstream
+results_dir: ${PGVL_REPO_ROOT}/results/camelyon16_benchmark/pathpt_keep/camelyon16/16shot
+training_mode: upstream_patch_ssl
 implementation_provenance: vendored_native_objective_binary_adaptation
 upstream_fidelity: partial
-fidelity_note: Native PathPT patch objective with a disclosed binary slide-classification adaptation.
-results_dir: ${PGVL_REPO_ROOT}/results/camelyon16_benchmark/pathpt_keep/camelyon16/16shot
+fidelity_note: Prompt selection, PatchSSLoss, and patch voting are restored, but CAMELYON
+  normal-vs-tumour WSI classification adapts PathPT's tumour-subtyping label and voting
+  semantics.
 lr: 0.0001
 n_ctx: 32
 prompt_init: template

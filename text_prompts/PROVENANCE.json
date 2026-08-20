@@ -3,23 +3,51 @@
   "method_summaries": {
     "focus": {
       "upstream_repository": "https://github.com/dddavid4real/FOCUS",
-      "copied_from_upstream": [],
-      "generated_or_rewritten": [
+      "upstream_commit": "66c4015d5ba09657f4c8183bc06947faecd5b01f",
+      "copied_from_upstream": [
         "focus/CAMELYON16_two_scale_text_prompt.csv",
-        "focus/TCGA_BRCA_two_scale_text_prompt.csv",
         "focus/TCGA_NSCLC_two_scale_text_prompt.csv",
-        "focus/TCGA_RCC_two_scale_text_prompt.csv",
-        "focus/TCGA_RCC_GEPA_two_scale_text_prompt.csv",
-        "focus/UBC_OCEAN_two_scale_text_prompt.csv",
-        "TCGA_Lung_two_scale_text_prompt.csv",
-        "UBC-OCEAN_two_scale_text_prompt.csv"
+        "focus/UBC_OCEAN_two_scale_text_prompt.csv"
       ],
-      "upstream_files_available_but_not_copied": {
-        "focus/CAMELYON16_two_scale_text_prompt.csv": "text_prompt/CAMELYON_two_scale_text_prompt.csv",
-        "focus/TCGA_NSCLC_two_scale_text_prompt.csv": "text_prompt/TCGA_Lung_two_scale_text_prompt.csv",
-        "focus/UBC_OCEAN_two_scale_text_prompt.csv": "text_prompt/UBC-OCEAN_two_scale_text_prompt.csv"
+      "generated_or_rewritten": [
+        "focus/TCGA_BRCA_two_scale_text_prompt.csv",
+        "focus/TCGA_RCC_two_scale_text_prompt.csv",
+        "prompt_spec-compiled FOCUS banks"
+      ],
+      "selected_prompt_banks": {
+        "TCGA-NSCLC": "exact upstream TCGA_Lung bank",
+        "UBC-OCEAN": "exact upstream UBC-OCEAN bank, reordered at runtime from the released CC/HGSC/LGSC/EC/MC order to benchmark order",
+        "CAMELYON16": "exact upstream CAMELYON bank",
+        "TCGA-BRCA": "generated task extension",
+        "TCGA-RCC": "generated task extension"
       },
-      "note": "No checked-in FOCUS CSV is a verbatim copy of an upstream prompt file. CAMELYON16, TCGA-NSCLC, and UBC-OCEAN use locally rewritten wording for tasks that do have upstream banks. TCGA-BRCA and TCGA-RCC use locally generated banks for tasks with no prompt CSV in the FOCUS release. The two root-level legacy CSVs are local classname templates, not copies of the richer focus/ files."
+      "native_format": "Headerless one-column CSV: every low-resolution class prompt in file class order, followed by every high-resolution prompt in the same order.",
+      "known_upstream_text": "The UBC-OCEAN high-resolution clear-cell row contains an unescaped quoted word, hobnail. The byte-exact file and the resulting upstream pandas parse are preserved rather than silently corrected.",
+      "note": "CAMELYON16, TCGA-NSCLC, and UBC-OCEAN are byte-exact upstream prompt files. TCGA-BRCA and TCGA-RCC use generated native-format banks because the FOCUS release provides no matching CSV."
+    },
+    "vila_mil": {
+      "upstream_repository": "https://github.com/Jiangbo-Shi/ViLa-MIL",
+      "upstream_commit": "68a11cf0d5cf092dd980f0da1cb38ccac8747a82",
+      "copied_from_upstream": [
+        "vila_mil/TCGA_Lung_two_scale_text_prompt.csv",
+        "vila_mil/TCGA_RCC_two_scale_text_prompt.csv"
+      ],
+      "generated_or_rewritten": [
+        "vila_mil/TCGA_BRCA_two_scale_text_prompt.csv",
+        "vila_mil/UBC_OCEAN_two_scale_text_prompt.csv",
+        "vila_mil/CAMELYON16_two_scale_text_prompt.csv",
+        "prompt_spec-compiled ViLa-MIL banks"
+      ],
+      "selected_prompt_banks": {
+        "TCGA-NSCLC": "exact upstream TCGA_Lung bank",
+        "TCGA-RCC": "exact upstream TCGA_RCC bank",
+        "TCGA-BRCA": "generated task extension",
+        "UBC-OCEAN": "generated task extension",
+        "CAMELYON16": "generated task extension"
+      },
+      "native_format": "Headerless one-column CSV: every low-resolution class prompt in classifier order, followed by every high-resolution class prompt in the same order.",
+      "known_upstream_text": "The third TCGA-RCC prompt uses the token CRCC in both scales. The exact released text is preserved; its third positional slot is explicitly bound to the CHRCC classifier label.",
+      "note": "ViLa-MIL releases prompt CSVs only for TCGA-Lung and TCGA-RCC. Those two files are byte-exact copies. BRCA, UBC-OCEAN, and CAMELYON16 are explicitly generated task extensions. Assets remain method-owned even though ViLa-MIL and FOCUS use the same positional schema."
     },
     "mscpt": {
       "upstream_repository": "https://github.com/Hanminghao/MSCPT",
@@ -82,6 +110,55 @@
       ],
       "note": "Native PathPT uses the upstream 22 templates and synonym banks verbatim for BRCA, UBC-OCEAN, and CAMELYON. NSCLC and RCC are explicit generated task extensions because upstream PathPT defines neither bank. The CAMELYON Normal bank preserves the upstream missing-comma concatenation and discloses it rather than silently changing the prompt condition."
     },
+    "sldpc": {
+      "upstream_repository": "https://github.com/linlu2022/SLDPC",
+      "upstream_commit": "3c9580a1f3602a140d7e6bcc75ad93d7554e4e85",
+      "copied_from_upstream": [
+        "text_prompts/sldpc/tcga_nsclc.yaml",
+        "text_prompts/sldpc/tcga_ot.yaml",
+        "text_prompts/sldpc/tcga_rcc.yaml",
+        "text_prompts/sldpc/ubc_ocean.yaml"
+      ],
+      "generated_or_rewritten": [
+        "text_prompts/sldpc/camelyon16.yaml",
+        "text_prompts/sldpc/tcga_brca.yaml"
+      ],
+      "active_stage1_stage2_class_tokens": {
+        "TCGA-NSCLC": {
+          "tokens": ["LUAD", "LUSC"],
+          "provenance": "upstream",
+          "source": "https://github.com/linlu2022/SLDPC/blob/3c9580a1f3602a140d7e6bcc75ad93d7554e4e85/configs/datasets/tcga_nsclc.yaml",
+          "sha256": "4515a591db0ff0ef8d5f4ffb33580f649f3d8b81a6bf809f2c01993e6a8dd683"
+        },
+        "TCGA-RCC": {
+          "tokens": ["CCRCC", "PRCC", "CHRCC"],
+          "provenance": "derived",
+          "source": "https://github.com/linlu2022/SLDPC/blob/3c9580a1f3602a140d7e6bcc75ad93d7554e4e85/configs/datasets/tcga_rcc.yaml",
+          "sha256": "aeeeb9a3f9259d8840cd985e83dd60d18a8b1295af7f765f4957280c044430a8",
+          "note": "The tokens are upstream but reordered to the benchmark label order."
+        },
+        "TCGA-BRCA": {
+          "tokens": ["IDC", "ILC"],
+          "provenance": "derived",
+          "source": "https://github.com/linlu2022/SLDPC/blob/3c9580a1f3602a140d7e6bcc75ad93d7554e4e85/configs/datasets/tcga_ot.yaml",
+          "sha256": "4745c82dbf12ac7bde110c0f974ef55f71cd3815df9ef20582344c3794f302d8",
+          "note": "The two tokens are selected from the released TCGA-OT class-token list."
+        },
+        "UBC-OCEAN": {
+          "tokens": ["CC", "EC", "HGSC", "LGSC", "MC"],
+          "provenance": "upstream",
+          "source": "https://github.com/linlu2022/SLDPC/blob/3c9580a1f3602a140d7e6bcc75ad93d7554e4e85/configs/datasets/ubc_ocean.yaml",
+          "sha256": "73a0f6c17591812c6c9bd0199b2d78972ce70f9448ed67962666b46f7932c134"
+        },
+        "CAMELYON16": {
+          "tokens": ["normal", "tumor"],
+          "provenance": "generated",
+          "source": "PGVL-Gym task extension; no CAMELYON16 dataset config is published by SLDPC",
+          "sha256": "cc33e5ec5db1156a9da2bc1d6a761667a67f3693dd2832787661d4c2ef435731"
+        }
+      },
+      "note": "SLDPC Stage 1/2 constructs its PromptLearner from the dataset class_names codes; it does not consume a synonym YAML. The four released YAML banks and the exact 23-template ensemble belong only to the separately reported, untrained TITAN zero-shot baseline. PGVL records optional YAMLs as reference_only_unwired and never uses them to claim the trained run's prompt provenance."
+    },
     "top": {
       "upstream_repository": "https://github.com/miccaiif/TOP",
       "upstream_commit": "8356b0dd1786d35e6d6d617d2b253c949769ba39",
@@ -109,7 +186,7 @@
         "TCGA-RCC": "No released TOP RCC bag initializer; the example config uses the upstream instance bank with random classname bag context.",
         "UBC-OCEAN": "No released TOP ovarian bag initializer; the example config uses the upstream instance bank with random classname bag context."
       },
-      "note": "The 26 instance prototypes are copied from knowledge_from_chatGPT in the released training code, not reconstructed from the six examples displayed in the supplement. Standard NSCLC and CAMELYON declarations use the exact active bagPrompt_ctx_init code literals, including ten learnable slots. The longer NSCLC descriptions from supplementary Figure 4 remain available only as an explicitly unwired alternative condition."
+      "note": "The 26 instance prototypes are copied from knowledge_from_chatGPT in the released training code, not reconstructed from the six examples displayed in the supplement. Standard NSCLC and CAMELYON declarations use the exact active bagPrompt_ctx_init code literals, including ten learnable slots. The longer NSCLC descriptions from supplementary Figure 4 remain available only as an explicitly unwired alternative condition. Every registered TOP role carries a file hash and a semantic bank hash; the shared runtime/doctor/compiler loader validates role and usage and derives the combined condition rather than trusting a prompt_provenance string."
     },
     "slip": {
       "upstream_repository": "https://github.com/LTS5/SLIP",
@@ -154,17 +231,22 @@
     },
     "wsi_five": {
       "upstream_repository": "https://github.com/ls1rius/WSI_FiVE",
-      "copied_from_upstream": [
+      "upstream_commit": "07344c9ac6eef919fcd1440877ea796feef7445a",
+      "copied_from_upstream": [],
+      "derived_from_upstream": [
         "text_prompts/wsi_five/clinical_questions/nsclc.json",
-        "text_prompts/wsi_five/nsclc_report_answers.csv",
         "text_prompts/wsi_five/nsclc_evaluation_prompts.json"
+      ],
+      "mixed_from_upstream_and_generated": [
+        "text_prompts/wsi_five/nsclc_report_answers.csv"
       ],
       "generated_or_rewritten": [
         "text_prompts/wsi_five/clinical_questions/brca.json",
         "text_prompts/wsi_five/clinical_questions/rcc.json",
         "text_prompts/wsi_five/clinical_questions/ubc_ocean.json"
       ],
-      "note": "NSCLC native mode uses the released six questions, authors' per-case answers, and verbatim LUAD/LUSC evaluation descriptions. Each training candidate bank is derived only from that fold's training cases. BRCA, RCC, and UBC-OCEAN question sets are local task extensions and cannot reproduce the released lung supervision condition; simplified modes use their questions with classname comparison and never consume report text."
+      "answer_derivation": "Merge the pinned 471-row LUAD and 468-row LUSC workbooks; split the 912 nonblank upstream answers on semicolons into exactly six stripped fields; fill all six fields for the 27 blank upstream answer cells with the disclosed deterministic not-documented/cannot-determine completion policy; and sort all 939 records by case_id. scripts/build_wsi_five_prompt_assets.py reproduces the checked-in CSV byte-for-byte.",
+      "note": "NSCLC native mode uses derived containers preserving the released six questions and verbatim LUAD/LUSC evaluation descriptions. Its complete 939-case answer bank contains 912 upstream-authored answers plus 27 explicitly generated conservative completions. Each training candidate bank is then derived only from that fold's training cases. BRCA, RCC, and UBC-OCEAN question sets are local task extensions and cannot reproduce the released lung supervision condition; simplified modes use their questions with classname comparison and never consume report text."
     },
     "muse": {
       "upstream_repository": "https://github.com/JiahaoXu-god/CVPR2026_MUSE",
@@ -195,6 +277,33 @@
         "UBC-OCEAN": "generated MUSE-schema task extension from the released MSCPT UBC-OCEAN descriptions; 40 descriptions per class"
       },
       "note": "MUSE publishes banks only for CAMELYON, TCGA-NSCLC, and TCGA-BRCA. The six selected CSVs for those tasks are byte-exact copies. RCC and UBC-OCEAN reuse text released by MSCPT, but their selection and MUSE CSV conversion are local, so they are generated MUSE task extensions rather than upstream MUSE conditions."
+    },
+    "convlm": {
+      "upstream_repository": "https://github.com/BasitAlawode/ConVLM",
+      "upstream_commit": "a399e51585eeb4c7974b274174ca9b0360a9120d",
+      "copied_from_upstream": [],
+      "generated_or_rewritten": [
+        "text_prompts/convlm/brca_attributes.json",
+        "text_prompts/convlm/camelyon16_attributes.json",
+        "text_prompts/convlm/nsclc_attributes.json",
+        "text_prompts/convlm/rcc_attributes.json",
+        "text_prompts/convlm/ubc_ocean_attributes.json"
+      ],
+      "selected_prompt_banks": {
+        "CAMELYON16": "generated local attribute descriptions; no released ConVLM attribute bank",
+        "TCGA-NSCLC": "generated local attribute descriptions; no released ConVLM attribute bank",
+        "TCGA-BRCA": "generated task extension; no released ConVLM attribute bank",
+        "TCGA-RCC": "generated task extension; no released ConVLM attribute bank",
+        "UBC-OCEAN": "generated task extension; no released ConVLM attribute bank"
+      },
+      "upstream_asset_issue": {
+        "status": "missing_and_generation_script_unusable",
+        "training_input": "train.py loads a dataset-specific att_splits.mat that is absent from the repository",
+        "generation_script": "attribute_embedding_generation.py is hard-coded to two NSCLC classes, contains malformed quoted input, calls the encode_text result as a function, and saves no matrix",
+        "image_description_role": "generate_text.py writes per-image Quilt-LLaVA descriptions, not a reusable ordered class bank"
+      },
+      "runtime_deviation": "PGVL averages normalized prompt embeddings into one vector per class. That aggregation and the local patch-bag transformer are reconstructions, not a released upstream prompt-loading path.",
+      "note": "ConVLM publishes no usable prompt or attribute matrix to copy. All five checked-in JSON banks are explicitly generated, deliberately unwired defaults. A run may select one, but it is never reported as an upstream prompt condition. Precomputed matrices must carry the source-bank digest, ordered classnames, prompt provenance, encoder feature space, and checkpoint hash."
     }
   },
   "repository_assets": {
@@ -543,28 +652,76 @@
       "sha256": "e59cc3b4816ff286c2b49095f4e7a060a6e2b8ddc917a06660588439bf3aeada"
     },
     "sldpc/camelyon16.yaml": {
-      "provenance": "upstream",
-      "source": "linlu2022/SLDPC data/datasets/zero_shot_prompts/"
+      "provenance": "generated",
+      "copied_from_upstream": false,
+      "source": "PGVL-Gym CAMELYON16 task extension; SLDPC publishes no CAMELYON16 zero-shot bank",
+      "usage": "reference_only_unwired",
+      "class_names": ["normal", "tumor"],
+      "prompt_counts_per_class": {"normal": 3, "tumor": 3},
+      "sha256": "1a96e564877078704867028f3e2f5668a7779982c273ec067032f50a0cf4d49e",
+      "prompt_mapping_sha256": "938569cef8cfff16ea374c1f6d87852d2a07c9c7794236ec4d99d6fcb6fc4c07",
+      "templates": 23,
+      "templates_sha256": "6688a22c36820dd7b8e66a8bb1b3ea67487939f13f2e65a981afc516ae74596d"
     },
     "sldpc/tcga_brca.yaml": {
-      "provenance": "upstream",
-      "source": "linlu2022/SLDPC data/datasets/zero_shot_prompts/"
+      "provenance": "generated",
+      "copied_from_upstream": false,
+      "source": "PGVL-Gym TCGA-BRCA IDC/ILC task extension; SLDPC publishes no task-specific BRCA zero-shot bank",
+      "usage": "reference_only_unwired",
+      "class_names": ["IDC", "ILC"],
+      "prompt_counts_per_class": {"IDC": 4, "ILC": 4},
+      "sha256": "2d67b0e940dd1a787542880fe23b7cf4db620d02fb6999e2e3c96b8dce7a6c9b",
+      "prompt_mapping_sha256": "8123b0e0001a280c273249857156ed11d0ef8b8bae1787050bd948533bce5d5e",
+      "templates": 23,
+      "templates_sha256": "6688a22c36820dd7b8e66a8bb1b3ea67487939f13f2e65a981afc516ae74596d"
     },
     "sldpc/tcga_nsclc.yaml": {
       "provenance": "upstream",
-      "source": "linlu2022/SLDPC data/datasets/zero_shot_prompts/"
+      "copied_from_upstream": true,
+      "source": "https://github.com/linlu2022/SLDPC/blob/3c9580a1f3602a140d7e6bcc75ad93d7554e4e85/data/datasets/zero_shot_prompts/tcga_nsclc.yaml",
+      "usage": "reference_only_unwired",
+      "class_names": ["LUAD", "LUSC"],
+      "prompt_counts_per_class": {"LUAD": 5, "LUSC": 4},
+      "sha256": "a139ac9e0f43ed18365f606dca584b74039b18b192b3519522bb72c438a8aa00",
+      "prompt_mapping_sha256": "996b07ca151a0d0e910036470d26b4ab0b4d85ed88165f418f7fe71b36cc082b",
+      "templates": 23,
+      "templates_sha256": "6688a22c36820dd7b8e66a8bb1b3ea67487939f13f2e65a981afc516ae74596d"
     },
     "sldpc/tcga_ot.yaml": {
       "provenance": "upstream",
-      "source": "linlu2022/SLDPC data/datasets/zero_shot_prompts/"
+      "copied_from_upstream": true,
+      "source": "https://github.com/linlu2022/SLDPC/blob/3c9580a1f3602a140d7e6bcc75ad93d7554e4e85/data/datasets/zero_shot_prompts/tcga_ot.yaml",
+      "usage": "reference_only_unwired",
+      "class_names": ["AASTR", "ACC", "AOAST", "ASTR", "BLCA", "CCRCC", "CESC", "CHRCC", "COAD", "DDLS", "DSTAD", "ESCA", "ESCC", "GBM", "HCC", "HGSOC", "HNSC", "IDC", "ILC", "LMS", "LUAD", "LUSC", "MACR", "MEL", "MFH", "MFS", "NSGCT", "OAST", "ODG", "PAAD", "PHC", "PLEMESO", "PRAD", "PRCC", "READ", "SEM", "SKCM", "STAD", "THFO", "THPA", "THYM", "TSTAD", "UCS", "UEC", "UM", "USC"],
+      "prompt_counts_per_class": {"AASTR": 4, "ACC": 4, "AOAST": 4, "ASTR": 7, "BLCA": 5, "CCRCC": 5, "CESC": 4, "CHRCC": 5, "COAD": 4, "DDLS": 4, "DSTAD": 5, "ESCA": 4, "ESCC": 5, "GBM": 5, "HCC": 4, "HGSOC": 5, "HNSC": 9, "IDC": 4, "ILC": 5, "LMS": 4, "LUAD": 5, "LUSC": 4, "MACR": 5, "MEL": 4, "MFH": 4, "MFS": 4, "NSGCT": 7, "OAST": 4, "ODG": 5, "PAAD": 4, "PHC": 5, "PLEMESO": 5, "PRAD": 4, "PRCC": 4, "READ": 4, "SEM": 6, "SKCM": 5, "STAD": 5, "THFO": 5, "THPA": 5, "THYM": 5, "TSTAD": 5, "UCS": 5, "UEC": 5, "UM": 7, "USC": 5},
+      "sha256": "c7defebfe4f7c591fe3ee712b9519712a66758b6fc6a5ece3192b55dbafb73b9",
+      "prompt_mapping_sha256": "7c5396a006bf719c93380d77f986dab52048b7e36ef6fb3f5832f08d71e6adf3",
+      "templates": 23,
+      "templates_sha256": "6688a22c36820dd7b8e66a8bb1b3ea67487939f13f2e65a981afc516ae74596d"
     },
     "sldpc/tcga_rcc.yaml": {
       "provenance": "upstream",
-      "source": "linlu2022/SLDPC data/datasets/zero_shot_prompts/"
+      "copied_from_upstream": true,
+      "source": "https://github.com/linlu2022/SLDPC/blob/3c9580a1f3602a140d7e6bcc75ad93d7554e4e85/data/datasets/zero_shot_prompts/tcga_rcc.yaml",
+      "usage": "reference_only_unwired",
+      "class_names": ["CCRCC", "CHRCC", "PRCC"],
+      "prompt_counts_per_class": {"CCRCC": 6, "CHRCC": 6, "PRCC": 6},
+      "sha256": "c720439d4833a39c806f0e5ff3f186238561ce46f86aee4068899fdf2df99ec6",
+      "prompt_mapping_sha256": "80cec5e1a4120916a04afff08ffa9c17e04f88939bdd7dc3ed50c4b4d45501a8",
+      "templates": 23,
+      "templates_sha256": "6688a22c36820dd7b8e66a8bb1b3ea67487939f13f2e65a981afc516ae74596d"
     },
     "sldpc/ubc_ocean.yaml": {
       "provenance": "upstream",
-      "source": "linlu2022/SLDPC data/datasets/zero_shot_prompts/"
+      "copied_from_upstream": true,
+      "source": "https://github.com/linlu2022/SLDPC/blob/3c9580a1f3602a140d7e6bcc75ad93d7554e4e85/data/datasets/zero_shot_prompts/ubc_ocean.yaml",
+      "usage": "reference_only_unwired",
+      "class_names": ["CC", "EC", "HGSC", "LGSC", "MC"],
+      "prompt_counts_per_class": {"CC": 4, "EC": 4, "HGSC": 4, "LGSC": 4, "MC": 4},
+      "sha256": "47b7bdd76724cb2a2454d859eaabdbca9b45efa0389b5d2cfca1e19381c58956",
+      "prompt_mapping_sha256": "c86dbf12b7e1482cad13d3aad094ad5fe646cd718180fd49291c0e0a2f697b09",
+      "templates": 23,
+      "templates_sha256": "6688a22c36820dd7b8e66a8bb1b3ea67487939f13f2e65a981afc516ae74596d"
     },
     "cod_mil/rcc_chain_of_diagnosis.csv": {
       "provenance": "upstream",
@@ -642,6 +799,8 @@
       "usage": "standard_upstream_recipe",
       "role": "instance_level_prototypes",
       "count": 26,
+      "sha256": "33a95e5e41c33459c8cf79abe68e1275986a952758c67705da02b1f7d102d0db",
+      "prompt_bank_sha256": "56ae6c7ec40cb2dace3bbe2897d73ec70d0f7c4564d5d69b19912543554b0cd2",
       "ordered_prompt_sha256": "56ae6c7ec40cb2dace3bbe2897d73ec70d0f7c4564d5d69b19912543554b0cd2",
       "note": "Verbatim ordered tissue labels and descriptions from the released knowledge_from_chatGPT dictionary, rendered with the released single-template construction."
     },
@@ -651,6 +810,8 @@
       "source": "https://proceedings.neurips.cc/paper_files/paper/2023/file/d599b81036fd1a3b3949b7d444f31082-Supplemental-Conference.pdf#page=5",
       "usage": "alternative_unwired",
       "role": "bag_level_prompts",
+      "sha256": "d1ae205124538d6817f23d51e886314a5adca8a4c094c5d1db70090f8f5848a2",
+      "prompt_bank_sha256": "bef2256d34582a9fb3aab24b635f91270446bb6ecd62f37e4f8fd4ba49874160",
       "note": "Verbatim supplementary Figure 4 descriptions. They differ from the active bagPrompt_ctx_init literals in the released training script and are deliberately not selected by the standard NSCLC protocol."
     },
     "top/tcga_nsclc_upstream_code_bag_prompts.json": {
@@ -659,6 +820,8 @@
       "source": "https://github.com/miccaiif/TOP/blob/8356b0dd1786d35e6d6d617d2b253c949769ba39/train_TCGAFeat_MIL_CLIP.py#L500-L506",
       "usage": "standard_upstream_recipe",
       "role": "bag_level_ctx_init",
+      "sha256": "0c5c4748ee1368c10b6aaeb3064c7cfc7e72149b0152374e8141f3c55a144ec9",
+      "prompt_bank_sha256": "3a5520826b0a9ec0aeecf03c818b2b69c8beac60ba10b7324f1c09dae2b5815e",
       "note": "Exact active NSCLC bagPrompt_ctx_init literals, including their ten learnable slots and label order."
     },
     "top/camelyon16_upstream_code_bag_prompts.json": {
@@ -667,99 +830,298 @@
       "source": "https://github.com/miccaiif/TOP/blob/8356b0dd1786d35e6d6d617d2b253c949769ba39/train_CAMELYONFeat_MIL_CLIP.py#L518-L526",
       "usage": "standard_upstream_recipe",
       "role": "bag_level_ctx_init",
+      "sha256": "7ad0d019a9d21ae752d447f0d1c12a7e8c56abac03fb518003095570167887de",
+      "prompt_bank_sha256": "64eb770a342654a184b8f363e0e70a0f9199ee63ea0d402256e8987735540919",
       "note": "Exact active one-word CAMELYON bagPrompt_ctx_init literals. The richer adjacent descriptions are commented out in the release and are not substituted here."
     },
     "convlm/brca_attributes.json": {
       "provenance": "generated",
+      "copied_from_upstream": false,
       "source": "authored for this benchmark from FOCUS/SLIP descriptions",
+      "usage": "alternative_unwired",
+      "classnames": [
+        "invasive ductal carcinoma",
+        "invasive lobular carcinoma"
+      ],
+      "prompt_counts_per_class": {
+        "invasive ductal carcinoma": 4,
+        "invasive lobular carcinoma": 4
+      },
+      "sha256": "420a03452d3b537413fb41fd6e2465198f21d302731fc6c4aa5db9a41823f9f8",
+      "ordered_prompt_sha256": "ba65e732a1eccee196bc7d1069380ffb989a8566960db807ef2d81cd42d58944",
       "note": "Substitutes for ConVLM's unpublished Quilt-LLaVA bank. Deliberately unwired."
     },
     "convlm/camelyon16_attributes.json": {
       "provenance": "generated",
+      "copied_from_upstream": false,
       "source": "authored for this benchmark from FOCUS/SLIP descriptions",
+      "usage": "alternative_unwired",
+      "classnames": [
+        "normal lymph node",
+        "metastatic lymph node"
+      ],
+      "prompt_counts_per_class": {
+        "normal lymph node": 2,
+        "metastatic lymph node": 2
+      },
+      "sha256": "94ac5783a75adc41407f266ca2456f0ffc07a92b4ea8bad0d985df8c8561a6b7",
+      "ordered_prompt_sha256": "9071b96f1f749237084722e79671058bb07296d696f7c748d95547546e46797c",
       "note": "Substitutes for ConVLM's unpublished Quilt-LLaVA bank. Deliberately unwired."
     },
     "convlm/nsclc_attributes.json": {
       "provenance": "generated",
+      "copied_from_upstream": false,
       "source": "authored for this benchmark from FOCUS/SLIP descriptions",
+      "usage": "alternative_unwired",
+      "classnames": [
+        "lung adenocarcinoma",
+        "lung squamous cell carcinoma"
+      ],
+      "prompt_counts_per_class": {
+        "lung adenocarcinoma": 4,
+        "lung squamous cell carcinoma": 4
+      },
+      "sha256": "2d6ba0e7f9ea66e15156ee56c416986f5736a7761f657f276e3df4dd20c6e806",
+      "ordered_prompt_sha256": "d9d3fba472d44d1ba5455bc9efecbbeb8085f9627f8b8ec9f24a3af372cad205",
       "note": "Substitutes for ConVLM's unpublished Quilt-LLaVA bank. Deliberately unwired."
     },
     "convlm/rcc_attributes.json": {
       "provenance": "generated",
+      "copied_from_upstream": false,
       "source": "authored for this benchmark from FOCUS/SLIP descriptions",
+      "usage": "alternative_unwired",
+      "classnames": [
+        "clear cell renal cell carcinoma",
+        "papillary renal cell carcinoma",
+        "chromophobe renal cell carcinoma"
+      ],
+      "prompt_counts_per_class": {
+        "clear cell renal cell carcinoma": 4,
+        "papillary renal cell carcinoma": 4,
+        "chromophobe renal cell carcinoma": 4
+      },
+      "sha256": "8183aff65bfa4aa770b6021703e3e8917118f1142327246ecfb7d21f0d94747b",
+      "ordered_prompt_sha256": "674f1c853bf969810dcde392bf0e09838c1c269bbb8a94d837593782d2727726",
       "note": "Substitutes for ConVLM's unpublished Quilt-LLaVA bank. Deliberately unwired."
     },
     "convlm/ubc_ocean_attributes.json": {
       "provenance": "generated",
+      "copied_from_upstream": false,
       "source": "authored for this benchmark from FOCUS/SLIP descriptions",
+      "usage": "alternative_unwired",
+      "classnames": [
+        "ovarian clear cell carcinoma",
+        "ovarian endometrioid carcinoma",
+        "ovarian high-grade serous carcinoma",
+        "ovarian low-grade serous carcinoma",
+        "ovarian mucinous carcinoma"
+      ],
+      "prompt_counts_per_class": {
+        "ovarian clear cell carcinoma": 4,
+        "ovarian endometrioid carcinoma": 4,
+        "ovarian high-grade serous carcinoma": 4,
+        "ovarian low-grade serous carcinoma": 4,
+        "ovarian mucinous carcinoma": 4
+      },
+      "sha256": "0f930358a4b802de86195c0244759e9e6bce0630fcc7f5b84e9de2043552efbb",
+      "ordered_prompt_sha256": "39df4f49928567d68afb3cd76d3df284aa77f29e7b51c6b2cac8bc232716d671",
       "note": "Substitutes for ConVLM's unpublished Quilt-LLaVA bank. Deliberately unwired."
     },
+    "wsi_five/clinical_questions/nsclc.json": {
+      "provenance": "derived",
+      "content_provenance": "upstream",
+      "copied_from_upstream": false,
+      "source": "https://github.com/ls1rius/WSI_FiVE/blob/07344c9ac6eef919fcd1440877ea796feef7445a/configs/wsi/fix_pth.yaml",
+      "source_sha256": "78df5983214e59007594e09cdae061602b2e5295711ff2db3e7039e9bd77467c",
+      "sha256": "642274c61e3388acda81dc461c2f0be4e8c6c3be8c8cf6285eb550d825335da8",
+      "prompt_bank_sha256": "66689686c7d2305341dc42e71b27438412fc327275a80860e7f98499935f026f",
+      "questions": 6,
+      "note": "Derived JSON container holding PROMPT_LIST verbatim and in released order."
+    },
     "wsi_five/nsclc_report_answers.csv": {
-      "provenance": "upstream",
-      "source": "ls1rius/WSI_FiVE gpt_preprocess/LUAD|LUSC_report_answer_*.xlsx",
-      "note": "The authors' GPT answers to their six clinical questions, 912 cases."
+      "provenance": "generated",
+      "content_provenance": "mixed_upstream_and_generated",
+      "copied_from_upstream": false,
+      "source": "ls1rius/WSI_FiVE@07344c9ac6eef919fcd1440877ea796feef7445a gpt_preprocess answer workbooks",
+      "source_files": {
+        "LUAD_report_answer_v7_471.xlsx": "280269b1fc5c9dc26dd0050b1a3e7f294593b10dd58de0346dfe8a4c87bc195a",
+        "LUSC_report_answer_v1_468.xlsx": "1b47d972663eecfb8e09c2549db264fdd093502df6a0afb0cbd44d0d1fb9ae7d"
+      },
+      "derivation": "Split the 912 nonblank upstream answers into q1..q6; replace each of the 27 blank upstream answer cells with the six disclosed conservative local completions; sort all 939 rows by case_id.",
+      "generated_completion_answers": [
+        "Differentiation cannot be determined from the available pathology text.",
+        "Spread through air spaces is not documented in the available pathology text.",
+        "Vascular invasion is not documented in the available pathology text.",
+        "Pleural invasion is not documented in the available pathology text.",
+        "Extension into adjacent non-lung organs is not documented in the available pathology text.",
+        "Margin status cannot be determined from the available pathology text."
+      ],
+      "generated_case_ids": [
+        "TCGA-22-1000",
+        "TCGA-22-1012",
+        "TCGA-22-1016",
+        "TCGA-22-1017",
+        "TCGA-33-4586",
+        "TCGA-37-3783",
+        "TCGA-37-3789",
+        "TCGA-37-3792",
+        "TCGA-37-4129",
+        "TCGA-37-4130",
+        "TCGA-37-4132",
+        "TCGA-37-4133",
+        "TCGA-37-4135",
+        "TCGA-37-4141",
+        "TCGA-37-5819",
+        "TCGA-37-A5EL",
+        "TCGA-37-A5EM",
+        "TCGA-37-A5EN",
+        "TCGA-49-4506",
+        "TCGA-49-4514",
+        "TCGA-63-6202",
+        "TCGA-63-7020",
+        "TCGA-63-7021",
+        "TCGA-63-7022",
+        "TCGA-63-7023",
+        "TCGA-63-A5ML",
+        "TCGA-85-7844"
+      ],
+      "upstream_answer_rows": 912,
+      "generated_completion_rows": 27,
+      "sha256": "dbe2ebb91eb57e391f2f9fff807246815943a4a85036575375c2ec62d8b9d360",
+      "answer_bank_sha256": "a853601f0cb18324627956e1a9304aa554e499e8164e798306cd80f7f611ac83",
+      "rows": 939,
+      "note": "Complete reproducible bank: 912 author GPT answers plus 27 explicitly generated conservative completions for blank upstream cells."
     },
     "wsi_five/nsclc_evaluation_prompts.json": {
-      "provenance": "upstream",
-      "copied_from_upstream": true,
-      "source": "ls1rius/WSI_FiVE data/TCGA-lung-patch_report/LUAD_LUSC_labels_train_reid.csv and LUAD_LUSC_labels_val_reid.csv",
-      "note": "Verbatim two-description LUAD/LUSC evaluation bank in class-index order."
+      "provenance": "derived",
+      "content_provenance": "upstream",
+      "copied_from_upstream": false,
+      "source": "https://github.com/ls1rius/WSI_FiVE/tree/07344c9ac6eef919fcd1440877ea796feef7445a/data/TCGA-lung-patch_report",
+      "source_files": {
+        "LUAD_LUSC_labels_train_reid.csv": "8f4d35087a28460abcfd6c9bc4aa8d3e239fa14f9aaa9e6bc6cb78ba7ac09a7f",
+        "LUAD_LUSC_labels_val_reid.csv": "8f4d35087a28460abcfd6c9bc4aa8d3e239fa14f9aaa9e6bc6cb78ba7ac09a7f"
+      },
+      "sha256": "3cdcdc0fe542e01ae8f416897e71159b6f55b555d9788b1d440653af9ab9a0b2",
+      "prompt_bank_sha256": "cc1647ebeb30b20f588da39992b5990a360506734d7633f50ee246c8f753b3da",
+      "class_names": ["LUAD", "LUSC"],
+      "note": "Derived JSON container preserving the released descriptions verbatim in class-index order."
     },
     "focus/CAMELYON16_two_scale_text_prompt.csv": {
-      "provenance": "generated",
-      "copied_from_upstream": false,
-      "source": "authored for this benchmark as a shorter rewrite of dddavid4real/FOCUS text_prompt/CAMELYON_two_scale_text_prompt.csv",
-      "upstream_counterpart": "https://github.com/dddavid4real/FOCUS/blob/main/text_prompt/CAMELYON_two_scale_text_prompt.csv",
-      "note": "The task and diagnostic concepts follow FOCUS, but the checked-in sentences are reworded and therefore are not prompt-faithful copies."
+      "provenance": "upstream",
+      "copied_from_upstream": true,
+      "source": "https://github.com/dddavid4real/FOCUS/blob/66c4015d5ba09657f4c8183bc06947faecd5b01f/text_prompt/CAMELYON_two_scale_text_prompt.csv",
+      "format": "headerless_low_then_high",
+      "rows": 4,
+      "class_names": ["normal", "tumor"],
+      "sha256": "e73ad22cccd86b6325513566de98405f2361b8023f596d84d34a7a41cc744d01",
+      "prompt_bank_sha256": "43a22302b048cb67aabbe5d3c7434f4d4a32d946fe098b99402e01acc6a3ce9f",
+      "note": "Byte-exact upstream FOCUS prompt bank."
     },
     "focus/TCGA_BRCA_two_scale_text_prompt.csv": {
       "provenance": "generated",
       "copied_from_upstream": false,
       "source": "authored for this benchmark",
       "upstream_counterpart": null,
-      "note": "The FOCUS release has no TCGA-BRCA prompt CSV. This bank is local and a run using it is not prompt-faithful to a published FOCUS condition."
+      "format": "headerless_low_then_high",
+      "rows": 4,
+      "class_names": ["IDC", "ILC"],
+      "sha256": "a8bf0709cd4ef0fd7630c6b60bc38743ec079a1097fcb104f779a0a5ff17ded5",
+      "prompt_bank_sha256": "af5c672ba5e6565bfd1402ec90e8b265810d97fd96fba719ef648c0bf7b36c70",
+      "note": "The FOCUS release has no TCGA-BRCA prompt CSV. This generated bank now uses FOCUS's native positional format."
     },
     "focus/TCGA_NSCLC_two_scale_text_prompt.csv": {
-      "provenance": "generated",
-      "copied_from_upstream": false,
-      "source": "authored for this benchmark as an expanded rewrite of dddavid4real/FOCUS text_prompt/TCGA_Lung_two_scale_text_prompt.csv",
-      "upstream_counterpart": "https://github.com/dddavid4real/FOCUS/blob/main/text_prompt/TCGA_Lung_two_scale_text_prompt.csv",
-      "note": "An upstream bank exists for this task, but the checked-in sentences are substantially reworded and expanded rather than copied."
+      "provenance": "upstream",
+      "copied_from_upstream": true,
+      "source": "https://github.com/dddavid4real/FOCUS/blob/66c4015d5ba09657f4c8183bc06947faecd5b01f/text_prompt/TCGA_Lung_two_scale_text_prompt.csv",
+      "format": "headerless_low_then_high",
+      "rows": 4,
+      "class_names": ["LUAD", "LUSC"],
+      "sha256": "a8df24b0adbfa15369b51fb31f17adef4a9a6b955d25cd9ab0e09f3284c76c50",
+      "prompt_bank_sha256": "a966d04324b31fe04b81874d5bbace791fd44347eac19bef0fa73d7a4c156b3c",
+      "note": "Byte-exact upstream FOCUS prompt bank."
     },
     "focus/TCGA_RCC_two_scale_text_prompt.csv": {
       "provenance": "generated",
       "copied_from_upstream": false,
       "source": "authored for this benchmark",
       "upstream_counterpart": null,
-      "note": "The FOCUS release has no TCGA-RCC prompt CSV. This bank is local and a run using it is not prompt-faithful to a published FOCUS condition."
-    },
-    "focus/TCGA_RCC_GEPA_two_scale_text_prompt.csv": {
-      "provenance": "generated",
-      "copied_from_upstream": false,
-      "source": "authored for this benchmark as a GEPA-expanded RCC variant",
-      "upstream_counterpart": null,
-      "note": "The FOCUS release has no TCGA-RCC or GEPA prompt CSV. This bank is entirely local."
+      "format": "headerless_low_then_high",
+      "rows": 6,
+      "class_names": ["CCRCC", "PRCC", "CHRCC"],
+      "sha256": "24c83ca73f7d8de17c6206189f9c8024a60b83336468cb976608fb1eb91aefb1",
+      "prompt_bank_sha256": "f311087ebf290b280746040886195a4731ad90c75b614f7a2886f27d17c3f422",
+      "note": "The FOCUS release has no TCGA-RCC prompt CSV. This generated bank now uses FOCUS's native positional format."
     },
     "focus/UBC_OCEAN_two_scale_text_prompt.csv": {
-      "provenance": "generated",
-      "copied_from_upstream": false,
-      "source": "authored for this benchmark as a condensed rewrite of dddavid4real/FOCUS text_prompt/UBC-OCEAN_two_scale_text_prompt.csv",
-      "upstream_counterpart": "https://github.com/dddavid4real/FOCUS/blob/main/text_prompt/UBC-OCEAN_two_scale_text_prompt.csv",
-      "note": "An upstream bank exists for this task, but the checked-in sentences are condensed and reworded rather than copied."
+      "provenance": "upstream",
+      "copied_from_upstream": true,
+      "source": "https://github.com/dddavid4real/FOCUS/blob/66c4015d5ba09657f4c8183bc06947faecd5b01f/text_prompt/UBC-OCEAN_two_scale_text_prompt.csv",
+      "format": "headerless_low_then_high",
+      "rows": 10,
+      "class_names": ["CC", "HGSC", "LGSC", "EC", "MC"],
+      "sha256": "d8e93638bca7a12b0282710de8f540ab33187e15b594a2d783752f51ec31f1ca",
+      "prompt_bank_sha256": "b68319ea4f318d8ce7595c3da17fb67a59f4ab82b1bf857ee9ee9a6c0903213c",
+      "known_issue": "The exact upstream clear-cell high-resolution row contains unescaped inner quote characters around hobnail; pandas preserves a trailing quote in the parsed prompt.",
+      "note": "Byte-exact upstream bank in its released class order. Runtime explicitly reorders it to the benchmark classifier order when necessary."
     },
-    "TCGA_Lung_two_scale_text_prompt.csv": {
-      "provenance": "generated",
-      "copied_from_upstream": false,
-      "source": "local legacy classname templates",
-      "upstream_counterpart": "https://github.com/dddavid4real/FOCUS/blob/main/text_prompt/TCGA_Lung_two_scale_text_prompt.csv",
-      "note": "This is neither the upstream FOCUS bank nor a duplicate of focus/TCGA_NSCLC_two_scale_text_prompt.csv. It contains only generic low/high-resolution classname templates."
+    "vila_mil/TCGA_Lung_two_scale_text_prompt.csv": {
+      "provenance": "upstream",
+      "copied_from_upstream": true,
+      "source": "https://github.com/Jiangbo-Shi/ViLa-MIL/blob/68a11cf0d5cf092dd980f0da1cb38ccac8747a82/text_prompt/TCGA_Lung_two_scale_text_prompt.csv",
+      "format": "headerless_low_then_high",
+      "rows": 4,
+      "class_names": ["LUAD", "LUSC"],
+      "sha256": "4fcea3a2016b2b0c600421da19a9b40441faef5a6b491d40ed80aa80e58319f1",
+      "prompt_bank_sha256": "61c001097a14a153dd8723cf5d85b41b8b2b0f61bb09b84b218280f1818eedfa",
+      "note": "Byte-exact upstream ViLa-MIL prompt bank."
     },
-    "UBC-OCEAN_two_scale_text_prompt.csv": {
+    "vila_mil/TCGA_RCC_two_scale_text_prompt.csv": {
+      "provenance": "upstream",
+      "copied_from_upstream": true,
+      "source": "https://github.com/Jiangbo-Shi/ViLa-MIL/blob/68a11cf0d5cf092dd980f0da1cb38ccac8747a82/text_prompt/TCGA_RCC_two_scale_text_prompt.csv",
+      "format": "headerless_low_then_high",
+      "rows": 6,
+      "class_names": ["CCRCC", "PRCC", "CHRCC"],
+      "embedded_class_tokens": ["CCRCC", "PRCC", "CRCC"],
+      "sha256": "af95c33eaaa2ab47eeba139a98fcdf7e5137fe797748c8a7caff189c4340886a",
+      "prompt_bank_sha256": "288fd6b82c6d608ffb2e5d57ff191df47638171ff876d116a928edf4bf5c3077",
+      "note": "Byte-exact upstream bank. The released third low/high prompt says CRCC; positional class binding deliberately maps that slot to classifier label CHRCC without altering upstream text."
+    },
+    "vila_mil/TCGA_BRCA_two_scale_text_prompt.csv": {
       "provenance": "generated",
       "copied_from_upstream": false,
-      "source": "local legacy classname templates",
-      "upstream_counterpart": "https://github.com/dddavid4real/FOCUS/blob/main/text_prompt/UBC-OCEAN_two_scale_text_prompt.csv",
-      "note": "This is neither the upstream FOCUS bank nor a duplicate of focus/UBC_OCEAN_two_scale_text_prompt.csv. It contains only generic low/high-resolution classname templates."
+      "source": "local ViLa-MIL task extension using locally authored BRCA wording, stored low-then-high",
+      "upstream_counterpart": null,
+      "format": "headerless_low_then_high",
+      "rows": 4,
+      "class_names": ["IDC", "ILC"],
+      "sha256": "a8bf0709cd4ef0fd7630c6b60bc38743ec079a1097fcb104f779a0a5ff17ded5",
+      "prompt_bank_sha256": "af5c672ba5e6565bfd1402ec90e8b265810d97fd96fba719ef648c0bf7b36c70",
+      "note": "ViLa-MIL publishes no BRCA subtype bank; this is not reported as upstream."
+    },
+    "vila_mil/UBC_OCEAN_two_scale_text_prompt.csv": {
+      "provenance": "generated",
+      "copied_from_upstream": false,
+      "source": "local ViLa-MIL task extension using locally authored UBC-OCEAN wording, stored low-then-high",
+      "upstream_counterpart": null,
+      "format": "headerless_low_then_high",
+      "rows": 10,
+      "class_names": ["CC", "EC", "HGSC", "LGSC", "MC"],
+      "sha256": "f2a8e2c2ab45f0aece457029666fcce2f0a467a9c96ed7b866415ef70f9ba788",
+      "prompt_bank_sha256": "8ebac6a2034b3bbcc97a91906ba14390a3c84efc1b4d4a051ef394e7c73f6d6a",
+      "note": "ViLa-MIL publishes no UBC-OCEAN bank; this is not reported as upstream."
+    },
+    "vila_mil/CAMELYON16_two_scale_text_prompt.csv": {
+      "provenance": "generated",
+      "copied_from_upstream": false,
+      "source": "local ViLa-MIL task extension using locally authored CAMELYON16 wording, stored low-then-high",
+      "upstream_counterpart": null,
+      "format": "headerless_low_then_high",
+      "rows": 4,
+      "class_names": ["normal", "tumor"],
+      "sha256": "130800520a24ba37832043cf5bab4dd643985226efef85ac7038dc999689460c",
+      "prompt_bank_sha256": "9b1879d9741c10b12d7e0667f9d3fd8957b0e4b8660e991f405477268a86e3ba",
+      "note": "ViLa-MIL publishes no CAMELYON16 bank; this is not reported as upstream."
     },
     "cod_mil/brca_chain_of_diagnosis.json": {
       "provenance": "inline",

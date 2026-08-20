@@ -100,11 +100,11 @@ def test_precomputed_cod_mil_accepts_upstream_spaces_and_rejects_unaligned_backb
 
 
 def test_convlm_is_precomputed_not_encoder_owning():
-    """ConVLM trains on precomputed patch features, so it owns no vision tower.
+    """PGVL's ConVLM reconstruction owns no runtime vision tower.
 
-    Upstream extracts them with UNI (`ConVLM_visual_feature_extraction.py`) and
-    exposes the embedding width as a config value; the contract is therefore
-    ``PRECOMPUTED``. Rejection of an unaligned backbone is unchanged.
+    This contract describes the local patch-bag adapter. The released train.py
+    uses its raw-image ViT; the repository's separate UNI extraction utility
+    is not wired into that training path.
     """
     contract = get_method("convlm").get_backbone_contract()
     assert contract.swap_policy is SwapPolicy.PRECOMPUTED

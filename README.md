@@ -47,6 +47,7 @@ cp .env.example .env
 PGVL_REPO_ROOT=/path/to/PGVL-Gym
 PGVL_USER_ROOT=/path/to/user-root
 PGVL_STORAGE_ROOT=/path/to/storage-root
+PGVL_CONDA_ENV=/path/to/project/envs/pgvl-gym
 ```
 
 Committed protocols, manifests, splits, and configs use references such as
@@ -78,6 +79,14 @@ and `all`. Generated configs appear under
 `benchmarks/<cohort>/configs/<experiment>/`; runnable rows are indexed in
 `benchmarks/<cohort>/run_matrix.csv`.
 
+Feature extraction may finish after those artifacts are generated. Campaign
+planning refreshes `feature_coverage.csv`, `missing_feature_files`, and the
+feature-derived `ready` state directly from the existing manifests before every
+plan. It does not rebuild prompts, manifests, splits, or configs. Thus a pending
+feature set remains a clean skip, then becomes runnable automatically once all
+of its referenced files arrive. Use `--no-refresh-readiness` only when you
+deliberately need to inspect the frozen matrix cells.
+
 Check one generated run before allocating a GPU:
 
 ```bash
@@ -103,10 +112,13 @@ duplicate slide rows or feature aliases; measures individual and joint feature c
 fold CSV structure and identities; and detects slide or patient leakage between
 train, validation, and test partitions. Method-aware checks also catch omitted
 feature, prompt, report, map, and encoder inputs before model construction, and
-validate the native FOCUS/ViLa-MIL, MAPLE, MSCPT, PathPT, TOP, SLIP, and CoD-MIL
-prompt schemas, WSI-FiVE's six-question/structured-answer/evaluation banks,
-plus the MUSE, ConVLM, and SLDPC prompt banks, rather than accepting a merely
-present JSON, YAML, or CSV. Flat `splits_<fold>.csv` and upstream
+validate FOCUS and ViLa-MIL's native positional low-then-high prompt banks,
+and the MAPLE, MSCPT, PathPT, TOP, SLIP, and CoD-MIL
+schemas, WSI-FiVE's six-question/structured-answer/evaluation banks,
+plus the MUSE and ConVLM prompt banks. For SLDPC it hashes the ordered class
+tokens actually embedded by Stage 1/2 separately from any optional TITAN
+zero-shot synonym YAML, rather than accepting a merely present JSON, YAML, or
+CSV or attributing an unused bank to training. Flat `splits_<fold>.csv` and upstream
 `fold<fold>.csv` tables are checked against the same phase/label contract used
 at runtime; one unscoped phase table cannot be silently reused across folds.
 It rejects non-unit batches for variable-length bag methods, invalid optimizer
@@ -143,7 +155,11 @@ descriptions are preserved as an explicitly unwired alternative. TOP tasks for
 which the authors published no bag initializer are labeled
 `upstream_instance_with_random_classname_bag`, rather than being presented as a
 fully upstream prompt condition. The doctor validates TOP prompt structure,
-ordered labels, prototype digest, and learnable-slot counts.
+ordered labels, learnable-slot counts, role/usage declarations, and both file
+and semantic prompt-bank hashes. Runtime, benchmark generation, and the doctor
+share that loader and derive `prompt_provenance`/`prompt_source` from the active
+instance and bag roles, so a supplementary or modified bank cannot retain the
+standard upstream identity.
 
 SLIP's TCGA-NSCLC condition now uses the complete released bank: the exact
 template, slide-class groups, and all 17 nested tissue name/description pairs.
@@ -171,6 +187,16 @@ row indices, class-to-file binding, row counts, hashes, and declared
 provenance. See
 [`docs/design-decisions.md`](docs/design-decisions.md#muse--upstream-and-generated-prompt-banks).
 
+ConVLM publishes neither the `att_splits.mat` consumed by training nor a usable
+attribute-bank builder. Consequently, none of the five checked-in ConVLM JSON
+banks is described as upstream: all are generated, hashed, class-order-bound,
+and unwired by default. The doctor rejects prompt provenance drift and anonymous
+attribute tensors; encoded banks must include their source-prompt digest,
+encoder feature-space ID, and checkpoint hash. The local precomputed-patch-bag
+adapter is also disclosed as a reconstruction because the released training
+path consumes RGB images. See
+[`docs/design-decisions.md`](docs/design-decisions.md#convlm--missing-upstream-attributes-and-a-local-feature-bag-reconstruction).
+
 ## 4. Run a configuration
 
 ```bash
@@ -188,7 +214,12 @@ For a campaign:
 ./launch_pgvl.sh
 ```
 
-The launcher skips unavailable assets, avoids queued/completed runs, and
+Dry-run planning intentionally does not import Torch, h5py, or method models,
+so it can inspect the campaign from a login-node bootstrap Python. Real
+submission requires `PGVL_CONDA_ENV`; the compute wrapper activates that exact
+environment and the launcher refuses to fall back to a partial site module.
+
+The launcher refreshes feature readiness, skips unavailable assets, avoids queued/completed runs, and
 resumes only when the saved method and executable resolved config match. It
 validates the same fingerprint as `train.py`, counts exact completed fold
 indices (including states with holes), and requires finite validation loss plus
@@ -228,13 +259,23 @@ Generated results also carry `implementation_provenance` and
 can be natively supported while the local objective remains partial. Set
 `require_upstream_fidelity: true` to make the doctor reject partial adapters.
 
-FOCUS prompt provenance is explicit rather than inferred from filenames. None
-of the checked-in FOCUS CSVs is a verbatim upstream copy: CAMELYON16,
-TCGA-NSCLC, and UBC-OCEAN are locally reworded versions of tasks with published
-FOCUS banks, while TCGA-BRCA, TCGA-RCC, and RCC-GEPA are locally generated for
-tasks without an upstream FOCUS prompt CSV. The per-file classification and
-upstream counterpart links live in `text_prompts/PROVENANCE.json`; the readable
-comparison is in `docs/design-decisions.md`.
+FOCUS now uses byte-exact upstream prompt CSVs for CAMELYON16, TCGA-NSCLC, and
+UBC-OCEAN, pinned to commit `66c4015d5ba09657f4c8183bc06947faecd5b01f`.
+TCGA-BRCA and TCGA-RCC remain generated because FOCUS released no
+matching banks. FOCUS's actual format is headerless and positional—not the
+earlier local named table—and runtime and doctor checks enforce its file-class
+binding, provenance, file hash, and ordered prompt-bank hash. UBC's released
+class order is explicitly reordered to the benchmark label order. The exact
+upstream UBC quoting defect is preserved and disclosed in the provenance file.
+
+ViLa-MIL is kept separate from FOCUS even though both native loaders use the
+same positional schema and two magnifications.
+The exact headerless upstream Lung and RCC CSVs are copied from commit
+`68a11cf0d5cf092dd980f0da1cb38ccac8747a82`; BRCA, UBC-OCEAN, and CAMELYON16
+are generated task extensions in the same native low-then-high layout. The
+released RCC spelling `CRCC` is preserved and explicitly bound by position to
+the benchmark label `CHRCC`. Runtime and doctor checks enforce file order,
+format, provenance, and both file and class-bound prompt hashes.
 
 MSCPT uses copied upstream banks for TCGA-NSCLC, TCGA-RCC, and UBC-OCEAN,
 while the TCGA-BRCA IDC/ILC and CAMELYON16 banks are local task extensions and
@@ -285,15 +326,23 @@ is recorded in `text_prompts/PROVENANCE.json` and the reasoning is documented
 in `docs/design-decisions.md`.
 
 WSI-FiVE's native NSCLC mode now preserves the three distinct text roles in
-the official release. The six copied clinical questions condition patch
-aggregation; the copied per-case six-answer records form a training-fold-only
-candidate bank for the native contrastive objective; and the two copied
-LUAD/LUSC diagnostic descriptions are the only comparison text used for
+the official release. The six upstream questions, stored in a derived JSON
+container, condition patch aggregation; a complete 939-case answer bank forms
+the training-fold-only candidate bank for the native contrastive objective. It
+contains 912 nonblank upstream six-answer records reproducibly normalized from
+the two released workbooks plus 27 explicitly generated conservative
+completions for blank upstream cells;
+and the two upstream LUAD/LUSC diagnostic descriptions, stored in a derived
+JSON container, are the only comparison text used for
 validation and test classification. Per-slide answers are never inference
 inputs. RCC and UBC examples remain explicitly labelled
 `simplified_classnames`, because WSI-FiVE did not publish native answer and
 evaluation banks for those tasks. Asset-level sources and this distinction are
-recorded in `text_prompts/PROVENANCE.json` and `docs/design-decisions.md`.
+recorded at pinned commit `07344c9ac6eef919fcd1440877ea796feef7445a` in
+`text_prompts/PROVENANCE.json` and `docs/design-decisions.md`.
+`scripts/build_wsi_five_prompt_assets.py --check` reproduces the answer CSV;
+runtime and the doctor reject any byte, ordering, schema, or provenance drift
+across the question, answer, and evaluation roles.
 
 ## Example run YAML
 

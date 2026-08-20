@@ -41,6 +41,8 @@ asset exits **3** and records `skipped.json`; neither should be read as a result
 | --- | --- | --- |
 | `We couldn't connect to 'https://huggingface.co' … couldn't find them in the cached files` | Compute node is offline and `HF_HOME` points at an empty cache | Export `HF_HOME` to the shared project cache and `HF_HUB_OFFLINE=1`; download weights from a login node first |
 | `ModuleNotFoundError` for `h5py`, `ftfy`, `torch_geometric`, `conch` | Running against a site PyTorch module instead of the project environment | Set `PGVL_CONDA_ENV` to the environment built from `environment.yml` |
+| `PGVL_CONDA_ENV is unset; refusing to submit` | The campaign has no explicit compute environment | Set it in the ignored `.env` file or export it before a real launch; dry-run planning remains available |
+| A completed feature backfill is still shown as missing | The plan was run with `--no-refresh-readiness`, or the manifest references a different path | Run `./launch_pgvl.sh --dry-run` normally; if it remains missing, inspect the manifest's `feature__*` path and `${PGVL_STORAGE_ROOT}` value rather than regenerating unrelated prompt/split artifacts |
 | `PermissionError: [Errno 13] … '/path'` | Config still carries the committed `/path/to/...` placeholders | Regenerate configs from a protocol whose paths match local storage |
 | `KeyError: "Unknown method 'pathpt_keep'"` | A method name was taken from a config directory name | Submit through `./launch_pgvl.sh`, which reads the matrix's `method` column |
 | Job appears hung before any output | First import of an environment on Lustre or GPFS from a cold node | Wait; the cost is per node, not per job. Stage the environment to node-local storage if it recurs |

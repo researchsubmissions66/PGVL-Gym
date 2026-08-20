@@ -1,5 +1,6 @@
 # ViLa-MIL / RCC / 16-shot / 5-fold
-# Source: README of Jiangbo-Shi/ViLa-MIL.
+# Prompt source: exact Jiangbo-Shi/ViLa-MIL release at commit 68a11cf.
+# The released third prompt says CRCC; its positional slot binds to CHRCC.
 
 method: "vila_mil"
 backbone: "clip-rn50"
@@ -31,5 +32,11 @@ dataset_csv:    "splits/TCGA_RCC/dataset.csv"
 data_folder_s:  "path/to/TCGA_RCC/feats_5x"
 data_folder_l:  "path/to/TCGA_RCC/feats_20x"
 split_dir:      "splits/task_tcga_rcc_subtyping_16shots_5folds"
-text_prompt_path: "text_prompts/TCGA_RCC_two_scale_text_prompt.csv"
+text_prompt_path: "text_prompts/vila_mil/TCGA_RCC_two_scale_text_prompt.csv"
+vila_prompt_format: "headerless_low_then_high"
+vila_prompt_file_classnames: [CCRCC, PRCC, CHRCC]
+vila_prompt_file_sha256: "af95c33eaaa2ab47eeba139a98fcdf7e5137fe797748c8a7caff189c4340886a"
+vila_prompt_bank_sha256: "288fd6b82c6d608ffb2e5d57ff191df47638171ff876d116a928edf4bf5c3077"
+prompt_provenance: "upstream"
+prompt_source: "vila_mil_upstream_native_two_scale_csv"
 results_dir:    "results/vila_mil_rcc16"

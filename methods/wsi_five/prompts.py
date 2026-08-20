@@ -12,13 +12,15 @@ text from becoming privileged test-time input.
 from __future__ import annotations
 
 from dataclasses import dataclass
-import json
 from pathlib import Path
 import random
 from typing import Any, Mapping, Sequence
 
+from common.prompts.wsi_five import (
+    ANSWER_FIELD_COUNT,
+    load_wsi_five_evaluation_bank,
+)
 
-ANSWER_FIELD_COUNT = 6
 
 
 @dataclass(frozen=True)
@@ -112,29 +114,4 @@ def load_evaluation_prompts(
     label_dict: Mapping[str, int],
 ) -> tuple[str, ...]:
     """Load released evaluation descriptions in class-index order."""
-    prompt_path = Path(path)
-    with prompt_path.open(encoding="utf-8") as handle:
-        payload = json.load(handle)
-    prompts = payload.get("prompts") if isinstance(payload, dict) else None
-    if not isinstance(prompts, dict):
-        raise ValueError(
-            f"{prompt_path}: WSI-FiVE evaluation prompts must be a mapping")
-    expected = set(label_dict)
-    if set(prompts) != expected:
-        raise ValueError(
-            f"{prompt_path}: WSI-FiVE evaluation prompt labels must be "
-            f"{sorted(expected)}, got {sorted(prompts)}")
-    indices = list(label_dict.values())
-    if (any(isinstance(index, bool) or not isinstance(index, int)
-            for index in indices)
-            or sorted(indices) != list(range(len(indices)))):
-        raise ValueError(
-            "WSI-FiVE label_dict values must be contiguous class indices")
-    ordered = [""] * len(indices)
-    for label, index in label_dict.items():
-        value = prompts[label]
-        if not isinstance(value, str) or not value.strip():
-            raise ValueError(
-                f"{prompt_path}: WSI-FiVE prompt for {label!r} is blank")
-        ordered[index] = value.strip()
-    return tuple(ordered)
+    return load_wsi_five_evaluation_bank(path, label_dict).prompts

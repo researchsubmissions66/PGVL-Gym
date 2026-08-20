@@ -46,7 +46,8 @@ PATH_KEYS_BY_CHECK = {
     ),
     "prompts": (
         "text_prompt_path", "description_prompt_path",
-        "prompt_reference_yaml", "gpt_dir", "instance_prompt_path",
+        "prompt_reference_yaml", "zero_shot_prompt_path", "gpt_dir",
+        "instance_prompt_path",
         "bag_prompt_path", "prompt_features", "text_prompt_features",
         "text_prompt_bank_csv", "normal_structures_json", "report_csv", "attribute_embeddings",
         "attribute_prompt_path", "tissue_classnames_path",
@@ -54,7 +55,6 @@ PATH_KEYS_BY_CHECK = {
     ),
     "encoders": (
         "backbone_weights", "conch_ckpt", "clinicalbert_weights",
-        "initial_checkpoint",
     ),
     "splits": ("dataset_csv",),
 }
@@ -90,11 +90,12 @@ OUTPUT_KEYS_BY_CHECK = {
 
 FILE_PATH_KEYS = frozenset({
     "dataset_csv", "text_prompt_path", "description_prompt_path",
-    "prompt_reference_yaml", "instance_prompt_path", "bag_prompt_path",
+    "prompt_reference_yaml", "zero_shot_prompt_path",
+    "instance_prompt_path", "bag_prompt_path",
     "prompt_features", "text_prompt_features", "text_prompt_bank_csv",
     "normal_structures_json",
     "report_csv", "attribute_embeddings", "attribute_prompt_path",
-    "tissue_classnames_path", "initial_checkpoint", "clinical_questions",
+    "tissue_classnames_path", "clinical_questions",
     "evaluation_prompt_path",
 })
 
@@ -125,64 +126,119 @@ def _require_any_config_key(
 
 
 def _check_focus_prompt_schema(
-    cfg: dict[str, Any], report: "PreflightReport", *,
-    consumer: str = "FOCUS",
+    cfg: dict[str, Any], report: "PreflightReport",
 ) -> None:
-    """Validate the ordered two-scale prompt table used by FOCUS/ViLa."""
+    """Validate FOCUS's released positional low-then-high CSV contract."""
     value = cfg.get("text_prompt_path")
     if not _exists(value):
         return
-    path = Path(expand_path(value))
-    try:
-        with path.open(newline="", encoding="utf-8") as handle:
-            reader = csv.DictReader(handle)
-            fields = set(reader.fieldnames or [])
-            rows = list(reader)
-    except (OSError, UnicodeError, csv.Error) as error:
+    from common.prompts import FOCUS_PROMPT_FORMAT, load_focus_prompt_bank
+
+    if cfg.get("focus_prompt_format") != FOCUS_PROMPT_FORMAT:
         report.problems.append(
-            f"cannot read {consumer} prompt CSV {path}: {error}")
-        return
-    required = {"class_name", "low_res_prompt", "high_res_prompt"}
-    missing = sorted(required - fields)
-    if missing:
-        report.problems.append(
-            f"{consumer} prompt CSV is missing columns: "
-            + ", ".join(missing))
-        return
-    raw_n_classes = cfg.get("n_classes")
-    if (isinstance(raw_n_classes, int) and not isinstance(raw_n_classes, bool)
-            and len(rows) != raw_n_classes):
-        report.problems.append(
-            f"{consumer} prompt CSV has {len(rows)} rows for "
-            f"n_classes={raw_n_classes}")
-    class_names = [_cell(row, "class_name") for row in rows]
-    duplicate_names = _duplicate_values(
-        [name for name in class_names if name])
-    if duplicate_names:
-        report.problems.append(
-            f"{consumer} prompt CSV repeats class names: "
-            + ", ".join(duplicate_names[:3]))
-    expected_orders: list[list[str]] = []
+            "FOCUS focus_prompt_format must be " + FOCUS_PROMPT_FORMAT)
+    for key in (
+        "focus_prompt_file_classnames",
+        "focus_prompt_file_sha256",
+        "focus_prompt_bank_sha256",
+    ):
+        if not _configured(cfg, key):
+            report.problems.append(f"FOCUS requires {key}")
+
     label_dict = cfg.get("label_dict")
-    if isinstance(label_dict, dict) and all(
-            isinstance(index, int) and not isinstance(index, bool)
-            for index in label_dict.values()):
-        expected_orders.append([
-            str(label) for label, _index in sorted(
-                label_dict.items(), key=lambda item: item[1])])
-    classnames = cfg.get("classnames")
-    if isinstance(classnames, list):
-        expected_orders.append([str(value) for value in classnames])
-    if (class_names and expected_orders
-            and class_names not in expected_orders):
+    if not isinstance(label_dict, dict) or not label_dict:
         report.problems.append(
-            f"{consumer} prompt CSV class_name order {class_names} does not "
-            "match label_dict/classnames class-index order")
-    for column in required:
-        blanks = sum(not _cell(row, column) for row in rows)
-        if blanks:
-            report.problems.append(
-                f"{consumer} prompt CSV has {blanks} blank values in {column}")
+            "FOCUS requires label_dict to bind positional prompts")
+        return
+    indices = list(label_dict.values())
+    if (any(not isinstance(index, int) or isinstance(index, bool)
+            for index in indices)
+            or sorted(indices) != list(range(len(indices)))):
+        report.problems.append(
+            "FOCUS label_dict indices must be contiguous from zero")
+        return
+    labels = [
+        str(label) for label, _index in sorted(
+            label_dict.items(), key=lambda item: item[1])]
+    try:
+        bank = load_focus_prompt_bank(
+            Path(expand_path(str(value))),
+            class_names=labels,
+            file_class_names=cfg.get("focus_prompt_file_classnames"),
+            expected_provenance=cfg.get("prompt_provenance"),
+            expected_file_sha256=cfg.get("focus_prompt_file_sha256"),
+            expected_ordered_prompt_bank_sha256=cfg.get(
+                "focus_prompt_bank_sha256"),
+        )
+    except (OSError, UnicodeError, csv.Error, ValueError) as error:
+        report.problems.append(f"invalid FOCUS prompt bank: {error}")
+        return
+    expected_source = {
+        "upstream": "focus_upstream_native_two_scale_csv",
+        "derived": "focus_derived_native_two_scale_csv",
+        "generated": "focus_generated_native_two_scale_csv",
+    }[bank.provenance]
+    if cfg.get("prompt_source") != expected_source:
+        report.problems.append(
+            "FOCUS prompt_source does not match prompt provenance")
+
+
+def _check_vila_prompt_schema(
+    cfg: dict[str, Any], report: "PreflightReport",
+) -> None:
+    """Validate ViLa-MIL's released positional low-then-high CSV contract."""
+    value = cfg.get("text_prompt_path")
+    if not _exists(value):
+        return
+    from common.prompts import VILA_PROMPT_FORMAT, load_vila_prompt_bank
+
+    if cfg.get("vila_prompt_format") != VILA_PROMPT_FORMAT:
+        report.problems.append(
+            "ViLa-MIL vila_prompt_format must be " + VILA_PROMPT_FORMAT)
+    for key in (
+        "vila_prompt_file_classnames",
+        "vila_prompt_file_sha256",
+        "vila_prompt_bank_sha256",
+    ):
+        if not _configured(cfg, key):
+            report.problems.append(f"ViLa-MIL requires {key}")
+
+    label_dict = cfg.get("label_dict")
+    if not isinstance(label_dict, dict) or not label_dict:
+        report.problems.append(
+            "ViLa-MIL requires label_dict to bind positional prompts")
+        return
+    indices = list(label_dict.values())
+    if (any(not isinstance(index, int) or isinstance(index, bool)
+            for index in indices)
+            or sorted(indices) != list(range(len(indices)))):
+        report.problems.append(
+            "ViLa-MIL label_dict indices must be contiguous from zero")
+        return
+    labels = [
+        str(label) for label, _index in sorted(
+            label_dict.items(), key=lambda item: item[1])]
+    try:
+        bank = load_vila_prompt_bank(
+            Path(expand_path(str(value))),
+            class_names=labels,
+            file_class_names=cfg.get("vila_prompt_file_classnames"),
+            expected_provenance=cfg.get("prompt_provenance"),
+            expected_file_sha256=cfg.get("vila_prompt_file_sha256"),
+            expected_ordered_prompt_bank_sha256=cfg.get(
+                "vila_prompt_bank_sha256"),
+        )
+    except (OSError, UnicodeError, csv.Error, ValueError) as error:
+        report.problems.append(f"invalid ViLa-MIL prompt bank: {error}")
+        return
+    expected_source = {
+        "upstream": "vila_mil_upstream_native_two_scale_csv",
+        "derived": "vila_mil_derived_native_two_scale_csv",
+        "generated": "vila_mil_generated_native_two_scale_csv",
+    }[bank.provenance]
+    if cfg.get("prompt_source") != expected_source:
+        report.problems.append(
+            "ViLa-MIL prompt_source does not match prompt provenance")
 
 
 def _check_report_csv_schema(
@@ -325,6 +381,99 @@ def _check_clinical_questions_schema(
         report.problems.append(
             f"WSI-FiVE native question bank must contain exactly "
             f"{expected_count} questions, got {len(questions)}")
+
+
+def _check_wsi_five_prompt_contract(
+    cfg: dict[str, Any], report: "PreflightReport",
+) -> None:
+    """Validate every WSI-FiVE text role with the runtime loaders."""
+    from common.prompts import (
+        WSI_FIVE_PROMPT_FORMAT,
+        load_wsi_five_answer_bank,
+        load_wsi_five_evaluation_bank,
+        load_wsi_five_question_bank,
+    )
+
+    if cfg.get("wsi_prompt_format") != WSI_FIVE_PROMPT_FORMAT:
+        report.problems.append(
+            "WSI-FiVE wsi_prompt_format must be " + WSI_FIVE_PROMPT_FORMAT)
+    question_keys = (
+        "clinical_questions", "wsi_question_file_sha256",
+        "wsi_question_bank_sha256", "wsi_question_provenance",
+        "prompt_provenance", "prompt_source",
+    )
+    missing = [key for key in question_keys if not _configured(cfg, key)]
+    for key in missing:
+        report.problems.append(f"WSI-FiVE requires {key}")
+    question_bank = None
+    if not missing:
+        try:
+            question_bank = load_wsi_five_question_bank(
+                expand_path(cfg["clinical_questions"]),
+                expected_file_sha256=cfg["wsi_question_file_sha256"],
+                expected_prompt_bank_sha256=cfg["wsi_question_bank_sha256"],
+                expected_provenance=cfg["wsi_question_provenance"],
+            )
+        except (OSError, UnicodeError, ValueError, TypeError) as error:
+            report.problems.append(
+                f"invalid WSI-FiVE clinical question bank: {error}")
+
+    mode = cfg.get("training_mode", "simplified_classnames")
+    if mode == "upstream_answer_bank":
+        if _configured(cfg, "report_csv"):
+            _check_report_csv_schema(cfg, report)
+        if _configured(cfg, "evaluation_prompt_path"):
+            _check_wsi_five_evaluation_prompts(cfg, report)
+        native_keys = (
+            "report_csv", "wsi_answer_file_sha256",
+            "wsi_answer_bank_sha256", "wsi_answer_provenance",
+            "evaluation_prompt_path", "wsi_evaluation_file_sha256",
+            "wsi_evaluation_bank_sha256", "wsi_evaluation_provenance",
+        )
+        native_missing = [
+            key for key in native_keys if not _configured(cfg, key)]
+        for key in native_missing:
+            report.problems.append(
+                f"WSI-FiVE upstream_answer_bank requires {key}")
+        answer_bank = evaluation_bank = None
+        if not native_missing:
+            try:
+                answer_bank = load_wsi_five_answer_bank(
+                    expand_path(cfg["report_csv"]),
+                    expected_file_sha256=cfg["wsi_answer_file_sha256"],
+                    expected_answer_bank_sha256=cfg["wsi_answer_bank_sha256"],
+                    expected_provenance=cfg["wsi_answer_provenance"],
+                )
+                evaluation_bank = load_wsi_five_evaluation_bank(
+                    expand_path(cfg["evaluation_prompt_path"]),
+                    cfg["label_dict"],
+                    expected_file_sha256=cfg["wsi_evaluation_file_sha256"],
+                    expected_prompt_bank_sha256=(
+                        cfg["wsi_evaluation_bank_sha256"]),
+                    expected_provenance=cfg["wsi_evaluation_provenance"],
+                )
+            except (OSError, UnicodeError, ValueError, TypeError) as error:
+                report.problems.append(
+                    f"invalid WSI-FiVE native text asset: {error}")
+        expected_provenance = (
+            f"{question_bank.provenance}_questions_with_"
+            f"{answer_bank.provenance}_answer_and_"
+            f"{evaluation_bank.provenance}_evaluation_banks"
+            if (question_bank is not None and answer_bank is not None
+                and evaluation_bank is not None) else None)
+        expected_source = "wsi_five_derived_upstream_text_assets"
+    else:
+        expected_provenance = (
+            f"{question_bank.provenance}_questions_with_classname_comparison"
+            if question_bank is not None else None)
+        expected_source = "wsi_five_simplified_classname_baseline"
+    if (expected_provenance is not None
+            and cfg.get("prompt_provenance") != expected_provenance):
+        report.problems.append(
+            "WSI-FiVE prompt_provenance does not match active text roles")
+    if cfg.get("prompt_source") != expected_source:
+        report.problems.append(
+            "WSI-FiVE prompt_source does not match active text roles")
 
 
 def _read_prompt_json(
@@ -480,171 +629,103 @@ def _check_mscpt_prompt_schema(
 def _check_top_prompt_schema(
     cfg: dict[str, Any], report: "PreflightReport",
 ) -> None:
-    """Validate TOP's instance prototypes and optional bag descriptions."""
-    instance_value = cfg.get("instance_prompt_path")
-    if not _configured(cfg, "instance_prompt_path"):
-        report.problems.append(
-            "Method 'top' requires instance_prompt_path; the released method "
-            "always initializes its instance learner from tissue prototypes")
-    else:
-        loaded = _read_prompt_json(instance_value, "TOP instance", report)
-        if loaded is not None:
-            path, payload = loaded
-            prototypes = (
-                payload.get("prototypes") if isinstance(payload, dict)
-                else payload)
-            if not isinstance(prototypes, list) or len(prototypes) < 2:
-                report.problems.append(
-                    f"{path}: TOP needs at least two instance prototypes")
-            else:
-                invalid = [
-                    index for index, item in enumerate(prototypes)
-                    if (not isinstance(item, dict)
-                        or not isinstance(item.get("prompt"), str)
-                        or not item["prompt"].strip())]
-                if invalid:
-                    report.problems.append(
-                        f"{path}: TOP instance prototypes at indices "
-                        f"{invalid[:5]} need a non-empty 'prompt' string")
-                valid_prompts = [
-                    item["prompt"] for item in prototypes
-                    if isinstance(item, dict)
-                    and isinstance(item.get("prompt"), str)
-                    and item["prompt"].strip()]
-                if len(valid_prompts) != len(set(valid_prompts)):
-                    report.problems.append(
-                        f"{path}: TOP instance prompts must be unique")
-                mismatched = []
-                for index, item in enumerate(prototypes):
-                    if not isinstance(item, dict):
-                        continue
-                    tissue = item.get("tissue")
-                    description = item.get("description")
-                    prompt = item.get("prompt")
-                    if (isinstance(tissue, str)
-                            and isinstance(description, str)
-                            and isinstance(prompt, str)
-                            and prompt != f"an H&E stained image of {tissue}, "
-                            f"which is {description}"):
-                        mismatched.append(index)
-                if mismatched:
-                    report.problems.append(
-                        f"{path}: TOP instance prototypes at indices "
-                        f"{mismatched[:5]} do not match their structured "
-                        "tissue/description fields")
-                slotted = [
-                    index for index, item in enumerate(prototypes)
-                    if isinstance(item, dict)
-                    and isinstance(item.get("prompt"), str)
-                    and "*" in item["prompt"]]
-                if slotted:
-                    report.problems.append(
-                        f"{path}: TOP base instance prompts at indices "
-                        f"{slotted[:5]} already contain learnable slots")
-                metadata = payload.get("_metadata", {}) \
-                    if isinstance(payload, dict) else {}
-                if not isinstance(metadata, dict):
-                    report.problems.append(
-                        f"{path}: TOP instance _metadata must be a mapping")
-                else:
-                    declared_count = metadata.get("count")
-                    if (declared_count is not None
-                            and declared_count != len(prototypes)):
-                        report.problems.append(
-                            f"{path}: TOP instance metadata count "
-                            f"{declared_count} does not match "
-                            f"{len(prototypes)} prototypes")
-                    declared_digest = metadata.get("ordered_prompt_sha256")
-                    if declared_digest is not None and not invalid:
-                        actual_digest = hashlib.sha256(
-                            "\n".join(valid_prompts).encode()).hexdigest()
-                        if declared_digest != actual_digest:
-                            report.problems.append(
-                                f"{path}: TOP ordered_prompt_sha256 does not "
-                                "match the instance bank")
-                    separator = metadata.get("slot_separator", "")
-                    separator = cfg.get(
-                        "instance_slot_separator", separator)
-                    if separator not in {"", " "}:
-                        report.problems.append(
-                            f"{path}: TOP instance slot_separator must be "
-                            "empty or one space")
+    """Validate TOP with the same identity contract used at runtime."""
+    from common.prompts import (
+        TOP_PROMPT_FORMAT,
+        load_top_bag_prompt_bank,
+        load_top_instance_prompt_bank,
+        load_top_prompt_condition,
+    )
 
-    if not _configured(cfg, "bag_prompt_path"):
-        if cfg.get("prompt_provenance") == "upstream":
-            report.problems.append(
-                "TOP prompt_provenance='upstream' requires bag_prompt_path; "
-                "otherwise the bag learner uses random classname context")
-        return
-    loaded = _read_prompt_json(cfg["bag_prompt_path"], "TOP bag", report)
-    if loaded is None:
-        return
-    path, payload = loaded
-    exact_ctx = payload.get("ctx_init") if isinstance(payload, dict) else None
-    prompts = (exact_ctx if exact_ctx is not None
-               else payload.get("prompts") if isinstance(payload, dict)
-               else None)
-    if not isinstance(prompts, dict) or not prompts:
+    instance_keys = (
+        "instance_prompt_path", "top_prompt_format",
+        "top_instance_file_sha256", "top_instance_prompt_bank_sha256",
+        "top_instance_provenance", "prompt_provenance", "prompt_source",
+    )
+    missing = [key for key in instance_keys if not _configured(cfg, key)]
+    for key in missing:
+        report.problems.append(f"Method 'top' requires {key}")
+    if (_configured(cfg, "top_prompt_format")
+            and cfg["top_prompt_format"] != TOP_PROMPT_FORMAT):
         report.problems.append(
-            f"{path}: TOP bag prompt payload needs a non-empty 'prompts' or "
-            "'ctx_init' mapping")
-        return
-    invalid = [
-        label for label, prompt in prompts.items()
-        if not isinstance(prompt, str) or not prompt.strip()]
-    if invalid:
-        report.problems.append(
-            f"{path}: TOP bag prompts are blank for {invalid[:5]}")
-    label_dict = cfg.get("label_dict")
-    if isinstance(label_dict, dict):
-        labels = list(label_dict)
-        if all(isinstance(index, int) and not isinstance(index, bool)
-               for index in label_dict.values()):
-            labels = [label for label, _ in sorted(
-                label_dict.items(), key=lambda item: item[1])]
-        missing = [label for label in labels if label not in prompts]
-        if missing:
-            report.problems.append(
-                f"{path}: TOP bag prompts are missing task labels {missing}")
-        extra = [label for label in prompts if label not in label_dict]
-        if extra:
-            report.problems.append(
-                f"{path}: TOP bag prompts contain unknown task labels {extra}")
-        metadata = payload.get("_metadata", {})
-        if not isinstance(metadata, dict):
-            report.problems.append(
-                f"{path}: TOP bag _metadata must be a mapping")
-            metadata = {}
-        declared_order = metadata.get("label_order")
-        if declared_order is not None and declared_order != labels:
-            report.problems.append(
-                f"{path}: TOP bag label_order {declared_order} does not match "
-                f"classifier order {labels}")
-        upstream_classnames = metadata.get("upstream_classnames")
-        if (upstream_classnames is not None
-                and (not isinstance(upstream_classnames, list)
-                     or len(upstream_classnames) != len(labels)
-                     or any(not isinstance(name, str) or not name.strip()
-                            for name in upstream_classnames))):
-            report.problems.append(
-                f"{path}: TOP upstream_classnames must contain one non-empty "
-                "suffix per classifier label")
-    if exact_ctx is not None:
-        wrong_slots = [
-            label for label, prompt in prompts.items()
-            if isinstance(prompt, str) and prompt.count("*") != 10]
-        if wrong_slots:
-            report.problems.append(
-                f"{path}: TOP ctx_init needs exactly ten learnable slots per "
-                f"label; invalid labels {wrong_slots}")
+            f"TOP top_prompt_format must be {TOP_PROMPT_FORMAT!r}")
+
+    instance = None
+    if _configured(cfg, "instance_prompt_path"):
+        try:
+            instance = load_top_instance_prompt_bank(
+                expand_path(cfg["instance_prompt_path"]),
+                expected_file_sha256=cfg.get("top_instance_file_sha256"),
+                expected_prompt_bank_sha256=cfg.get(
+                    "top_instance_prompt_bank_sha256"),
+                expected_provenance=cfg.get("top_instance_provenance"),
+            )
+            instance.initialized_prompts(cfg.get("instance_slot_separator"))
+        except (OSError, UnicodeError, ValueError, TypeError) as error:
+            report.problems.append(f"invalid TOP instance prompt bank: {error}")
+
+    bag = None
+    bag_configured = _configured(cfg, "bag_prompt_path")
+    bag_keys = (
+        "top_bag_file_sha256", "top_bag_prompt_bank_sha256",
+        "top_bag_provenance", "top_bag_usage",
+    )
+    if bag_configured:
+        for key in bag_keys:
+            if not _configured(cfg, key):
+                report.problems.append(
+                    f"Method 'top' with bag_prompt_path requires {key}")
+        try:
+            bag = load_top_bag_prompt_bank(
+                expand_path(cfg["bag_prompt_path"]),
+                label_dict=cfg.get("label_dict", {}),
+                classnames=cfg.get("classnames", []),
+                expected_file_sha256=cfg.get("top_bag_file_sha256"),
+                expected_prompt_bank_sha256=cfg.get(
+                    "top_bag_prompt_bank_sha256"),
+                expected_provenance=cfg.get("top_bag_provenance"),
+                expected_usage=cfg.get("top_bag_usage"),
+            )
+        except (OSError, UnicodeError, ValueError, TypeError) as error:
+            report.problems.append(f"invalid TOP bag prompt bank: {error}")
     else:
-        slotted = [
-            label for label, prompt in prompts.items()
-            if isinstance(prompt, str) and "*" in prompt]
-        if slotted:
+        stale = [key for key in bag_keys if _configured(cfg, key)]
+        if stale:
             report.problems.append(
-                f"{path}: TOP base bag prompts already contain learnable "
-                f"slots for labels {slotted}")
+                f"TOP has bag identity fields {stale} but no bag_prompt_path")
+
+    if instance is not None and (bag is not None or not bag_configured):
+        try:
+            condition = load_top_prompt_condition(
+                expand_path(cfg["instance_prompt_path"]),
+                label_dict=cfg.get("label_dict", {}),
+                classnames=cfg.get("classnames", []),
+                bag_path=(
+                    expand_path(cfg["bag_prompt_path"])
+                    if bag_configured else None),
+                expected_instance_file_sha256=cfg.get(
+                    "top_instance_file_sha256"),
+                expected_instance_prompt_bank_sha256=cfg.get(
+                    "top_instance_prompt_bank_sha256"),
+                expected_instance_provenance=cfg.get(
+                    "top_instance_provenance"),
+                expected_bag_file_sha256=cfg.get("top_bag_file_sha256"),
+                expected_bag_prompt_bank_sha256=cfg.get(
+                    "top_bag_prompt_bank_sha256"),
+                expected_bag_provenance=cfg.get("top_bag_provenance"),
+                expected_bag_usage=cfg.get("top_bag_usage"),
+            )
+        except (OSError, UnicodeError, ValueError, TypeError) as error:
+            report.problems.append(f"invalid TOP prompt condition: {error}")
+            return
+        if cfg.get("prompt_provenance") != condition.provenance:
+            report.problems.append(
+                "TOP prompt_provenance contradicts active prompt roles: "
+                f"expected {condition.provenance!r}")
+        if cfg.get("prompt_source") != condition.source:
+            report.problems.append(
+                "TOP prompt_source contradicts active prompt roles: "
+                f"expected {condition.source!r}")
 
 
 def _check_slip_prompt_schema(
@@ -918,62 +999,167 @@ def _check_muse_prompt_schema(
 def _check_convlm_prompt_schema(
     cfg: dict[str, Any], report: "PreflightReport",
 ) -> None:
-    """Validate the ordered class-to-attribute graph used at runtime."""
+    """Validate ConVLM text content, class binding, hashes, and provenance."""
     if not _configured(cfg, "attribute_prompt_path"):
         return
-    loaded = _read_prompt_json(
-        cfg["attribute_prompt_path"], "ConVLM attribute", report)
-    if loaded is None:
+    if not _exists(cfg["attribute_prompt_path"]):
         return
-    path, payload = loaded
-    if not isinstance(payload, dict):
-        report.problems.append(
-            f"{path}: ConVLM attribute prompt payload must be a mapping")
-        return
-    prompts = {
-        key: value for key, value in payload.items()
-        if not str(key).startswith("_")}
+    path = Path(expand_path(cfg["attribute_prompt_path"]))
     classnames = cfg.get("classnames")
-    if isinstance(classnames, list) and list(prompts) != classnames:
+    if not _valid_prompt_list(classnames):
         report.problems.append(
-            f"{path}: ConVLM attribute prompt order must match classnames")
-    for classname, values in prompts.items():
-        if not _valid_prompt_list(values):
-            report.problems.append(
-                f"{path}: ConVLM attributes for {classname!r} must be a "
-                "non-empty string list")
+            "ConVLM requires ordered classnames to validate attribute binding")
+        return
+    try:
+        from common.prompts.convlm import load_convlm_prompt_bank
+        bank = load_convlm_prompt_bank(
+            path,
+            classnames=classnames,
+            record=_prompt_manifest_record(path),
+            expected_file_sha256=cfg.get("attribute_prompt_sha256"),
+            expected_prompt_bank_sha256=cfg.get(
+                "attribute_prompt_bank_sha256"),
+        )
+    except (OSError, UnicodeError, ValueError, TypeError) as error:
+        report.problems.append(str(error))
+        return
+
+    declared = cfg.get("prompt_provenance")
+    if declared and declared != bank.provenance:
+        report.problems.append(
+            "ConVLM prompt_provenance contradicts the active bank: "
+            f"declared {declared!r}, expected {bank.provenance!r}")
+    expected_source = {
+        "upstream": "convlm_upstream_attribute_prompts",
+        "derived": "convlm_derived_attribute_prompts",
+        "generated": "convlm_generated_attribute_prompts",
+    }[bank.provenance]
+    declared_source = cfg.get("prompt_source")
+    if declared_source and declared_source != expected_source:
+        report.problems.append(
+            "ConVLM prompt_source contradicts the active bank: "
+            f"declared {declared_source!r}, expected {expected_source!r}")
+
+
+def _check_convlm_embedding_schema(
+    cfg: dict[str, Any], report: "PreflightReport",
+) -> None:
+    """Reject attribute matrices with no prompt or encoder-space binding."""
+    if not _configured(cfg, "attribute_embeddings") \
+            or not _exists(cfg["attribute_embeddings"]):
+        return
+    classnames = cfg.get("classnames")
+    if not _valid_prompt_list(classnames):
+        report.problems.append(
+            "ConVLM requires ordered classnames to validate attribute rows")
+        return
+    try:
+        from common.prompts.convlm import load_convlm_attribute_embeddings
+        bank = load_convlm_attribute_embeddings(
+            Path(expand_path(cfg["attribute_embeddings"])),
+            classnames=classnames,
+            feature_space_id=cfg.get("attribute_feature_space_id"),
+            expected_prompt_bank_sha256=cfg.get(
+                "attribute_prompt_bank_sha256"),
+        )
+    except Exception as error:
+        report.problems.append(str(error))
+        return
+    declared = cfg.get("prompt_provenance")
+    if declared and declared != bank.prompt_provenance:
+        report.problems.append(
+            "ConVLM prompt_provenance contradicts the encoded attribute "
+            f"artifact: declared {declared!r}, expected "
+            f"{bank.prompt_provenance!r}")
+    declared_source = cfg.get("prompt_source")
+    if (declared_source
+            and declared_source != "convlm_precomputed_attribute_embeddings"):
+        report.problems.append(
+            "ConVLM prompt_source contradicts the encoded attribute artifact: "
+            f"declared {declared_source!r}, expected "
+            "'convlm_precomputed_attribute_embeddings'")
 
 
 def _check_sldpc_prompt_schema(
     cfg: dict[str, Any], report: "PreflightReport",
 ) -> None:
-    """Validate SLDPC's declared task prompt reference."""
-    if not _configured(cfg, "prompt_reference_yaml"):
+    """Validate active learned tokens separately from zero-shot references."""
+    if _configured(cfg, "prompt_reference_yaml"):
+        report.problems.append(
+            "SLDPC prompt_reference_yaml is ambiguous and is not consumed by "
+            "Stage 1/2; use prompt_classnames for learned prompts and "
+            "zero_shot_prompt_path for the separate baseline reference")
+
+    from common.prompts.sldpc import (
+        load_sldpc_zero_shot_prompt_bank,
+        sldpc_prompt_classname_sha256,
+        sldpc_prompt_classnames,
+        sldpc_zero_shot_templates_sha256,
+    )
+    try:
+        active = sldpc_prompt_classnames(
+            cfg.get("prompt_classnames", ()),
+            n_classes=cfg.get("n_classes"),
+        )
+    except (TypeError, ValueError) as error:
+        report.problems.append(str(error))
         return
-    value = cfg["prompt_reference_yaml"]
-    if not _exists(value):
+
+    digest = sldpc_prompt_classname_sha256(active)
+    declared_digest = cfg.get("prompt_classname_sha256")
+    if declared_digest != digest:
+        report.problems.append(
+            "SLDPC prompt_classname_sha256 does not match the ordered active "
+            "class tokens")
+    origin = cfg.get("prompt_provenance")
+    if origin not in {"upstream", "derived", "generated"}:
+        report.problems.append(
+            "SLDPC prompt_provenance must classify the active class tokens")
+    expected_source = {
+        "upstream": "sldpc_upstream_class_tokens",
+        "derived": "sldpc_derived_class_tokens",
+        "generated": "sldpc_generated_class_tokens",
+    }.get(origin)
+    if expected_source and cfg.get("prompt_source") != expected_source:
+        report.problems.append(
+            "SLDPC prompt_source contradicts the active class-token origin: "
+            f"expected {expected_source!r}")
+
+    value = cfg.get("zero_shot_prompt_path")
+    if not _configured(cfg, "zero_shot_prompt_path") or not _exists(value):
         return
     path = Path(expand_path(value))
-    try:
-        payload = load_yaml_file(path)
-    except (OSError, UnicodeError, yaml.YAMLError) as error:
-        report.problems.append(
-            f"cannot read SLDPC prompt reference {path}: {error}")
-        return
-    prompts = payload.get("prompts") if isinstance(payload, dict) else None
-    if not isinstance(prompts, dict):
-        report.problems.append(
-            f"{path}: SLDPC prompt reference needs a 'prompts' mapping")
-        return
     label_dict = cfg.get("label_dict")
-    if isinstance(label_dict, dict) and set(prompts) != set(label_dict):
+    if not isinstance(label_dict, dict):
         report.problems.append(
-            f"{path}: SLDPC prompt keys must match label_dict")
-    for label, values in prompts.items():
-        if not _valid_prompt_list(values):
-            report.problems.append(
-                f"{path}: SLDPC prompts for {label!r} must be a non-empty "
-                "string list")
+            "SLDPC zero-shot reference requires ordered label_dict keys")
+        return
+    class_names = [name for name, _ in sorted(
+        label_dict.items(), key=lambda item: item[1])]
+    try:
+        bank = load_sldpc_zero_shot_prompt_bank(
+            path,
+            class_names=class_names,
+            record=_prompt_manifest_record(path),
+            expected_file_sha256=cfg.get("zero_shot_prompt_sha256"),
+            expected_ordered_prompt_sha256=cfg.get(
+                "zero_shot_prompt_bank_sha256"),
+        )
+    except (OSError, UnicodeError, ValueError, TypeError, yaml.YAMLError) as error:
+        report.problems.append(str(error))
+        return
+    if cfg.get("zero_shot_prompt_provenance") != bank.provenance:
+        report.problems.append(
+            "SLDPC zero_shot_prompt_provenance contradicts its reference bank")
+    if cfg.get("zero_shot_prompt_usage") != "reference_only_unwired":
+        report.problems.append(
+            "SLDPC zero-shot YAML is not consumed by the unified Stage 1/2 "
+            "result and must declare usage='reference_only_unwired'")
+    if cfg.get("zero_shot_templates_sha256") \
+            != sldpc_zero_shot_templates_sha256():
+        report.problems.append(
+            "SLDPC zero_shot_templates_sha256 does not match the released "
+            "23-template ensemble")
 
 
 def _check_method_requirements(
@@ -1062,10 +1248,10 @@ def _check_method_requirements(
             if not _configured(cfg, "text_prompt_path"):
                 report.problems.append(
                     f"Method '{method}' requires text_prompt_path")
-            elif method in {"focus", "vila_mil"}:
-                _check_focus_prompt_schema(
-                    cfg, report,
-                    consumer="FOCUS" if method == "focus" else "ViLa-MIL")
+            elif method == "focus":
+                _check_focus_prompt_schema(cfg, report)
+            elif method == "vila_mil":
+                _check_vila_prompt_schema(cfg, report)
             elif method == "maple":
                 _check_maple_prompt_schema(cfg, report)
         elif method == "mscpt":
@@ -1110,6 +1296,14 @@ def _check_method_requirements(
             _require_any_config_key(
                 cfg, report, "Method 'convlm' attribute bank",
                 ("attribute_embeddings", "attribute_prompt_path"))
+            if (_configured(cfg, "attribute_embeddings")
+                    and _configured(cfg, "attribute_prompt_path")):
+                report.problems.append(
+                    "Method 'convlm' must configure exactly one of "
+                    "attribute_embeddings or attribute_prompt_path")
+            if not _configured(cfg, "attribute_feature_space_id"):
+                report.problems.append(
+                    "Method 'convlm' requires attribute_feature_space_id")
             if (_configured(cfg, "attribute_prompt_path")
                     and not _configured(cfg, "attribute_embeddings")):
                 encoder = cfg.get("attribute_encoder")
@@ -1119,17 +1313,52 @@ def _check_method_requirements(
                         "an attribute_encoder mapping")
                 else:
                     missing = [
-                        key for key in ("model_name", "weights")
+                        key for key in (
+                            "model_name", "weights", "feature_space_id",
+                            "checkpoint_sha256")
                         if not _configured(encoder, key)]
                     if missing:
                         report.problems.append(
                             "Method 'convlm' attribute_encoder requires: "
                             + ", ".join(missing))
+                    elif (encoder["feature_space_id"]
+                          != cfg.get("attribute_feature_space_id")):
+                        report.problems.append(
+                            "Method 'convlm' attribute_encoder feature space "
+                            "must match attribute_feature_space_id")
+                    else:
+                        digest = encoder["checkpoint_sha256"]
+                        valid_digest = (
+                            isinstance(digest, str) and len(digest) == 64
+                            and all(char in "0123456789abcdefABCDEF"
+                                    for char in digest))
+                        if not valid_digest:
+                            report.problems.append(
+                                "Method 'convlm' attribute_encoder."
+                                "checkpoint_sha256 must be a 64-character "
+                                "digest")
+                        weights = Path(expand_path(encoder["weights"]))
+                        if valid_digest and weights.is_file():
+                            try:
+                                from common.prompts import file_sha256
+                                actual = file_sha256(weights)
+                            except OSError as error:
+                                report.problems.append(
+                                    f"cannot hash ConVLM attribute encoder "
+                                    f"{weights}: {error}")
+                            else:
+                                if actual.lower() != digest.lower():
+                                    report.problems.append(
+                                        "Method 'convlm' attribute_encoder "
+                                        "checkpoint_sha256 does not match "
+                                        f"{weights}")
             _check_convlm_prompt_schema(cfg, report)
+            _check_convlm_embedding_schema(cfg, report)
         elif method == "sldpc":
-            if not _configured(cfg, "prompt_reference_yaml"):
+            if not _configured(cfg, "prompt_classnames"):
                 report.problems.append(
-                    "Method 'sldpc' requires prompt_reference_yaml")
+                    "Method 'sldpc' requires ordered prompt_classnames for "
+                    "the learned Stage 1/2 prompts")
             _check_sldpc_prompt_schema(cfg, report)
         elif method == "cod_mil":
             if not _configured(cfg, "text_prompt_path"):
@@ -1155,34 +1384,8 @@ def _check_method_requirements(
                     "Method 'wsi_five' training_mode must be "
                     "upstream_answer_bank or simplified_classnames")
             else:
-                if not _configured(cfg, "clinical_questions"):
-                    report.problems.append(
-                        "Method 'wsi_five' requires an explicit six-question "
-                        "prompt bank (clinical_questions)")
-                elif isinstance(cfg["clinical_questions"], (str, Path)):
-                    _check_clinical_questions_schema(
-                        cfg["clinical_questions"], report, expected_count=6)
-                else:
-                    questions = cfg["clinical_questions"]
-                    if (not isinstance(questions, (list, tuple))
-                            or len(questions) != 6
-                            or any(not isinstance(item, str) or not item.strip()
-                                   for item in questions)):
-                        report.problems.append(
-                            "Method 'wsi_five' clinical_questions must contain "
-                            "exactly six non-empty strings")
+                _check_wsi_five_prompt_contract(cfg, report)
             if mode == "upstream_answer_bank":
-                for key, purpose in (
-                        ("report_csv", "structured answer CSV"),
-                        ("evaluation_prompt_path", "evaluation prompt bank")):
-                    if not _configured(cfg, key):
-                        report.problems.append(
-                            f"Method 'wsi_five' native mode requires {purpose} "
-                            f"({key})")
-                if _configured(cfg, "report_csv"):
-                    _check_report_csv_schema(cfg, report)
-                if _configured(cfg, "evaluation_prompt_path"):
-                    _check_wsi_five_evaluation_prompts(cfg, report)
                 if cfg.get("require_report") is not True:
                     report.problems.append(
                         "Method 'wsi_five' native mode requires "
@@ -1385,7 +1588,6 @@ def _check_runtime_settings(
         "wsifive": "wsi_five",
     }.get(method_name, method_name)
     choices: dict[tuple[str, str], set[str]] = {
-        ("focus", "trainable_scope"): {"all", "soft_context"},
         ("pathpt", "prompt_init"): {"template", "rand"},
         ("pathpt", "learnable"): {"token", "embedding", "both"},
         ("pathpt", "training_mode"): {

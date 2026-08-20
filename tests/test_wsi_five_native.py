@@ -8,6 +8,12 @@ import pandas as pd
 import torch
 import torch.nn as nn
 
+from common.prompts import (
+    WSI_FIVE_PROMPT_FORMAT,
+    load_wsi_five_answer_bank,
+    load_wsi_five_evaluation_bank,
+    load_wsi_five_question_bank,
+)
 from methods.wsi_five.adapter import WSIFiVEMethod
 from methods.wsi_five.dataset import WSI_FiVE_Dataset
 from methods.wsi_five import dataset as wsi_five_dataset
@@ -26,12 +32,28 @@ def _answers(prefix: str) -> tuple[str, ...]:
 
 def _write_eval_prompts(path):
     path.write_text(json.dumps({
-        "_provenance": "upstream",
+        "_provenance": "derived",
         "prompts": {"LUAD": "upstream LUAD", "LUSC": "upstream LUSC"},
     }))
 
 
 def _native_cfg(eval_path, **updates):
+    questions_path = eval_path.with_name(eval_path.stem + "_questions.json")
+    questions_path.write_text(json.dumps({
+        "_provenance": "derived",
+        "questions": [f"question {index}" for index in range(1, 7)],
+    }))
+    answers_path = eval_path.with_name(eval_path.stem + "_answers.csv")
+    fields = _answers("a")
+    answers_path.write_text(
+        "case_id,cancer_type,answer,q1,q2,q3,q4,q5,q6\n"
+        f"case-a,LUAD,{'; '.join(fields)},{','.join(fields)}\n")
+    question_bank = load_wsi_five_question_bank(
+        questions_path, expected_provenance="derived")
+    answer_bank = load_wsi_five_answer_bank(
+        answers_path, expected_provenance="generated")
+    evaluation_bank = load_wsi_five_evaluation_bank(
+        eval_path, {"LUAD": 0, "LUSC": 1}, expected_provenance="derived")
     cfg = {
         "method": "wsi_five",
         "backbone": "wsi-five-vit",
@@ -40,7 +62,16 @@ def _native_cfg(eval_path, **updates):
         "classnames": ["lung adenocarcinoma", "lung squamous carcinoma"],
         "label_dict": {"LUAD": 0, "LUSC": 1},
         "training_mode": "upstream_answer_bank",
+        "clinical_questions": str(questions_path),
+        "report_csv": str(answers_path),
         "evaluation_prompt_path": str(eval_path),
+        "wsi_prompt_format": WSI_FIVE_PROMPT_FORMAT,
+        **question_bank.config_values(),
+        **answer_bank.config_values(),
+        **evaluation_bank.config_values(),
+        "prompt_provenance": (
+            "derived_questions_with_generated_answer_and_derived_evaluation_banks"),
+        "prompt_source": "wsi_five_derived_upstream_text_assets",
     }
     cfg.update(updates)
     return cfg
